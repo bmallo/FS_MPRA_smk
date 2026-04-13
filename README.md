@@ -117,6 +117,8 @@ extras/
   mpra_library_browser.ipynb # Jupyter notebook for library exploration
 ```
 
+> Earlier versions of the pipeline (package prototype, v1 variant caller) are preserved in the initial commit history.
+
 ## License
 
 MIT

@@ -23,9 +23,6 @@ extras/
   mpra_analysis_qc.py        # Single-variant deep-dive analysis
   MPRA_qc_visualization.py   # PDF report from QC HDF5
   mpra_library_browser.ipynb # Notebook for library exploration
-archive/
-  variant_barcode_caller.py  # v1, superseded by 02_call_variants.py
-  fiberseq_mpra/             # Package prototype, superseded by pipeline scripts
 results/{sample}/            # Created by Snakemake at runtime
   filtered/                  # Stage 1 output
   variants/                  # Stage 2 output

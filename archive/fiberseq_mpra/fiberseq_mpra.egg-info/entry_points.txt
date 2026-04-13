@@ -1,2 +1,0 @@
-[console_scripts]
-fiberseq-mpra = fiberseq_mpra.cli.main:main
