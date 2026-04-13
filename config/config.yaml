@@ -1,0 +1,54 @@
+# FS_MPRA Pipeline Configuration
+# ================================
+# Edit this file to define samples and pipeline parameters.
+# Then run: snakemake --cores <N>
+
+# Reference FASTA used for alignment (required)
+reference_fasta: null  # e.g., /path/to/reference.fa
+
+# Sample definitions
+# Each sample needs at minimum a BAM path.
+# Per-sample overrides (e.g., promoter_region) take precedence over defaults.
+samples:
+  # Example:
+  # SampleA:
+  #   bam: /path/to/sampleA.bam
+  #   promoter_region: "PlasmidName:3184-3501"  # optional per-sample override
+  #   barcode_region: "3502-3516"                # optional per-sample override
+
+# ---------------------------------------------------------------------------
+# Stage 1: Filter reads (01_filter_reads.py)
+# ---------------------------------------------------------------------------
+methylation_range: null          # [min, max] or null to use per-type defaults
+genomic_methylation_range:
+  - 0.1
+  - 1.0
+plasmid_methylation_range:
+  - 0.1
+  - 1.0
+length_range:
+  - 50
+  - 50
+exact_alignment: true
+skip_methylation: false
+write_genomic: false             # Write genomic reads to a separate BAM
+
+# ---------------------------------------------------------------------------
+# Stage 2: Call variants (02_call_variants.py)
+# ---------------------------------------------------------------------------
+promoter_region: null             # e.g., "PlasmidName:3184-3501" (required)
+barcode_region: null              # e.g., "3502-3516" or null to skip
+no_barcode: false
+snv_only: false
+min_base_quality: 20
+max_edit_distance: 2
+
+# ---------------------------------------------------------------------------
+# Stage 3: Analyze library (03_analyze_library.py)
+# ---------------------------------------------------------------------------
+target_region: null               # e.g., "PlasmidName:3100-3600" or null
+analysis_promoter_region: null    # e.g., "3184-3501" (START-END within target)
+min_reads: 50
+n_null_iterations: 2000
+nuc_range: null                   # [min, max] or null for no filter
+threads: 8

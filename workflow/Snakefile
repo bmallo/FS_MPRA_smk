@@ -1,0 +1,168 @@
+"""
+FS_MPRA Snakemake Pipeline
+===========================
+Fiber-seq MPRA saturation mutagenesis analysis:
+  filter reads -> call variants -> analyze library
+
+Usage:
+  snakemake --cores 8
+  snakemake --cores 8 -n          # dry run
+  snakemake --cores 1 results/SampleA/analysis/SampleA.h5  # single target
+"""
+
+import os
+
+configfile: "config/config.yaml"
+
+SAMPLES = list(config["samples"].keys())
+SCRIPTS = os.path.join(workflow.basedir, "scripts")
+
+
+def sample_cfg(wc, key, default=None):
+    """Get a config value with per-sample override support."""
+    sample_overrides = config["samples"].get(wc.sample, {})
+    return sample_overrides.get(key, config.get(key, default))
+
+
+def filter_reads_extra(wc):
+    """Build extra CLI args for 01_filter_reads.py."""
+    args = []
+    ref = config.get("reference_fasta")
+    if ref:
+        args.append(f"--reference {ref}")
+    meth = config.get("methylation_range")
+    if meth:
+        args.append(f"--methylation-range {meth[0]} {meth[1]}")
+    else:
+        gm = config.get("genomic_methylation_range", [0.1, 1.0])
+        pm = config.get("plasmid_methylation_range", [0.1, 1.0])
+        args.append(f"--genomic-methylation-range {gm[0]} {gm[1]}")
+        args.append(f"--plasmid-methylation-range {pm[0]} {pm[1]}")
+    lr = config.get("length_range", [50, 50])
+    args.append(f"--length-range {lr[0]} {lr[1]}")
+    if not config.get("exact_alignment", True):
+        args.append("--no-exact-alignment")
+    if config.get("skip_methylation", False):
+        args.append("--skip-methylation")
+    if config.get("write_genomic", False):
+        args.append("--write-genomic")
+    return " ".join(args)
+
+
+def call_variants_extra(wc):
+    """Build extra CLI args for 02_call_variants.py."""
+    args = []
+    ref = config.get("reference_fasta")
+    if ref:
+        args.append(ref)
+    pr = sample_cfg(wc, "promoter_region")
+    if pr:
+        args.append(f"--promoter-region {pr}")
+    br = sample_cfg(wc, "barcode_region")
+    if br:
+        args.append(f"--barcode-region {br}")
+    if config.get("no_barcode", False):
+        args.append("--no-barcode")
+    if config.get("snv_only", False):
+        args.append("--snv-only")
+    args.append(f"--min-base-quality {config.get('min_base_quality', 20)}")
+    args.append(f"--max-edit-distance {config.get('max_edit_distance', 2)}")
+    return " ".join(args)
+
+
+def analyze_library_extra(wc):
+    """Build extra CLI args for 03_analyze_library.py."""
+    args = []
+    tr = sample_cfg(wc, "target_region")
+    if tr:
+        args.append(f"--target-region {tr}")
+    pr = sample_cfg(wc, "analysis_promoter_region")
+    if pr:
+        args.append(f"--promoter-region {pr}")
+    args.append(f"--min-reads {config.get('min_reads', 50)}")
+    args.append(f"--n-null-iterations {config.get('n_null_iterations', 2000)}")
+    nr = config.get("nuc_range")
+    if nr:
+        args.append(f"--nuc-range {nr[0]} {nr[1]}")
+    t = config.get("threads", 8)
+    args.append(f"--threads {t}")
+    return " ".join(args)
+
+
+# ===========================================================================
+# Default target
+# ===========================================================================
+
+rule all:
+    input:
+        expand("results/{sample}/analysis/{sample}.h5", sample=SAMPLES),
+        expand("results/{sample}/analysis/{sample}_summary.tsv", sample=SAMPLES),
+
+
+# ===========================================================================
+# Stage 1: Filter reads
+# ===========================================================================
+
+rule filter_reads:
+    input:
+        bam=lambda wc: config["samples"][wc.sample]["bam"],
+    output:
+        bam="results/{sample}/filtered/{sample}.plasmid.bam",
+        bai="results/{sample}/filtered/{sample}.plasmid.bam.bai",
+    params:
+        script=os.path.join(SCRIPTS, "01_filter_reads.py"),
+        outdir="results/{sample}/filtered",
+        extra=filter_reads_extra,
+    shell:
+        "python {params.script} {input.bam} "
+        "--output-dir {params.outdir} "
+        "--sample-name {wildcards.sample} "
+        "{params.extra}"
+
+
+# ===========================================================================
+# Stage 2: Call variants
+# ===========================================================================
+
+rule call_variants:
+    input:
+        bam="results/{sample}/filtered/{sample}.plasmid.bam",
+        bai="results/{sample}/filtered/{sample}.plasmid.bam.bai",
+    output:
+        bam="results/{sample}/variants/{sample}.tagged.bam",
+        bai="results/{sample}/variants/{sample}.tagged.bam.bai",
+    params:
+        script=os.path.join(SCRIPTS, "02_call_variants.py"),
+        outdir="results/{sample}/variants",
+        extra=call_variants_extra,
+    shell:
+        "python {params.script} {input.bam} "
+        "{params.extra} "
+        "--output-dir {params.outdir} "
+        "--sample-name {wildcards.sample}"
+
+
+# ===========================================================================
+# Stage 3: Analyze library
+# ===========================================================================
+
+rule analyze_library:
+    input:
+        bam="results/{sample}/variants/{sample}.tagged.bam",
+        bai="results/{sample}/variants/{sample}.tagged.bam.bai",
+    output:
+        h5="results/{sample}/analysis/{sample}.h5",
+        tsv="results/{sample}/analysis/{sample}_summary.tsv",
+        pdf="results/{sample}/analysis/{sample}_results.pdf",
+    params:
+        script=os.path.join(SCRIPTS, "03_analyze_library.py"),
+        outdir="results/{sample}/analysis",
+        extra=analyze_library_extra,
+    threads:
+        config.get("threads", 8)
+    shell:
+        "python {params.script} "
+        "--bam {input.bam} "
+        "--output-dir {params.outdir} "
+        "--sample-name {wildcards.sample} "
+        "{params.extra}"

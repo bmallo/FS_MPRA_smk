@@ -1,0 +1,27 @@
+fdr_threshold: 0.05
+generate_static_figures: true
+heatmap_cmap: RdBu_r
+heatmap_vmax: 3.0
+heatmap_vmin: -3.0
+min_effect_size: 0.0
+min_read_length: 0
+min_variant_reads: 500
+nucleosome_range: [10,30]
+output_format:
+- html
+- tsv
+per_variant_output: false
+position_range: null
+require_single_variant: true
+significance_cmap: viridis
+significance_vmax: 10.0
+size_bins:
+  TF:
+  - 20
+  - 49
+  mid:
+  - 50
+  - 79
+  nucleosome:
+  - 80
+  - 200

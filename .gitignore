@@ -1,0 +1,19 @@
+# Runtime outputs
+results/
+
+# Pixi environment
+.pixi/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+
+# Claude Code local settings
+.claude/
