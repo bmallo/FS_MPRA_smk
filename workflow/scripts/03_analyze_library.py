@@ -168,6 +168,13 @@ def write_library_hdf5(output_path, parse_stats, ground_truth_nc,
         sumg.create_dataset('variant_fdr_q',
                             data=[vr.get('variant_fdr_q', 1.0)
                                   for vr in all_variant_results])
+        # NC-shift readout + MDE
+        for fld in ('nc_mean_variant', 'nc_mean_wt', 'nc_delta',
+                    'nc_wasserstein', 'nc_shift_p', 'nc_shift_q',
+                    'mde_median'):
+            sumg.create_dataset(
+                fld, data=[float(vr.get(fld, float('nan')))
+                           for vr in all_variant_results])
 
         # Per-bin summary columns
         for label in bin_labels:
@@ -268,7 +275,7 @@ def write_library_hdf5(output_path, parse_stats, ground_truth_nc,
                 lr = vr[label]
                 lg = sg.create_group(safe_hdf5_name(label))
                 for key in ['delta_obs', 'variant_occ', 'empirical_p',
-                            'q_values', 'z_scores']:
+                            'q_values', 'z_scores', 'mde']:
                     lg.create_dataset(key, data=lr[key], compression='gzip')
                 lg.attrs['n_sig_positions_fdr10'] = lr['n_sig_positions_fdr10']
                 lg.attrs['max_abs_delta'] = lr['max_abs_delta']
@@ -292,7 +299,9 @@ def write_library_hdf5(output_path, parse_stats, ground_truth_nc,
 
 def write_summary_tsv(tsv_path, all_variant_results, bin_labels):
     logging.info(f"Writing TSV: {tsv_path}")
-    header = ['variant_id', 'n_reads', 'best_cluster_p', 'variant_fdr_q']
+    header = ['variant_id', 'n_reads', 'best_cluster_p', 'variant_fdr_q',
+              'nc_delta', 'nc_wasserstein', 'nc_shift_p', 'nc_shift_q',
+              'mde_median']
     for label in bin_labels:
         short = safe_hdf5_name(label)
         header.extend([f'{short}_max_abs_delta',
@@ -310,7 +319,12 @@ def write_summary_tsv(tsv_path, all_variant_results, bin_labels):
         for vr in all_variant_results:
             row = [vr['variant_id'], vr['n_nc_matched'],
                    f"{vr['best_cluster_p']:.6f}",
-                   f"{vr.get('variant_fdr_q', 1.0):.6f}"]
+                   f"{vr.get('variant_fdr_q', 1.0):.6f}",
+                   f"{vr.get('nc_delta', float('nan')):.4f}",
+                   f"{vr.get('nc_wasserstein', float('nan')):.4f}",
+                   f"{vr.get('nc_shift_p', 1.0):.6f}",
+                   f"{vr.get('nc_shift_q', 1.0):.6f}",
+                   f"{vr.get('mde_median', float('nan')):.6f}"]
             for label in bin_labels:
                 lr = vr.get(label, {})
                 row.append(f"{lr.get('max_abs_delta', 0.0):.6f}")
@@ -321,7 +335,7 @@ def write_summary_tsv(tsv_path, all_variant_results, bin_labels):
                     top = max(sc, key=lambda c: c['sum_abs_delta'])
                     row.extend([str(top['abs_start']), str(top['abs_end']),
                                 f"{top['sum_abs_delta']:.4f}",
-                                f"{top.get('sum_p', 1.0):.6f}",
+                                f"{top.get('max_sum_p', 1.0):.6f}",
                                 top.get('direction', '')])
                 else:
                     row.extend(['', '', '', '', ''])
@@ -623,6 +637,9 @@ def parse_args():
     p.add_argument('--absolute-delta-threshold', type=float, default=None)
     p.add_argument('--gap-tolerance', type=int, default=2)
     p.add_argument('--merge-distance', type=int, default=5)
+    p.add_argument('--mde-alpha', type=float, default=0.05,
+                   help='Alpha for the minimum-detectable-effect track '
+                        '(default: 0.05)')
 
     # Runtime
     p.add_argument('--threads', type=int, default=None)
@@ -757,7 +774,8 @@ def main():
         n_workers=args.threads,
         stratify=args.null_stratify,
         n_tol=args.null_strata_n_tol,
-        nc_dist=args.null_strata_nc_dist)
+        nc_dist=args.null_strata_nc_dist,
+        mde_alpha=args.mde_alpha)
 
     n_tested = len(all_variant_results)
     logging.info(f"Tested {n_tested} / {n_total} variants")
@@ -777,6 +795,15 @@ def main():
                      f"FDR<0.05={n_sig_005}, "
                      f"FDR<0.10={n_sig_010}, "
                      f"FDR<0.20={n_sig_020}")
+
+        # Independent cross-variant FDR for the NC-shift readout
+        nc_ps = np.array([vr.get('nc_shift_p', 1.0)
+                          for vr in all_variant_results])
+        nc_qs = benjamini_hochberg(nc_ps)
+        for vr, q in zip(all_variant_results, nc_qs):
+            vr['nc_shift_q'] = float(q)
+        logging.info(f"NC-shift significant: "
+                     f"FDR<0.10={int(np.sum(nc_qs < 0.10))}")
 
     # Sort by significance
     all_variant_results.sort(key=lambda v: v['best_cluster_p'])

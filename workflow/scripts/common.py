@@ -24,7 +24,7 @@ from multiprocessing import shared_memory
 import numpy as np
 import pysam
 from scipy import ndimage
-from scipy.stats import wasserstein_distance
+from scipy.stats import norm, wasserstein_distance
 
 try:
     from tqdm import tqdm
@@ -1382,7 +1382,8 @@ def _compute_variant_result(vid, var_indices, var_matched, var_n,
                             prom_rel_s, prom_rel_e, prom_slice,
                             cluster_threshold_quantile,
                             absolute_delta_threshold,
-                            gap_tolerance, merge_distance):
+                            gap_tolerance, merge_distance,
+                            mde_alpha=0.05):
     """Shared per-variant testing core. Verbatim extraction of the
     per-bin block that was duplicated between test_single_variant and
     _variant_test_worker. The only thing that differed between callers
@@ -1391,6 +1392,11 @@ def _compute_variant_result(vid, var_indices, var_matched, var_n,
     """
     wt_occ = null_res['wt_occ']
     n_null = null_res['null_delta'].shape[0]
+    # Minimum detectable effect: smallest |Δ| this variant's N could
+    # resolve at each position given the WT (Option-A) occupancy p.
+    # Lets a true null be distinguished from "underpowered".
+    z_mde = float(norm.ppf(1.0 - mde_alpha / 2.0))
+    mde_all = []
     # Family-wide max-statistic null (computed in run_null_calibration by
     # the SAME detection rule as below): per null iteration, the max
     # cluster Σ|Δ| across all bins. Calibrating the observed family-wide
@@ -1464,12 +1470,17 @@ def _compute_variant_result(vid, var_indices, var_matched, var_n,
 
         n_sig_pos = int(np.sum(q_values[prom_slice] < 0.10))
 
+        p_wt = np.clip(wt_occ[label], 0.0, 1.0)
+        mde = z_mde * np.sqrt(p_wt * (1.0 - p_wt) / max(var_n, 1))
+        mde_all.append(mde[prom_slice])
+
         results[label] = {
             'delta_obs': delta_obs.astype(np.float32),
             'variant_occ': var_occ.astype(np.float32),
             'empirical_p': empirical_p.astype(np.float32),
             'q_values': q_values.astype(np.float32),
             'z_scores': z_scores.astype(np.float32),
+            'mde': mde.astype(np.float32),
             'n_sig_positions_fdr10': n_sig_pos,
             'max_abs_delta': float(np.max(abs_obs)),
             'significant_clusters': sig_clusters,
@@ -1483,6 +1494,8 @@ def _compute_variant_result(vid, var_indices, var_matched, var_n,
     results['obs_familywise_max'] = float(obs_familywise_max)
     results['best_cluster_p'] = float(
         (np.sum(null_fwm >= obs_familywise_max) + 1) / (n_null + 1))
+    results['mde_median'] = (float(np.median(np.concatenate(mde_all)))
+                             if mde_all else float('nan'))
     return results
 
 
@@ -1564,6 +1577,36 @@ def _nc_wasserstein(nc_a, nc_b):
         nc_a['nc_fracs'], nc_b['nc_fracs']))
 
 
+def nc_shift_null(wt_nc_samples, n, n_iter, rng):
+    """Null distribution of the variant-vs-WT NC Wasserstein-1 statistic
+    under H0 ('variant behaves like WT'): draw n WT NC values WITH
+    replacement (NOT NC-matched — the point is to detect an NC shift)
+    and measure Wasserstein-1 vs the full WT NC distribution. Depends
+    only on n, so it is computed once per stratum and reused.
+    """
+    null_w = np.empty(n_iter, dtype=np.float64)
+    for i in range(n_iter):
+        s = rng.choice(wt_nc_samples, size=n, replace=True)
+        null_w[i] = wasserstein_distance(s, wt_nc_samples)
+    return null_w
+
+
+def nc_shift_stats(var_nc_samples, wt_nc_samples, null_w):
+    """Per-variant nucleosome-count shift readout (distinct from the
+    per-position nuc-track occupancy test). Signed ΔNC mean for
+    direction/magnitude + Wasserstein-1 with an empirical p vs the
+    shared null."""
+    if len(var_nc_samples) == 0 or len(wt_nc_samples) == 0:
+        return None
+    obs_w = float(wasserstein_distance(var_nc_samples, wt_nc_samples))
+    mv = float(np.mean(var_nc_samples))
+    mw = float(np.mean(wt_nc_samples))
+    p = float((np.sum(null_w >= obs_w) + 1) / (len(null_w) + 1))
+    return {'nc_mean_variant': mv, 'nc_mean_wt': mw,
+            'nc_delta': mv - mw, 'nc_wasserstein': obs_w,
+            'nc_shift_p': p}
+
+
 def build_strata(rd, variant_groups, min_nuc=None, max_nuc=None,
                  n_tol=0.10, nc_dist=0.30, stratify=True):
     """Group testable variants whose per-variant null would be ~identical
@@ -1621,7 +1664,8 @@ def run_variant_testing_parallel(rd, wt_idx, variant_groups,
                                   absolute_delta_threshold=None,
                                   gap_tolerance=2, merge_distance=5,
                                   n_workers=1, stratify=True,
-                                  n_tol=0.10, nc_dist=0.30):
+                                  n_tol=0.10, nc_dist=0.30,
+                                  mde_alpha=0.05):
     """Test all variants. Nulls are built once per stratum (variants
     with ~identical N and NC distribution share a null — the compute
     lever) and reused across members. Each variant's observed delta
@@ -1648,6 +1692,12 @@ def run_variant_testing_parallel(rd, wt_idx, variant_groups,
                        or rd.analysis_start != a_start)
     col_indices = (np.arange(a_start, a_end) if needs_col_slice else None)
 
+    # WT NC samples (full WT, not NC-matched) for the NC-shift readout.
+    wt_f_nc = rd.get_indices_filtered(wt_idx, min_nuc=min_nuc,
+                                      max_nuc=max_nuc)
+    wt_nc_samples = rd.nuc_counts[wt_f_nc]
+    wt_nc_samples = wt_nc_samples[wt_nc_samples >= 0]
+
     all_results = []
     for si, st in enumerate(tqdm(strata, desc="Strata",
                                  disable=not HAS_TQDM)):
@@ -1661,6 +1711,12 @@ def run_variant_testing_parallel(rd, wt_idx, variant_groups,
             absolute_delta_threshold=absolute_delta_threshold,
             gap_tolerance=gap_tolerance, merge_distance=merge_distance,
             n_workers=n_workers)
+        # NC-shift null depends only on N -> one per stratum (rep_n).
+        nc_null = (nc_shift_null(
+            wt_nc_samples, st['rep_n'], n_null_iterations,
+            np.random.default_rng(
+                stable_variant_seed(random_seed, f"ncshift_{si}")))
+            if len(wt_nc_samples) else np.zeros(n_null_iterations))
         for vid, var_f, var_n, vnc in st['members']:
             if needs_col_slice:
                 def var_occ_fn(label, _vf=var_f):
@@ -1674,8 +1730,13 @@ def run_variant_testing_parallel(rd, wt_idx, variant_groups,
                 null_res, var_n, bin_labels, a_start, analysis_length,
                 prom_rel_s, prom_rel_e, prom_slice,
                 cluster_threshold_quantile, absolute_delta_threshold,
-                gap_tolerance, merge_distance)
+                gap_tolerance, merge_distance, mde_alpha=mde_alpha)
             if vr is not None:
+                vnc_samp = rd.nuc_counts[var_f]
+                vnc_samp = vnc_samp[vnc_samp >= 0]
+                ncs = nc_shift_stats(vnc_samp, wt_nc_samples, nc_null)
+                if ncs is not None:
+                    vr.update(ncs)
                 all_results.append(vr)
     logging.info(f"  Tested {len(all_results)} variants "
                  f"({len(strata)} null builds)")
