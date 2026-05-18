@@ -33,7 +33,7 @@ except ImportError:
 # Import shared pipeline utilities
 sys.path.insert(0, os.path.dirname(__file__))
 from common import (
-    VERSION, FOOTPRINT_BINS,
+    VERSION, build_analysis_bins, NUC_MIN_LEN_DEFAULT,
     setup_logging, parse_region, safe_hdf5_name, safe_variant_hdf5_name,
     benjamini_hochberg, derive_sample_name, parse_variant_tag,
     parse_variant_id_fields, get_bam_ref_info, resolve_target_chrom,
@@ -555,6 +555,20 @@ def parse_args():
     p.add_argument('--promoter-region', default=None,
                    help='Promoter region START-END (1-based inclusive)')
 
+    # Analysis bins (FiberHMM tracks; all bounds inclusive, configurable)
+    p.add_argument('--tf-subtf', type=int, nargs=2, default=[10, 19],
+                   metavar=('MIN', 'MAX'),
+                   help='tf-track sub_TF length range (default: 10 19)')
+    p.add_argument('--tf-tf', type=int, nargs=2, default=[20, 39],
+                   metavar=('MIN', 'MAX'),
+                   help='tf-track TF length range (default: 20 39)')
+    p.add_argument('--tf-pic', type=int, nargs=2, default=[40, 60],
+                   metavar=('MIN', 'MAX'),
+                   help='tf-track PIC length range (default: 40 60)')
+    p.add_argument('--nuc-min-len', type=int, default=NUC_MIN_LEN_DEFAULT,
+                   help=f'nuc-track min segment length '
+                        f'(default: {NUC_MIN_LEN_DEFAULT})')
+
     # Filtering
     p.add_argument('--nuc-range', type=int, nargs=2, default=None,
                    metavar=('MIN', 'MAX'),
@@ -618,9 +632,11 @@ def main():
     logging.info(f"Threads: {args.threads}")
     start_time = time.time()
 
-    size_bins = [FOOTPRINT_BINS['sub_TF'], FOOTPRINT_BINS['TF'],
-                 FOOTPRINT_BINS['PIC'], FOOTPRINT_BINS['NUC']]
-    bin_labels = [b[2] for b in size_bins]
+    analysis_bins = build_analysis_bins(
+        tf_subTF=tuple(args.tf_subtf), tf_TF=tuple(args.tf_tf),
+        tf_PIC=tuple(args.tf_pic), nuc_min_len=args.nuc_min_len)
+    bin_labels = [b[0] for b in analysis_bins]
+    logging.info(f"Analysis bins: {analysis_bins}")
 
     target_chrom, target_start, target_end = parse_region(
         args.target_region)
@@ -648,7 +664,7 @@ def main():
     analysis_region = (prom_s, prom_e)
 
     rd, ref_length, ref_name, parse_stats = parse_bam(
-        args.bam, size_bins, bin_labels, target_chrom=target_chrom,
+        args.bam, analysis_bins, target_chrom=target_chrom,
         analysis_region=analysis_region)
 
     wt_idx = rd.wt_indices

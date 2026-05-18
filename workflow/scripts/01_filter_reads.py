@@ -265,17 +265,44 @@ def calculate_methylation_percentage(read) -> float:
     return m6a_count / at_count
 
 
-def calculate_nucleosome_tags(read) -> Tuple[int, float]:
-    """Calculate nucleosome count and basepairs-per-nucleosome from BAM tags.
+def _nuc_count_from_ma(ma_str) -> Optional[int]:
+    """Count nucleosome segments in a FiberHMM MA:Z string.
 
-    Uses the 'as' tag (nucleosome starts array) for the count and
-    query_length for the bp-per-nucleosome ratio.
+    MA = "<qlen>;nuc...:s-l,...;msp...:...;tf...:..." — count the
+    comma-separated segments in the section whose label starts 'nuc'.
     """
-    try:
-        nuc_starts = read.get_tag('as')
-        nuc_count = len(nuc_starts)
-    except KeyError:
-        nuc_count = 0
+    if not ma_str:
+        return None
+    for seg in ma_str.split(';')[1:]:
+        label, sep, body = seg.partition(':')
+        if sep and label.split('+', 1)[0].strip() == 'nuc':
+            return 0 if not body else body.count(',') + 1
+    return None
+
+
+def calculate_nucleosome_tags(read) -> Tuple[int, float]:
+    """Calculate nucleosome count and basepairs-per-nucleosome.
+
+    Nucleosome-count source priority (the legacy 'as' tag is the MSP /
+    accessible track, NOT nucleosomes — using it was a bug):
+      1. existing 'nc' tag (FiberHMM source already provides it)
+      2. FiberHMM 'MA' string nuc section count
+      3. legacy 'ns' tag length (ns/nl = nucleosomes in fibertools)
+      4. 0
+    """
+    nuc_count = None
+    if read.has_tag('nc'):
+        try:
+            nuc_count = int(read.get_tag('nc'))
+        except (ValueError, TypeError):
+            nuc_count = None
+    if nuc_count is None and read.has_tag('MA'):
+        nuc_count = _nuc_count_from_ma(read.get_tag('MA'))
+    if nuc_count is None:
+        try:
+            nuc_count = len(read.get_tag('ns'))
+        except KeyError:
+            nuc_count = 0
 
     seq_len = read.query_length or 0
 
@@ -368,6 +395,11 @@ def process_bam_single_pass(
 
         for read in tqdm(pysam_bam, total=stats.total_input_reads, desc="Processing reads"):
             chrom = read.reference_name
+
+            # Skip unmapped reads (reference_name is None when --unmapped reads are present)
+            if chrom is None:
+                stats.unknown_chromosomes += 1
+                continue
 
             # Get classification
             chrom_type = chrom_classifications.get(chrom, classify_chromosome(chrom))

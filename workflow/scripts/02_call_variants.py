@@ -1655,17 +1655,17 @@ def parse_args():
         epilog="""
 Examples:
     %(prog)s input.bam reference.fasta \\
-        --promoter-chrom LDLR --promoter-region 3184-3501 \\
+        --promoter-region LDLR:3184-3501 \\
         --barcode-region 3294-3309
 
     # SNV-only mode:
     %(prog)s input.bam reference.fasta \\
-        --promoter-chrom LDLR --promoter-region 3184-3501 \\
+        --promoter-region LDLR:3184-3501 \\
         --barcode-region 3294-3309 --snv-only
 
     # Without barcode extraction:
     %(prog)s input.bam reference.fasta \\
-        --promoter-chrom LDLR --promoter-region 3184-3501 --no-barcode
+        --promoter-region LDLR:3184-3501 --no-barcode
 
 Output BAM tags:
     PV  Consensus variant (post-clustering)
@@ -1798,12 +1798,18 @@ def main():
         written = 0
         try:
             for read in bam_in.fetch(promoter_chrom, promoter_start_0, promoter_end_0 + 1):
+                # Skip supplementary/secondary: they share query_name with the
+                # primary and would incorrectly inherit its tags (cf. pass 2).
+                if read.is_supplementary or read.is_secondary:
+                    continue
                 if read.query_name in read_data:
+                    # read_data values are 7-tuples:
+                    # 0=variant_tag, 2=num_variants, 6=min_var_qual
                     rd = read_data[read.query_name]
-                    read.set_tag("PV", rd['variant_tag'])
-                    read.set_tag("VC", rd['num_variants'])
-                    if rd['min_var_qual'] is not None:
-                        read.set_tag("VQ", rd['min_var_qual'])
+                    read.set_tag("PV", rd[0])
+                    read.set_tag("VC", rd[2])
+                    if rd[6] is not None:
+                        read.set_tag("VQ", rd[6])
                     bam_out.write(read)
                     written += 1
         except ValueError as e:

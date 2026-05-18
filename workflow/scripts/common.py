@@ -11,6 +11,7 @@ extras/mpra_analysis_qc.py.
 """
 
 import array as arr_module
+import hashlib
 import json
 import logging
 import re
@@ -45,6 +46,31 @@ FOOTPRINT_BINS = {
     'NUC':    (81, np.inf, 'Nucleosome_81plusbp'),
 }
 
+# Track-aware analysis bins (FiberHMM). Each entry:
+#   (label, source_track, min_len, max_len)   max_len inclusive.
+# tf-track footprints are length sub-binned; the nuc track is a single
+# bin keyed by a minimum-length threshold. All bounds are runtime knobs
+# (see 03_analyze_library.py); these are the defaults.
+NUC_MIN_LEN_DEFAULT = 80
+DEFAULT_ANALYSIS_BINS = [
+    ('sub_TF', 'tf',  10, 19),
+    ('TF',     'tf',  20, 39),
+    ('PIC',    'tf',  40, 60),
+    ('nuc',    'nuc', NUC_MIN_LEN_DEFAULT, np.inf),
+]
+
+
+def build_analysis_bins(tf_subTF=(10, 19), tf_TF=(20, 39),
+                        tf_PIC=(40, 60), nuc_min_len=NUC_MIN_LEN_DEFAULT):
+    """Construct the (label, track, min, max) analysis-bin spec from
+    configurable bounds. Returns a list parallel to bin_labels."""
+    return [
+        ('sub_TF', 'tf',  tf_subTF[0], tf_subTF[1]),
+        ('TF',     'tf',  tf_TF[0],    tf_TF[1]),
+        ('PIC',    'tf',  tf_PIC[0],   tf_PIC[1]),
+        ('nuc',    'nuc', nuc_min_len, np.inf),
+    ]
+
 CLUSTER_WIDTH_RANGES = {
     'sub-TF_10-19bp':      (5, 30),
     'TF_20-40bp':          (10, 60),
@@ -58,6 +84,17 @@ TAG_VARIANT_COUNT = 'VC'
 TAG_FP_STARTS = 'ns'
 TAG_FP_LENGTHS = 'nl'
 TAG_FP_QUAL = 'nq'
+
+# FiberHMM structured footprint tag (new format). MA:Z =
+#   "<qlen>;nuc+Q:s-l,...;msp+:s-l,...;tf+QQQ:s-l,..."
+# starts are 1-based query coords; we expose them 0-based to match the
+# legacy `ns` convention used by build_q2r_array/convert_footprints*.
+TAG_MA = 'MA'
+TAG_MA_QUAL = 'AQ'
+# Legacy fibertools binary mirrors, mapped to the correct tracks:
+#   ns/nl = nucleosomes, as/al = MSPs (there is no legacy `tf` track).
+LEGACY_TRACK_TAGS = {'nuc': ('ns', 'nl'), 'msp': ('as', 'al')}
+FIBERHMM_TRACKS = ('nuc', 'msp', 'tf')
 
 
 # ============================================================================
@@ -150,6 +187,17 @@ def derive_sample_name(bam_path):
     return name
 
 
+def stable_variant_seed(base_seed, vid):
+    """Deterministic per-variant seed derived from base_seed and the variant id.
+
+    Python's builtin hash() is salted per process (PYTHONHASHSEED), so
+    `base_seed + hash(vid)` is not reproducible across runs and makes the
+    serial and parallel paths diverge. Use a stable digest instead.
+    """
+    digest = hashlib.blake2b(str(vid).encode(), digest_size=8).digest()
+    return (int(base_seed) + int.from_bytes(digest, 'little')) % (2**31)
+
+
 # ============================================================================
 # BAM Tag Parsing
 # ============================================================================
@@ -220,6 +268,85 @@ def parse_variant_id_fields(vid):
         return pos, dele.group(2), '', 'del'
 
     return pos, None, None, 'unknown'
+
+
+# ============================================================================
+# FiberHMM MA-tag parsing
+# ============================================================================
+
+def parse_ma_tag(ma_str):
+    """Parse the FiberHMM MA:Z structured footprint string.
+
+    Format: "<qlen>;<label>:<s-l>,<s-l>,...;<label>:...;..." where each
+    label is a track name optionally followed by a quality-encoding
+    suffix (e.g. 'nuc+Q', 'msp+', 'tf+QQQ') and each segment is
+    'start-length' with a 1-based query start.
+
+    Returns (qlen, tracks) where tracks maps track name ->
+    (starts_0based int32, lengths int32). Starts are converted to
+    0-based to match the legacy `ns` convention.
+    Robust to empty/missing/malformed sections.
+    """
+    tracks = {}
+    if not ma_str:
+        return None, tracks
+    parts = ma_str.split(';')
+    try:
+        qlen = int(parts[0])
+    except (ValueError, IndexError):
+        qlen = None
+    for seg in parts[1:]:
+        label, sep, body = seg.partition(':')
+        if not sep:
+            continue
+        track = label.split('+', 1)[0].strip()
+        if not track:
+            continue
+        starts = []
+        lengths = []
+        if body:
+            for pair in body.split(','):
+                d = pair.find('-')
+                if d <= 0:
+                    continue
+                try:
+                    s = int(pair[:d])
+                    ln = int(pair[d + 1:])
+                except ValueError:
+                    continue
+                starts.append(s - 1)  # 1-based -> 0-based query coord
+                lengths.append(ln)
+        tracks[track] = (np.asarray(starts, dtype=np.int32),
+                         np.asarray(lengths, dtype=np.int32))
+    return qlen, tracks
+
+
+def get_read_tracks(read):
+    """Per-read footprint tracks as {track: (starts_0based, lengths)}.
+
+    Prefers the FiberHMM MA:Z tag (authoritative; only source of the
+    `tf` track). Falls back to the legacy fibertools binary tags when
+    MA is absent: ns/nl -> 'nuc', as/al -> 'msp' (no legacy 'tf').
+    Always returns int32 numpy arrays; missing tracks are absent.
+    """
+    try:
+        ma = read.get_tag(TAG_MA)
+    except KeyError:
+        ma = None
+    if ma:
+        _, tracks = parse_ma_tag(ma)
+        return tracks
+    # Legacy fallback
+    tracks = {}
+    for track, (st_tag, ln_tag) in LEGACY_TRACK_TAGS.items():
+        try:
+            st = read.get_tag(st_tag)
+            ln = read.get_tag(ln_tag)
+        except KeyError:
+            continue
+        tracks[track] = (np.asarray(parse_tag_array(st), dtype=np.int32),
+                         np.asarray(parse_tag_array(ln), dtype=np.int32))
+    return tracks
 
 
 # ============================================================================
@@ -584,25 +711,67 @@ def convert_footprints_to_coverage(fp_starts, fp_lengths, q2r_arr,
     return coverage
 
 
-def parse_bam(bam_path, size_bins, bin_labels, target_chrom=None,
+def convert_tracks_to_coverage(tracks, q2r_arr, analysis_start,
+                               analysis_length, analysis_bins):
+    """Track-aware coverage builder (FiberHMM).
+
+    Parameters
+    ----------
+    tracks : dict {track: (starts_0based int32, lengths int32)}
+        From get_read_tracks(read).
+    q2r_arr : np.ndarray[int32]  query->ref map (build_q2r_array).
+    analysis_start, analysis_length : int  reference analysis window.
+    analysis_bins : list of (label, track, min_len, max_len)
+        max_len inclusive (may be np.inf).
+
+    Returns {label: uint8 array of length analysis_length}. Bins whose
+    source track is absent or contributes no covered positions are
+    omitted (treated as all-zeros downstream).
+    """
+    coverage = {}
+    analysis_end = analysis_start + analysis_length
+    q2r_len = len(q2r_arr)
+
+    for label, track, min_len, max_len in analysis_bins:
+        seg = tracks.get(track)
+        if seg is None:
+            continue
+        starts, lengths = seg
+        for fp_start, fp_len in zip(starts, lengths):
+            if not (min_len <= fp_len <= max_len):
+                continue
+            fp_start_c = max(0, int(fp_start))
+            fp_end_c = min(q2r_len, int(fp_start) + int(fp_len))
+            if fp_start_c >= fp_end_c:
+                continue
+            rpositions = q2r_arr[fp_start_c:fp_end_c]
+            valid = rpositions[rpositions >= 0]
+            valid = valid[(valid >= analysis_start) & (valid < analysis_end)]
+            if len(valid) == 0:
+                continue
+            if label not in coverage:
+                coverage[label] = np.zeros(analysis_length, dtype=np.uint8)
+            coverage[label][valid - analysis_start] = 1
+
+    return coverage
+
+
+def parse_bam(bam_path, analysis_bins, target_chrom=None,
               analysis_region=None, estimated_reads=None):
-    """Parse a tagged BAM into a ReadData object.
+    """Parse a tagged BAM into a ReadData object (track-aware).
 
     Parameters
     ----------
     bam_path : str
         Path to BAM file (must have PV/VC tags from stage 2).
-    size_bins : list of (min, max, label)
-        Footprint size bin definitions.
-    bin_labels : list of str
-        Bin label names.
+    analysis_bins : list of (label, track, min_len, max_len)
+        Track-aware analysis bins (see build_analysis_bins). Footprint
+        segments are read per-track via get_read_tracks() (FiberHMM
+        MA:Z, or legacy ns/nl/as fallback).
     target_chrom : str or None
         Target chromosome name (auto-detected if single-ref BAM).
     analysis_region : tuple of (start, end) or None
-        If provided, coverage matrices are restricted to this reference
-        region, using the optimized CIGAR-walk q2r and vectorized
-        footprint conversion. Reduces memory ~15x for typical cases.
-        If None, falls back to legacy full-width behavior.
+        Reference window for coverage matrices. None = full reference.
     estimated_reads : int or None
         Hint for pre-allocation size. If None, tries to read from index.
 
@@ -616,11 +785,7 @@ def parse_bam(bam_path, size_bins, bin_labels, target_chrom=None,
     stats = {'total': 0, 'unmapped': 0, 'missing_pv_vc': 0,
              'missing_fp_tags': 0, 'no_footprints': 0, 'off_target': 0,
              'parsed': 0}
-    bin_tuples = [(b[0], b[1], b[2]) for b in size_bins]
-
-    # Pre-compute bin boundaries for optimized path
-    if analysis_region is not None:
-        bin_boundaries = [(b[0], b[1]) for b in size_bins]
+    bin_labels = [b[0] for b in analysis_bins]
 
     with pysam.AlignmentFile(bam_path, 'rb') as bam:
         ref_info = {sq['SN']: sq['LN'] for sq in bam.header['SQ']}
@@ -628,7 +793,6 @@ def parse_bam(bam_path, size_bins, bin_labels, target_chrom=None,
         ref_name, ref_length = resolve_target_chrom(ref_info, target_chrom)
         logging.info(f"Using reference: {ref_name} ({ref_length:,} bp)")
 
-        # Estimate read count for pre-allocation
         if estimated_reads is None:
             try:
                 estimated_reads = sum(s.mapped for s in
@@ -643,18 +807,19 @@ def parse_bam(bam_path, size_bins, bin_labels, target_chrom=None,
         except (ValueError, AttributeError):
             pass
 
-        # Choose construction mode
+        # Single coverage path. Window = analysis_region or full ref.
         if analysis_region is not None:
             a_start, a_end = analysis_region
-            a_length = a_end - a_start
-            logging.info(f"Analysis region: {a_start}-{a_end} "
-                         f"({a_length} bp of {ref_length} bp)")
-            rd = ReadData(ref_length, bin_labels,
-                          analysis_length=a_length,
-                          analysis_start=a_start,
-                          estimated_reads=estimated_reads)
         else:
-            rd = ReadData(ref_length, bin_labels)
+            a_start, a_end = 0, ref_length
+        a_length = a_end - a_start
+        logging.info(f"Analysis region: {a_start}-{a_end} "
+                     f"({a_length} bp of {ref_length} bp); "
+                     f"bins={bin_labels}")
+        rd = ReadData(ref_length, bin_labels,
+                      analysis_length=a_length,
+                      analysis_start=a_start,
+                      estimated_reads=estimated_reads)
 
         for read in tqdm(bam, total=total_reads, desc="Parsing BAM",
                          unit=" reads", disable=not HAS_TQDM):
@@ -675,12 +840,13 @@ def parse_bam(bam_path, size_bins, bin_labels, target_chrom=None,
                 nuc_count = int(read.get_tag(TAG_NUC_COUNT))
             except KeyError:
                 nuc_count = None
-            try:
-                fp_starts = read.get_tag(TAG_FP_STARTS)
-                fp_lengths = read.get_tag(TAG_FP_LENGTHS)
-            except KeyError:
+
+            tracks = get_read_tracks(read)
+            if not tracks:
                 stats['missing_fp_tags'] += 1
                 continue
+            if sum(len(s[0]) for s in tracks.values()) == 0:
+                stats['no_footprints'] += 1
 
             if pv_value == "WT" or vc_value == 0:
                 variant_id = "WT"
@@ -689,34 +855,11 @@ def parse_bam(bam_path, size_bins, bin_labels, target_chrom=None,
                 variant_id = (variants[0] if len(variants) == 1
                               else json.dumps(variants))
 
-            if analysis_region is not None:
-                # Optimized path: CIGAR-walk q2r + vectorized coverage
-                if len(fp_starts) == 0:
-                    stats['no_footprints'] += 1
-                q2r_arr = build_q2r_array(read)
-                bin_cov = convert_footprints_to_coverage(
-                    fp_starts, fp_lengths, q2r_arr,
-                    a_start, a_length, bin_boundaries, bin_labels)
-                rd.add_read_coverage(nuc_count, variant_id, int(vc_value),
-                                     bin_cov)
-            else:
-                # Legacy path
-                fp_starts = parse_tag_array(fp_starts)
-                fp_lengths = parse_tag_array(fp_lengths)
-                if len(fp_starts) == 0:
-                    stats['no_footprints'] += 1
-                fp_quals = None
-                try:
-                    fp_quals = parse_tag_array(read.get_tag(TAG_FP_QUAL))
-                except KeyError:
-                    pass
-                q2r = build_query_to_ref_map(
-                    read.get_aligned_pairs(matches_only=False))
-                footprints = convert_footprints(
-                    fp_starts, fp_lengths, fp_quals, q2r,
-                    ref_length, bin_tuples)
-                rd.add_read(nuc_count, variant_id, int(vc_value),
-                            footprints, ref_length)
+            q2r_arr = build_q2r_array(read)
+            bin_cov = convert_tracks_to_coverage(
+                tracks, q2r_arr, a_start, a_length, analysis_bins)
+            rd.add_read_coverage(nuc_count, variant_id, int(vc_value),
+                                 bin_cov)
             stats['parsed'] += 1
 
     logging.info(f"Parsed {stats['parsed']:,} / {stats['total']:,}")
@@ -909,54 +1052,13 @@ def cleanup_shared_memory(shm_objects):
 # Cluster Detection
 # ============================================================================
 
-def _detect_clusters_adaptive(abs_delta, threshold, gap_tolerance=2,
-                              merge_distance=5, min_width=3):
-    sig = abs_delta > threshold
-    n = len(sig)
-    if not np.any(sig):
-        return []
-    if gap_tolerance > 0:
-        bridged = sig.copy()
-        for i in range(n):
-            if not sig[i]:
-                left = np.any(sig[max(0, i - gap_tolerance):i])
-                right = np.any(sig[i + 1:min(n, i + gap_tolerance + 1)])
-                if left and right:
-                    bridged[i] = True
-        sig = bridged
-    labeled, n_clusters = ndimage.label(sig)
-    raw = []
-    for c in range(1, n_clusters + 1):
-        pos = np.where(labeled == c)[0]
-        raw.append({'start': int(pos[0]), 'end': int(pos[-1])})
-    if len(raw) > 1:
-        merged = [raw[0].copy()]
-        for c in raw[1:]:
-            if c['start'] - merged[-1]['end'] <= merge_distance:
-                merged[-1]['end'] = c['end']
-            else:
-                merged.append(c.copy())
-        raw = merged
-    clusters = []
-    for c in raw:
-        s, e = c['start'], c['end']
-        w = e - s + 1
-        if w < min_width:
-            continue
-        rd = abs_delta[s:e + 1]
-        clusters.append({
-            'start': s, 'end': e, 'width': w,
-            'sum_abs_delta': float(np.sum(rd)),
-            'max_abs_delta': float(np.max(rd)),
-            'mean_abs_delta': float(np.mean(rd)),
-            'peak_position': s + int(np.argmax(rd)),
-        })
-    return clusters
-
-
-def _detect_clusters_from_mask(sig_mask, abs_delta, signed_delta,
-                               gap_tolerance=2, merge_distance=5,
-                               min_width=3):
+def _detect_clusters_core(sig_mask, abs_delta, signed_delta=None,
+                          gap_tolerance=2, merge_distance=5, min_width=3):
+    """Unified cluster detector. Behavior-preserving merge of the former
+    _detect_clusters_adaptive (signed_delta=None) and
+    _detect_clusters_from_mask (signed_delta given -> adds
+    mean_signed_delta + direction). Identical numerics to both.
+    """
     n = len(sig_mask)
     if not np.any(sig_mask):
         return []
@@ -989,17 +1091,32 @@ def _detect_clusters_from_mask(sig_mask, abs_delta, signed_delta,
         if w < min_width:
             continue
         ra = abs_delta[s:e + 1]
-        rs = signed_delta[s:e + 1]
-        clusters.append({
+        cl = {
             'start': s, 'end': e, 'width': w,
             'sum_abs_delta': float(np.sum(ra)),
             'max_abs_delta': float(np.max(ra)),
             'mean_abs_delta': float(np.mean(ra)),
-            'mean_signed_delta': float(np.mean(rs)),
             'peak_position': s + int(np.argmax(ra)),
-            'direction': 'loss' if np.mean(rs) < 0 else 'gain',
-        })
+        }
+        if signed_delta is not None:
+            rs = signed_delta[s:e + 1]
+            cl['mean_signed_delta'] = float(np.mean(rs))
+            cl['direction'] = 'loss' if np.mean(rs) < 0 else 'gain'
+        clusters.append(cl)
     return clusters
+
+
+def _detect_clusters_adaptive(abs_delta, threshold, gap_tolerance=2,
+                              merge_distance=5, min_width=3):
+    return _detect_clusters_core(abs_delta > threshold, abs_delta, None,
+                                 gap_tolerance, merge_distance, min_width)
+
+
+def _detect_clusters_from_mask(sig_mask, abs_delta, signed_delta,
+                               gap_tolerance=2, merge_distance=5,
+                               min_width=3):
+    return _detect_clusters_core(sig_mask, abs_delta, signed_delta,
+                                 gap_tolerance, merge_distance, min_width)
 
 
 # ============================================================================
@@ -1093,9 +1210,6 @@ def run_null_calibration(rd, wt_idx, ground_truth_nc, coverage_level,
     else:
         wt_mats = {l: rd.coverage_matrices[l][wt_f]
                    for l in bin_labels}
-    wt_occ = {l: wt_mats[l].mean(axis=0).astype(np.float64)
-              for l in bin_labels}
-
     wt_nc = rd.nuc_counts[wt_f]
     nc_vals = ground_truth_nc['nc_vals']
     nc_fracs = ground_truth_nc['nc_fracs']
@@ -1105,6 +1219,27 @@ def run_null_calibration(rd, wt_idx, ground_truth_nc, coverage_level,
         if len(pool) > 0:
             wt_nc_pools[nc_val] = pool
     wt_nc_pools_ser = list(wt_nc_pools.items())
+
+    # Option A reference: WT mean occupancy reweighted to the passed NC
+    # distribution (the variant's, for per-variant nulls). This removes
+    # the nucleosome-count confounder — both the observed delta and the
+    # null delta are referenced to "what WT does at this NC profile",
+    # so the null is centered at ~0 under H0. Renormalize over NC values
+    # that actually have WT reads.
+    wt_occ = {}
+    for l in bin_labels:
+        acc = np.zeros(analysis_length, dtype=np.float64)
+        tot = 0.0
+        for nc_val, frac in zip(nc_vals, nc_fracs):
+            pool = wt_nc_pools.get(nc_val)
+            if pool is None or len(pool) == 0 or frac <= 0:
+                continue
+            acc += frac * wt_mats[l][pool].mean(axis=0)
+            tot += frac
+        if tot > 0:
+            wt_occ[l] = acc / tot
+        else:
+            wt_occ[l] = wt_mats[l].mean(axis=0).astype(np.float64)
 
     nc_draw_counts = []
     for nc_val, frac in zip(nc_vals, nc_fracs):
@@ -1118,8 +1253,8 @@ def run_null_calibration(rd, wt_idx, ground_truth_nc, coverage_level,
 
     null_delta = np.zeros((n_iterations, n_bins, analysis_length),
                           dtype=np.float32)
-    all_cluster_stats = []
-
+    # ---- Fill null_delta only (cluster detection done post-hoc with the
+    # SAME rule used for the observed data — fixes Issue 2b) ----
     if n_workers > 1 and n_iterations > 1:
         shm_info, shm_objects = create_shared_matrices(wt_mats, bin_labels)
         chunk_size = max(1, n_iterations // n_workers)
@@ -1141,10 +1276,9 @@ def run_null_calibration(rd, wt_idx, ground_truth_nc, coverage_level,
                     results_by_chunk[futures[future]] = future.result()
                 offset = 0
                 for ci in range(len(seed_chunks)):
-                    dc, cc = results_by_chunk[ci]
+                    dc, _ = results_by_chunk[ci]
                     n_c = dc.shape[0]
                     null_delta[offset:offset + n_c] = dc
-                    all_cluster_stats.extend(cc)
                     offset += n_c
         finally:
             cleanup_shared_memory(shm_objects)
@@ -1154,54 +1288,64 @@ def run_null_calibration(rd, wt_idx, ground_truth_nc, coverage_level,
             rng = np.random.default_rng(all_seeds[it])
             pv_idx = _nc_matched_batch_draw(
                 nc_draw_counts, wt_nc_pools, 1, coverage_level, rng)[0]
-            iter_cl = {}
             for bi, label in enumerate(bin_labels):
                 pv_occ = wt_mats[label][pv_idx].mean(axis=0)
-                delta = pv_occ - wt_occ[label]
-                null_delta[it, bi, :] = delta.astype(np.float32)
-                abs_d = np.abs(delta)
-                thresh = 0.0
-                if cluster_threshold_quantile is not None:
-                    thresh = np.percentile(abs_d,
-                                           cluster_threshold_quantile * 100)
-                if absolute_delta_threshold is not None:
-                    thresh = max(thresh, absolute_delta_threshold)
-                cl = _detect_clusters_adaptive(abs_d, thresh, gap_tolerance,
-                                               merge_distance)
-                iter_cl[label] = {
-                    'cluster_sums': [c['sum_abs_delta'] for c in cl],
-                    'max_cluster_sum': max((c['sum_abs_delta'] for c in cl),
-                                           default=0.0),
-                }
-            all_cluster_stats.append(iter_cl)
+                null_delta[it, bi, :] = (
+                    pv_occ - wt_occ[label]).astype(np.float32)
 
-    # Summarize
+    # ---- Unified cluster rule + family-wide max-statistic null ----
     results = {
         'null_delta': null_delta, 'wt_occ': wt_occ,
         'coverage_level': coverage_level, 'n_iterations': n_iterations,
         'analysis_region': (a_start, a_end),
         'analysis_length': analysis_length,
         'summary': {}, 'null_cluster_sums': {},
-        'null_max_cluster_sums': {},
+        'null_max_cluster_sums': {}, 'pos_thresh': {},
     }
+    abs_null = {}
     for bi, label in enumerate(bin_labels):
         d = null_delta[:, bi, :]
+        ad = np.abs(d)
+        abs_null[label] = ad
         results['summary'][label] = {
             'pos_null_mean': d.mean(axis=0),
             'pos_null_std': d.std(axis=0),
         }
-        sums = []
-        max_sums = []
-        for cs in all_cluster_stats:
-            if label in cs:
-                sums.extend(cs[label]['cluster_sums'])
-                max_sums.append(cs[label]['max_cluster_sum'])
-        results['null_cluster_sums'][label] = np.array(sums, dtype=np.float32)
-        results['null_max_cluster_sums'][label] = np.array(max_sums,
-                                                            dtype=np.float32)
-        p95 = float(np.percentile(np.abs(d).flatten(), 95))
-        logging.info(f"    {label}: null |delta| p95={p95:.4f}")
+        if cluster_threshold_quantile is not None:
+            pt = np.percentile(ad, cluster_threshold_quantile * 100, axis=0)
+        else:
+            pt = np.zeros(analysis_length)
+        if absolute_delta_threshold is not None:
+            pt = np.maximum(pt, absolute_delta_threshold)
+        results['pos_thresh'][label] = pt
 
+    # Per iteration: detect clusters in every bin with the per-position
+    # threshold above (identical to the observed-data rule), record
+    # per-bin sums and the family-wide (across-bin) max cluster Σ|Δ|.
+    null_familywise_max = np.zeros(n_iterations, dtype=np.float32)
+    per_bin_sums = {l: [] for l in bin_labels}
+    per_bin_iter_max = {l: np.zeros(n_iterations, dtype=np.float32)
+                        for l in bin_labels}
+    for it in range(n_iterations):
+        fam = 0.0
+        for bi, label in enumerate(bin_labels):
+            ad_it = abs_null[label][it]
+            sig = ad_it > results['pos_thresh'][label]
+            cl = _detect_clusters_from_mask(
+                sig, ad_it, null_delta[it, bi, :],
+                gap_tolerance, merge_distance)
+            csums = [c['sum_abs_delta'] for c in cl]
+            per_bin_sums[label].extend(csums)
+            m = max(csums, default=0.0)
+            per_bin_iter_max[label][it] = m
+            if m > fam:
+                fam = m
+        null_familywise_max[it] = fam
+    for label in bin_labels:
+        results['null_cluster_sums'][label] = np.asarray(
+            per_bin_sums[label], dtype=np.float32)
+        results['null_max_cluster_sums'][label] = per_bin_iter_max[label]
+    results['null_familywise_max'] = null_familywise_max
     return results
 
 
@@ -1231,64 +1375,47 @@ def auto_coverage_grid(variant_groups, n_points=8):
 # Per-Variant Testing
 # ============================================================================
 
-def test_single_variant(rd, wt_idx, var_indices, var_id, ground_truth_nc,
-                        null_results_by_depth, analysis_region,
-                        promoter_start, promoter_end,
-                        min_nuc=None, max_nuc=None, random_seed=42,
-                        cluster_threshold_quantile=0.95,
-                        absolute_delta_threshold=None,
-                        gap_tolerance=2, merge_distance=5):
-    """Test one variant. Returns a dict of per-bin results."""
-    bin_labels = rd.bin_labels
-    a_start, a_end = analysis_region
-    analysis_length = a_end - a_start
-    prom_rel_s = max(0, promoter_start - a_start)
-    prom_rel_e = min(analysis_length, promoter_end - a_start)
-    prom_slice = slice(prom_rel_s, prom_rel_e)
-
-    nc_vals = ground_truth_nc['nc_vals']
-    nc_fracs = ground_truth_nc['nc_fracs']
-    rng = np.random.default_rng(random_seed)
-
-    var_matched, var_n = nc_matched_subsample(
-        var_indices, rd.nuc_counts, nc_fracs, nc_vals, rng, replace=False)
-
-    if var_n < 20:
-        return None
-
-    available_depths = sorted(null_results_by_depth.keys())
-    closest = min(available_depths, key=lambda d: abs(d - var_n))
-    null_res = null_results_by_depth[closest]
-
+def _compute_variant_result(vid, var_indices, var_matched, var_n,
+                            var_occ_fn, null_res, closest, bin_labels,
+                            a_start, analysis_length,
+                            prom_rel_s, prom_rel_e, prom_slice,
+                            cluster_threshold_quantile,
+                            absolute_delta_threshold,
+                            gap_tolerance, merge_distance):
+    """Shared per-variant testing core. Verbatim extraction of the
+    per-bin block that was duplicated between test_single_variant and
+    _variant_test_worker. The only thing that differed between callers
+    was how var_occ is obtained, injected here as var_occ_fn(label).
+    Numerics are identical to the former duplicated code.
+    """
     wt_occ = null_res['wt_occ']
-    # If matrices are already analysis-width, row-slice only
-    needs_col_slice = (rd.analysis_length != analysis_length
-                       or rd.analysis_start != a_start)
-    if needs_col_slice:
-        col_indices = np.arange(a_start, a_end)
+    n_null = null_res['null_delta'].shape[0]
+    # Family-wide max-statistic null (computed in run_null_calibration by
+    # the SAME detection rule as below): per null iteration, the max
+    # cluster Σ|Δ| across all bins. Calibrating the observed family-wide
+    # max against this is the correct multiplicity-aware test (fixes
+    # Issue 1: no uncorrected min-over-bins; Issue 2: identical null/
+    # observed rule, no selection-biased pooled reference).
+    null_fwm = null_res.get('null_familywise_max',
+                            np.zeros(n_null, dtype=np.float32))
+    pos_thresh_by_label = null_res.get('pos_thresh', {})
 
-    results = {'variant_id': var_id, 'n_raw': len(var_indices),
+    results = {'variant_id': vid, 'n_raw': len(var_indices),
                'n_nc_matched': var_n, 'null_depth_used': closest}
-
-    best_cluster_p = 1.0
+    obs_familywise_max = 0.0
 
     for bi, label in enumerate(bin_labels):
-        if needs_col_slice:
-            var_occ = rd.coverage_matrices[label][
-                np.ix_(var_matched, col_indices)].mean(axis=0)
-        else:
-            var_occ = rd.coverage_matrices[label][
-                var_matched].mean(axis=0)
+        var_occ = var_occ_fn(label)
         delta_obs = var_occ - wt_occ[label]
 
         null_delta = null_res['null_delta'][:, bi, :]
-        n_null = null_delta.shape[0]
         abs_obs = np.abs(delta_obs)
         abs_null = np.abs(null_delta)
 
+        # Per-position empirical p / BH-q — DIAGNOSTIC ONLY (positions
+        # are strongly spatially autocorrelated; not a calibrated count).
         exceed = np.sum(abs_null >= abs_obs[np.newaxis, :], axis=0)
         empirical_p = (exceed + 1) / (n_null + 1)
-
         prom_p = empirical_p[prom_slice]
         prom_q = benjamini_hochberg(prom_p)
         q_values = np.ones(analysis_length)
@@ -1298,8 +1425,11 @@ def test_single_variant(rd, wt_idx, var_indices, var_id, ground_truth_nc,
         null_std = np.maximum(null_res['summary'][label]['pos_null_std'], 1e-6)
         z_scores = (delta_obs - null_mean) / null_std
 
-        pos_thresh = np.percentile(abs_null,
-                                   cluster_threshold_quantile * 100, axis=0)
+        # Observed clusters via the EXACT threshold the null used.
+        pos_thresh = pos_thresh_by_label.get(label)
+        if pos_thresh is None:
+            pos_thresh = np.percentile(
+                abs_null, cluster_threshold_quantile * 100, axis=0)
         sig_mask = abs_obs > pos_thresh
         if absolute_delta_threshold is not None:
             sig_mask &= abs_obs > absolute_delta_threshold
@@ -1307,31 +1437,29 @@ def test_single_variant(rd, wt_idx, var_indices, var_id, ground_truth_nc,
         clusters = _detect_clusters_from_mask(
             sig_mask, abs_obs, delta_obs, gap_tolerance, merge_distance)
 
-        null_csums = null_res['null_cluster_sums'].get(label, np.array([]))
+        # Bin contribution to the observed family-wide max (mirrors the
+        # null computation: max cluster Σ|Δ| over all detected clusters).
+        for c in clusters:
+            if c['sum_abs_delta'] > obs_familywise_max:
+                obs_familywise_max = c['sum_abs_delta']
+
         null_max_csums = null_res['null_max_cluster_sums'].get(
             label, np.array([]))
-
         sig_clusters = []
         for c in clusters:
             if c['end'] < prom_rel_s or c['start'] >= prom_rel_e:
                 continue
-            if len(null_csums) > 0:
-                c['sum_p'] = max(
-                    float(np.mean(null_csums >= c['sum_abs_delta'])),
-                    1.0 / (len(null_csums) + 1))
-            else:
-                c['sum_p'] = np.nan
+            # Per-bin diagnostic p (per-iteration max within this bin).
             if len(null_max_csums) > 0:
-                c['max_sum_p'] = float(
-                    np.mean(null_max_csums >= c['sum_abs_delta']))
+                c['max_sum_p'] = max(
+                    float(np.mean(null_max_csums >= c['sum_abs_delta'])),
+                    1.0 / (len(null_max_csums) + 1))
             else:
                 c['max_sum_p'] = np.nan
             c['abs_start'] = c['start'] + a_start
             c['abs_end'] = c['end'] + a_start
-            if c.get('sum_p', 1.0) < 0.05:
+            if c.get('max_sum_p', 1.0) < 0.05:
                 sig_clusters.append(c)
-            if c.get('sum_p', 1.0) < best_cluster_p:
-                best_cluster_p = c.get('sum_p', 1.0)
 
         n_sig_pos = int(np.sum(q_values[prom_slice] < 0.10))
 
@@ -1349,235 +1477,123 @@ def test_single_variant(rd, wt_idx, var_indices, var_id, ground_truth_nc,
                                       and c['start'] < prom_rel_e],
         }
 
-    results['best_cluster_p'] = best_cluster_p
+    # Calibrated, multiplicity-aware variant p-value: where does the
+    # observed family-wide max fall in the null family-wide-max dist?
+    results['obs_familywise_max'] = float(obs_familywise_max)
+    results['best_cluster_p'] = float(
+        (np.sum(null_fwm >= obs_familywise_max) + 1) / (n_null + 1))
     return results
 
 
-# ============================================================================
-# Parallel Per-Variant Testing
-# ============================================================================
+def test_single_variant(rd, wt_idx, var_indices, var_id,
+                         analysis_region, promoter_start, promoter_end,
+                         min_nuc=None, max_nuc=None, random_seed=42,
+                         n_null_iterations=2000,
+                         cluster_threshold_quantile=0.95,
+                         absolute_delta_threshold=None,
+                         gap_tolerance=2, merge_distance=5):
+    """Test one variant against its OWN per-variant null (Issue 3 fix).
 
-def _variant_test_worker(args):
-    """Worker for parallel variant testing via shared memory."""
-    (variant_batch, shm_cov_info, shm_nc_info, bin_labels,
-     null_results_by_depth_ser, analysis_region,
-     promoter_start, promoter_end, ground_truth_nc,
-     min_nuc, max_nuc, random_seed_base,
-     cluster_threshold_quantile, absolute_delta_threshold,
-     gap_tolerance, merge_distance, analysis_length, analysis_start) = args
-
-    # Attach to shared memory for coverage matrices and nuc_counts
-    cov_mats = {}
-    shm_handles = []
-    for label in bin_labels:
-        arr, shm = load_shared_matrix(shm_cov_info[label])
-        cov_mats[label] = arr
-        shm_handles.append(shm)
-
-    nc_arr, nc_shm = load_shared_matrix(shm_nc_info)
-    shm_handles.append(nc_shm)
-
+    The null is built at the variant's exact read count N, sampling WT
+    WITH replacement, NC-matched to the variant's OWN NC distribution,
+    and referenced to the Option-A NC-reweighted WT mean (computed
+    inside run_null_calibration). The FULL variant read set is used as
+    a point estimate (no NC-subsampling of the variant), so there is no
+    null/observed sampling-scheme mismatch.
+    """
+    bin_labels = rd.bin_labels
     a_start, a_end = analysis_region
+    analysis_length = a_end - a_start
     prom_rel_s = max(0, promoter_start - a_start)
     prom_rel_e = min(analysis_length, promoter_end - a_start)
     prom_slice = slice(prom_rel_s, prom_rel_e)
 
-    nc_vals = ground_truth_nc['nc_vals']
-    nc_fracs = ground_truth_nc['nc_fracs']
+    var_f = rd.get_indices_filtered(var_indices, min_nuc=min_nuc,
+                                    max_nuc=max_nuc)
+    var_n = len(var_f)
+    if var_n < 20:
+        return None
 
-    # Deserialize null results (just the summaries, not full delta arrays)
-    null_results_by_depth = null_results_by_depth_ser
+    # The variant's own NC distribution drives both the null NC-matching
+    # and the Option-A reference.
+    variant_nc = compute_ground_truth_nc(rd, var_f, min_nuc=min_nuc,
+                                         max_nuc=max_nuc)
+    if variant_nc is None:
+        return None
 
-    batch_results = []
-    for vid, var_indices, seed in variant_batch:
-        rng = np.random.default_rng(seed)
-        var_matched, var_n = nc_matched_subsample(
-            var_indices, nc_arr, nc_fracs, nc_vals, rng, replace=False)
+    null_res = run_null_calibration(
+        rd, wt_idx, variant_nc, coverage_level=var_n,
+        min_nuc=min_nuc, max_nuc=max_nuc,
+        n_iterations=n_null_iterations, random_seed=random_seed,
+        analysis_region=analysis_region,
+        cluster_threshold_quantile=cluster_threshold_quantile,
+        absolute_delta_threshold=absolute_delta_threshold,
+        gap_tolerance=gap_tolerance, merge_distance=merge_distance,
+        n_workers=1)
 
-        if var_n < 20:
-            batch_results.append(None)
-            continue
+    needs_col_slice = (rd.analysis_length != analysis_length
+                       or rd.analysis_start != a_start)
+    if needs_col_slice:
+        col_indices = np.arange(a_start, a_end)
 
-        available_depths = sorted(null_results_by_depth.keys())
-        closest = min(available_depths, key=lambda d: abs(d - var_n))
-        null_res = null_results_by_depth[closest]
-        wt_occ = null_res['wt_occ']
+        def var_occ_fn(label):
+            return rd.coverage_matrices[label][
+                np.ix_(var_f, col_indices)].mean(axis=0)
+    else:
+        def var_occ_fn(label):
+            return rd.coverage_matrices[label][var_f].mean(axis=0)
 
-        results = {'variant_id': vid, 'n_raw': len(var_indices),
-                   'n_nc_matched': var_n, 'null_depth_used': closest}
-        best_cluster_p = 1.0
-
-        for bi, label in enumerate(bin_labels):
-            var_occ = cov_mats[label][var_matched].mean(axis=0)
-            delta_obs = var_occ - wt_occ[label]
-
-            null_delta = null_res['null_delta'][:, bi, :]
-            n_null = null_delta.shape[0]
-            abs_obs = np.abs(delta_obs)
-            abs_null = np.abs(null_delta)
-
-            exceed = np.sum(abs_null >= abs_obs[np.newaxis, :], axis=0)
-            empirical_p = (exceed + 1) / (n_null + 1)
-
-            prom_p = empirical_p[prom_slice]
-            prom_q = benjamini_hochberg(prom_p)
-            q_values = np.ones(analysis_length)
-            q_values[prom_slice] = prom_q
-
-            null_mean = null_res['summary'][label]['pos_null_mean']
-            null_std = np.maximum(
-                null_res['summary'][label]['pos_null_std'], 1e-6)
-            z_scores = (delta_obs - null_mean) / null_std
-
-            pos_thresh = np.percentile(
-                abs_null, cluster_threshold_quantile * 100, axis=0)
-            sig_mask = abs_obs > pos_thresh
-            if absolute_delta_threshold is not None:
-                sig_mask &= abs_obs > absolute_delta_threshold
-
-            clusters = _detect_clusters_from_mask(
-                sig_mask, abs_obs, delta_obs, gap_tolerance, merge_distance)
-
-            null_csums = null_res['null_cluster_sums'].get(
-                label, np.array([]))
-            null_max_csums = null_res['null_max_cluster_sums'].get(
-                label, np.array([]))
-
-            sig_clusters = []
-            for c in clusters:
-                if c['end'] < prom_rel_s or c['start'] >= prom_rel_e:
-                    continue
-                if len(null_csums) > 0:
-                    c['sum_p'] = max(
-                        float(np.mean(null_csums >= c['sum_abs_delta'])),
-                        1.0 / (len(null_csums) + 1))
-                else:
-                    c['sum_p'] = np.nan
-                if len(null_max_csums) > 0:
-                    c['max_sum_p'] = float(
-                        np.mean(null_max_csums >= c['sum_abs_delta']))
-                else:
-                    c['max_sum_p'] = np.nan
-                c['abs_start'] = c['start'] + a_start
-                c['abs_end'] = c['end'] + a_start
-                if c.get('sum_p', 1.0) < 0.05:
-                    sig_clusters.append(c)
-                if c.get('sum_p', 1.0) < best_cluster_p:
-                    best_cluster_p = c.get('sum_p', 1.0)
-
-            n_sig_pos = int(np.sum(q_values[prom_slice] < 0.10))
-
-            results[label] = {
-                'delta_obs': delta_obs.astype(np.float32),
-                'variant_occ': var_occ.astype(np.float32),
-                'empirical_p': empirical_p.astype(np.float32),
-                'q_values': q_values.astype(np.float32),
-                'z_scores': z_scores.astype(np.float32),
-                'n_sig_positions_fdr10': n_sig_pos,
-                'max_abs_delta': float(np.max(abs_obs)),
-                'significant_clusters': sig_clusters,
-                'all_promoter_clusters': [c for c in clusters
-                                          if c['end'] >= prom_rel_s
-                                          and c['start'] < prom_rel_e],
-            }
-
-        results['best_cluster_p'] = best_cluster_p
-        batch_results.append(results)
-
-    for shm in shm_handles:
-        shm.close()
-    return batch_results
+    return _compute_variant_result(
+        var_id, var_indices, var_f, var_n, var_occ_fn, null_res,
+        var_n, bin_labels, a_start, analysis_length,
+        prom_rel_s, prom_rel_e, prom_slice,
+        cluster_threshold_quantile, absolute_delta_threshold,
+        gap_tolerance, merge_distance)
 
 
-def run_variant_testing_parallel(rd, wt_idx, variant_groups, ground_truth_nc,
-                                 null_results_by_depth, analysis_region,
-                                 promoter_start, promoter_end,
-                                 min_nuc=None, max_nuc=None,
-                                 random_seed=42,
-                                 cluster_threshold_quantile=0.95,
-                                 absolute_delta_threshold=None,
-                                 gap_tolerance=2, merge_distance=5,
-                                 n_workers=1):
-    """Test all variants, optionally in parallel using shared memory.
+# ============================================================================
+# Per-Variant Testing (per-variant nulls; Issue 3 fix)
+# ============================================================================
 
-    Returns list of result dicts (same format as test_single_variant).
+def run_variant_testing_parallel(rd, wt_idx, variant_groups,
+                                  analysis_region,
+                                  promoter_start, promoter_end,
+                                  min_nuc=None, max_nuc=None,
+                                  random_seed=42,
+                                  n_null_iterations=2000,
+                                  cluster_threshold_quantile=0.95,
+                                  absolute_delta_threshold=None,
+                                  gap_tolerance=2, merge_distance=5,
+                                  n_workers=1):
+    """Test all variants, each against its OWN per-variant null.
+
+    Each variant builds an independent null at its exact N (WT sampled
+    with replacement, NC-matched to the variant, Option-A reference).
+
+    NOTE: per-variant nulls make each variant independently expensive.
+    Parallelism + null reuse via stratification is P1.6; the P1.4
+    correctness milestone runs serially. The WT-vs-WT acceptance
+    harness uses a single worker, so validation is unaffected.
     """
-    a_start, a_end = analysis_region
-    analysis_length = a_end - a_start
     n_total = len(variant_groups)
-
-    if n_workers <= 1 or n_total <= 1:
-        # Serial path
-        all_results = []
-        for vid, var_indices in tqdm(variant_groups.items(),
-                                     desc="Testing variants",
-                                     disable=not HAS_TQDM):
-            vr = test_single_variant(
-                rd, wt_idx, var_indices, vid, ground_truth_nc,
-                null_results_by_depth, analysis_region,
-                promoter_start, promoter_end,
-                min_nuc=min_nuc, max_nuc=max_nuc,
-                random_seed=random_seed + hash(vid) % (2**31),
-                cluster_threshold_quantile=cluster_threshold_quantile,
-                absolute_delta_threshold=absolute_delta_threshold,
-                gap_tolerance=gap_tolerance,
-                merge_distance=merge_distance)
-            if vr is not None:
-                all_results.append(vr)
-        return all_results
-
-    # Parallel path: put coverage matrices and nuc_counts in shared memory
-    logging.info(f"  Parallel variant testing: {n_total} variants, "
-                 f"{n_workers} workers")
-
-    shm_cov_info, shm_cov_objects = create_shared_matrices(
-        rd.coverage_matrices, rd.bin_labels)
-
-    # nuc_counts into shared memory
-    nc_shm = shared_memory.SharedMemory(
-        create=True, size=rd.nuc_counts.nbytes)
-    nc_shared = np.ndarray(rd.nuc_counts.shape, dtype=rd.nuc_counts.dtype,
-                           buffer=nc_shm.buf)
-    nc_shared[:] = rd.nuc_counts[:]
-    shm_nc_info = {'name': nc_shm.name, 'shape': rd.nuc_counts.shape,
-                   'dtype': str(rd.nuc_counts.dtype)}
-
-    # Build task list: (vid, var_indices, seed)
-    tasks = [(vid, var_indices,
-              random_seed + hash(vid) % (2**31))
-             for vid, var_indices in variant_groups.items()]
-
-    # Chunk into batches
-    batch_size = max(1, len(tasks) // (n_workers * 4))
-    batches = [tasks[i:i + batch_size]
-               for i in range(0, len(tasks), batch_size)]
-
-    worker_args = [
-        (batch, shm_cov_info, shm_nc_info, rd.bin_labels,
-         null_results_by_depth, analysis_region,
-         promoter_start, promoter_end, ground_truth_nc,
-         min_nuc, max_nuc, random_seed,
-         cluster_threshold_quantile, absolute_delta_threshold,
-         gap_tolerance, merge_distance, analysis_length, rd.analysis_start)
-        for batch in batches
-    ]
-
+    if n_workers and n_workers > 1:
+        logging.info("  (per-variant nulls: running serially for the "
+                     "P1.4 correctness milestone; parallel + null "
+                     "stratification is P1.6)")
     all_results = []
-    try:
-        with ProcessPoolExecutor(max_workers=n_workers) as executor:
-            futures = {executor.submit(_variant_test_worker, wa): ci
-                       for ci, wa in enumerate(worker_args)}
-            results_by_chunk = {}
-            for future in as_completed(futures):
-                results_by_chunk[futures[future]] = future.result()
-            for ci in range(len(batches)):
-                for vr in results_by_chunk[ci]:
-                    if vr is not None:
-                        all_results.append(vr)
-    finally:
-        cleanup_shared_memory(shm_cov_objects)
-        nc_shm.close()
-        nc_shm.unlink()
-
+    for vid, var_indices in tqdm(variant_groups.items(),
+                                 desc="Testing variants",
+                                 disable=not HAS_TQDM):
+        vr = test_single_variant(
+            rd, wt_idx, var_indices, vid,
+            analysis_region, promoter_start, promoter_end,
+            min_nuc=min_nuc, max_nuc=max_nuc,
+            random_seed=stable_variant_seed(random_seed, vid),
+            n_null_iterations=n_null_iterations,
+            cluster_threshold_quantile=cluster_threshold_quantile,
+            absolute_delta_threshold=absolute_delta_threshold,
+            gap_tolerance=gap_tolerance, merge_distance=merge_distance)
+        if vr is not None:
+            all_results.append(vr)
     logging.info(f"  Tested {len(all_results)} / {n_total} variants")
     return all_results
