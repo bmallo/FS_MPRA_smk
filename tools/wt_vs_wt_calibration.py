@@ -43,7 +43,16 @@ def main():
     p.add_argument('--target-region', required=True)
     p.add_argument('--promoter-region', default=None)
     p.add_argument('--n-pseudo', type=int, default=300,
-                   help='# pseudo-variants drawn from the WT pseudo pool')
+                   help='Max # pseudo-variants (disjoint mode caps at '
+                        'floor(pool/N))')
+    p.add_argument('--disjoint-pseudo', dest='disjoint_pseudo',
+                   action='store_true', default=True,
+                   help='Partition the pseudo pool into NON-overlapping '
+                        'pseudo-variants (independent null draws; default)')
+    p.add_argument('--overlap-pseudo', dest='disjoint_pseudo',
+                   action='store_false',
+                   help='Legacy: with-replacement-across draws (overlapping, '
+                        'correlated pseudo-variants)')
     p.add_argument('--pseudo-n', type=int, default=None,
                    help='Reads per pseudo-variant (default: median '
                         'testable real-variant N)')
@@ -94,20 +103,32 @@ def main():
     wt_ref = np.sort(wt_all[:n_ref])
     wt_pseudo = wt_all[n_ref:]
 
+    # Pseudo-variants. DISJOINT (default): partition the pseudo pool into
+    # non-overlapping size-N chunks -> each pseudo-variant is a genuinely
+    # independent "no effect" experiment (unbiased calibration). OVERLAP
+    # (legacy): independent with-replacement draws -> heavy read sharing,
+    # correlated pseudo-variants (biases KS/FDR pessimistically).
+    pseudo_groups = {}
+    if args.disjoint_pseudo:
+        perm = rng.permutation(wt_pseudo)
+        n_possible = len(perm) // pseudo_n
+        k = min(args.n_pseudo, n_possible)
+        for i in range(k):
+            pseudo_groups[f"pseudo_{i:04d}"] = np.sort(
+                perm[i * pseudo_n:(i + 1) * pseudo_n])
+        mode = f"disjoint ({k} of {n_possible} possible)"
+    else:
+        for i in range(args.n_pseudo):
+            sub = rng.choice(wt_pseudo, size=pseudo_n, replace=False)
+            pseudo_groups[f"pseudo_{i:04d}"] = np.sort(sub)
+        mode = f"overlapping ({args.n_pseudo})"
+
     print(f"\n=== WT-vs-WT calibration ===")
     print(f"WT total={len(wt_all):,}  ref={len(wt_ref):,}  "
           f"pseudo_pool={len(wt_pseudo):,}")
-    print(f"pseudo-variants: K={args.n_pseudo}  N={pseudo_n}  "
+    print(f"pseudo-variants: {mode}  N={pseudo_n}  "
           f"B={args.n_null_iterations}  threads={args.threads}  "
-          f"seed={args.seed}")
-
-    # K pseudo-variants: each N draws from the pseudo pool (with
-    # replacement across variants, without within) — each is an
-    # independent genuine null sample vs the reference-WT null.
-    pseudo_groups = {}
-    for k in range(args.n_pseudo):
-        sub = rng.choice(wt_pseudo, size=pseudo_n, replace=False)
-        pseudo_groups[f"pseudo_{k:04d}"] = np.sort(sub)
+          f"seed={args.seed}  stratify={args.stratify}")
 
     # Per-variant nulls (Issue 3 fix): each pseudo-variant builds its
     # own null from the reference WT pool at its exact N, NC-matched to
