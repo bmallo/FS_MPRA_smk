@@ -24,6 +24,7 @@ from multiprocessing import shared_memory
 import numpy as np
 import pysam
 from scipy import ndimage
+from scipy.stats import wasserstein_distance
 
 try:
     from tqdm import tqdm
@@ -1555,6 +1556,61 @@ def test_single_variant(rd, wt_idx, var_indices, var_id,
 # Per-Variant Testing (per-variant nulls; Issue 3 fix)
 # ============================================================================
 
+def _nc_wasserstein(nc_a, nc_b):
+    """Wasserstein-1 between two NC distributions (compute_ground_truth_nc
+    dicts: nc_vals as support, nc_fracs as weights)."""
+    return float(wasserstein_distance(
+        nc_a['nc_vals'], nc_b['nc_vals'],
+        nc_a['nc_fracs'], nc_b['nc_fracs']))
+
+
+def build_strata(rd, variant_groups, min_nuc=None, max_nuc=None,
+                 n_tol=0.10, nc_dist=0.30, stratify=True):
+    """Group testable variants whose per-variant null would be ~identical
+    (similar N and NC distribution) so one null can be reused.
+
+    Greedy, sorted by N. A variant joins a stratum if its N is within
+    n_tol (relative) of the stratum AND its NC distribution is within
+    Wasserstein-1 nc_dist of the stratum representative (fixed at
+    creation, like the centroid-fixed barcode clustering). The stratum
+    null depth is the MIN member N (conservative: the null is at least
+    as wide as any member's true sampling noise). stratify=False puts
+    every variant in its own stratum (== independent per-variant null).
+
+    Returns list of {rep_n, rep_nc, members:[(vid, var_f, var_n, vnc)]}.
+    """
+    entries = []
+    for vid, var_indices in variant_groups.items():
+        var_f = rd.get_indices_filtered(var_indices, min_nuc=min_nuc,
+                                        max_nuc=max_nuc)
+        var_n = len(var_f)
+        if var_n < 20:
+            continue
+        vnc = compute_ground_truth_nc(rd, var_f, min_nuc=min_nuc,
+                                      max_nuc=max_nuc)
+        if vnc is None:
+            continue
+        entries.append((vid, var_f, var_n, vnc))
+    entries.sort(key=lambda e: e[2])
+
+    strata = []
+    for vid, var_f, var_n, vnc in entries:
+        placed = False
+        if stratify:
+            for st in strata:
+                if (abs(var_n - st['rep_n']) <= n_tol * max(1, st['rep_n'])
+                        and _nc_wasserstein(vnc, st['rep_nc']) <= nc_dist):
+                    st['members'].append((vid, var_f, var_n, vnc))
+                    if var_n < st['rep_n']:
+                        st['rep_n'] = var_n  # conservative: widest null
+                    placed = True
+                    break
+        if not placed:
+            strata.append({'rep_n': var_n, 'rep_nc': vnc,
+                           'members': [(vid, var_f, var_n, vnc)]})
+    return strata
+
+
 def run_variant_testing_parallel(rd, wt_idx, variant_groups,
                                   analysis_region,
                                   promoter_start, promoter_end,
@@ -1564,36 +1620,63 @@ def run_variant_testing_parallel(rd, wt_idx, variant_groups,
                                   cluster_threshold_quantile=0.95,
                                   absolute_delta_threshold=None,
                                   gap_tolerance=2, merge_distance=5,
-                                  n_workers=1):
-    """Test all variants, each against its OWN per-variant null.
-
-    Each variant builds an independent null at its exact N (WT sampled
-    with replacement, NC-matched to the variant, Option-A reference).
-
-    NOTE: per-variant nulls make each variant independently expensive.
-    Parallelism + null reuse via stratification is P1.6; the P1.4
-    correctness milestone runs serially. The WT-vs-WT acceptance
-    harness uses a single worker, so validation is unaffected.
+                                  n_workers=1, stratify=True,
+                                  n_tol=0.10, nc_dist=0.30):
+    """Test all variants. Nulls are built once per stratum (variants
+    with ~identical N and NC distribution share a null — the compute
+    lever) and reused across members. Each variant's observed delta
+    uses its OWN full read set (Option-A reference from the stratum
+    null). The expensive null build is parallelized across n_workers
+    by run_null_calibration's shared-memory path.
     """
-    n_total = len(variant_groups)
-    if n_workers and n_workers > 1:
-        logging.info("  (per-variant nulls: running serially for the "
-                     "P1.4 correctness milestone; parallel + null "
-                     "stratification is P1.6)")
+    a_start, a_end = analysis_region
+    analysis_length = a_end - a_start
+    prom_rel_s = max(0, promoter_start - a_start)
+    prom_rel_e = min(analysis_length, promoter_end - a_start)
+    prom_slice = slice(prom_rel_s, prom_rel_e)
+    bin_labels = rd.bin_labels
+
+    strata = build_strata(rd, variant_groups, min_nuc=min_nuc,
+                          max_nuc=max_nuc, n_tol=n_tol, nc_dist=nc_dist,
+                          stratify=stratify)
+    n_members = sum(len(s['members']) for s in strata)
+    logging.info(f"  Null stratification: {n_members} testable variants "
+                 f"-> {len(strata)} strata (stratify={stratify}, "
+                 f"n_tol={n_tol}, nc_dist={nc_dist})")
+
+    needs_col_slice = (rd.analysis_length != analysis_length
+                       or rd.analysis_start != a_start)
+    col_indices = (np.arange(a_start, a_end) if needs_col_slice else None)
+
     all_results = []
-    for vid, var_indices in tqdm(variant_groups.items(),
-                                 desc="Testing variants",
-                                 disable=not HAS_TQDM):
-        vr = test_single_variant(
-            rd, wt_idx, var_indices, vid,
-            analysis_region, promoter_start, promoter_end,
+    for si, st in enumerate(tqdm(strata, desc="Strata",
+                                 disable=not HAS_TQDM)):
+        null_res = run_null_calibration(
+            rd, wt_idx, st['rep_nc'], coverage_level=st['rep_n'],
             min_nuc=min_nuc, max_nuc=max_nuc,
-            random_seed=stable_variant_seed(random_seed, vid),
-            n_null_iterations=n_null_iterations,
+            n_iterations=n_null_iterations,
+            random_seed=stable_variant_seed(random_seed, f"stratum_{si}"),
+            analysis_region=analysis_region,
             cluster_threshold_quantile=cluster_threshold_quantile,
             absolute_delta_threshold=absolute_delta_threshold,
-            gap_tolerance=gap_tolerance, merge_distance=merge_distance)
-        if vr is not None:
-            all_results.append(vr)
-    logging.info(f"  Tested {len(all_results)} / {n_total} variants")
+            gap_tolerance=gap_tolerance, merge_distance=merge_distance,
+            n_workers=n_workers)
+        for vid, var_f, var_n, vnc in st['members']:
+            if needs_col_slice:
+                def var_occ_fn(label, _vf=var_f):
+                    return rd.coverage_matrices[label][
+                        np.ix_(_vf, col_indices)].mean(axis=0)
+            else:
+                def var_occ_fn(label, _vf=var_f):
+                    return rd.coverage_matrices[label][_vf].mean(axis=0)
+            vr = _compute_variant_result(
+                vid, variant_groups[vid], var_f, var_n, var_occ_fn,
+                null_res, var_n, bin_labels, a_start, analysis_length,
+                prom_rel_s, prom_rel_e, prom_slice,
+                cluster_threshold_quantile, absolute_delta_threshold,
+                gap_tolerance, merge_distance)
+            if vr is not None:
+                all_results.append(vr)
+    logging.info(f"  Tested {len(all_results)} variants "
+                 f"({len(strata)} null builds)")
     return all_results

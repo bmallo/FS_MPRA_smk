@@ -49,6 +49,8 @@ max_edit_distance: 2
 target_region: null               # e.g., "PlasmidName:3100-3600" or null
 analysis_promoter_region: null    # e.g., "3184-3501" (START-END within target)
 min_reads: 50
-n_null_iterations: 2000
+n_null_iterations: 10000          # null subsamples B (common to all variants)
+null_strata_n_tol: 0.10           # max relative N diff within a null stratum
+null_strata_nc_dist: 0.30         # max NC Wasserstein-1 within a null stratum
 nuc_range: null                   # [min, max] or null for no filter
 threads: 8

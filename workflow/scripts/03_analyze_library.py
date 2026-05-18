@@ -597,10 +597,26 @@ def parse_args():
                    help='File with variant IDs to test (one per line)')
 
     # Null calibration
-    p.add_argument('--n-null-iterations', type=int, default=2000)
+    p.add_argument('--n-null-iterations', type=int, default=10000,
+                   help='Null subsamples B, common to all variants '
+                        '(default: 10000; reported-run value)')
     p.add_argument('--coverage-grid', default=None,
-                   help='Manual grid (comma-sep) or auto-detect')
+                   help='DEPRECATED, ignored (per-variant nulls)')
     p.add_argument('--random-seed', type=int, default=42)
+    # Null stratification (compute lever): reuse one null across
+    # variants with similar N and NC distribution.
+    p.add_argument('--null-stratify', dest='null_stratify',
+                   action='store_true', default=True,
+                   help='Reuse nulls across similar variants (default: on)')
+    p.add_argument('--no-null-stratify', dest='null_stratify',
+                   action='store_false',
+                   help='Force an independent null per variant')
+    p.add_argument('--null-strata-n-tol', type=float, default=0.10,
+                   help='Max relative N difference within a stratum '
+                        '(default: 0.10)')
+    p.add_argument('--null-strata-nc-dist', type=float, default=0.30,
+                   help='Max NC-distribution Wasserstein-1 within a '
+                        'stratum (default: 0.30)')
 
     # Cluster detection
     p.add_argument('--cluster-threshold-quantile', type=float, default=0.95)
@@ -738,7 +754,10 @@ def main():
         absolute_delta_threshold=args.absolute_delta_threshold,
         gap_tolerance=args.gap_tolerance,
         merge_distance=args.merge_distance,
-        n_workers=args.threads)
+        n_workers=args.threads,
+        stratify=args.null_stratify,
+        n_tol=args.null_strata_n_tol,
+        nc_dist=args.null_strata_nc_dist)
 
     n_tested = len(all_variant_results)
     logging.info(f"Tested {n_tested} / {n_total} variants")

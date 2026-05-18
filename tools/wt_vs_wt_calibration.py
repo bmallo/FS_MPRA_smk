@@ -53,6 +53,11 @@ def main():
     p.add_argument('--threads', type=int, default=1,
                    help='1 = deterministic serial path (regression oracle)')
     p.add_argument('--seed', type=int, default=42)
+    p.add_argument('--stratify', action='store_true', default=False,
+                   help='Reuse nulls across similar pseudo-variants '
+                        '(default: off = independent per-variant null)')
+    p.add_argument('--null-strata-n-tol', type=float, default=0.10)
+    p.add_argument('--null-strata-nc-dist', type=float, default=0.30)
     p.add_argument('--out', default='results/phase0/wt_vs_wt_calib.json')
     args = p.parse_args()
     setup_logging(quiet=True)
@@ -111,7 +116,10 @@ def main():
         rd, wt_ref, pseudo_groups, analysis_region,
         prom_s, prom_e, random_seed=args.seed,
         n_null_iterations=args.n_null_iterations,
-        n_workers=args.threads)
+        n_workers=args.threads,
+        stratify=args.stratify,
+        n_tol=args.null_strata_n_tol,
+        nc_dist=args.null_strata_nc_dist)
 
     best_p = np.array(sorted(r['best_cluster_p'] for r in results),
                       dtype=np.float64)

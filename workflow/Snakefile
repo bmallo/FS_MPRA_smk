@@ -80,7 +80,10 @@ def analyze_library_extra(wc):
     if pr:
         args.append(f"--promoter-region {pr}")
     args.append(f"--min-reads {config.get('min_reads', 50)}")
-    args.append(f"--n-null-iterations {config.get('n_null_iterations', 2000)}")
+    args.append(f"--n-null-iterations {config.get('n_null_iterations', 10000)}")
+    args.append(f"--null-strata-n-tol {config.get('null_strata_n_tol', 0.10)}")
+    args.append(f"--null-strata-nc-dist "
+                f"{config.get('null_strata_nc_dist', 0.30)}")
     nr = config.get("nuc_range")
     if nr:
         args.append(f"--nuc-range {nr[0]} {nr[1]}")
