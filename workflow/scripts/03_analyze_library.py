@@ -38,8 +38,7 @@ from common import (
     benjamini_hochberg, derive_sample_name, parse_variant_tag,
     parse_variant_id_fields, get_bam_ref_info, resolve_target_chrom,
     parse_bam, group_variants,
-    compute_ground_truth_nc, auto_coverage_grid,
-    run_null_calibration, test_single_variant,
+    compute_ground_truth_nc,
     run_variant_testing_parallel,
 )
 
@@ -105,20 +104,24 @@ def write_library_hdf5(output_path, parse_stats, ground_truth_nc,
                     compression='gzip')
 
         # ── Null calibrations (summary stats per depth) ───────────
-        ncg = f.create_group('null_calibration')
-        ncg.attrs['depths'] = sorted(list(null_results_by_depth.keys()))
-        for depth, nr in null_results_by_depth.items():
-            dg = ncg.create_group(str(depth))
-            dg.attrs['coverage_level'] = depth
-            dg.attrs['n_iterations'] = nr['n_iterations']
-            for label in bin_labels:
-                lg = dg.create_group(safe_hdf5_name(label))
-                lg.create_dataset('pos_null_mean',
-                                  data=nr['summary'][label]['pos_null_mean'],
-                                  compression='gzip')
-                lg.create_dataset('pos_null_std',
-                                  data=nr['summary'][label]['pos_null_std'],
-                                  compression='gzip')
+        # Per-variant nulls (Phase 1): no shared per-depth calibration.
+        if null_results_by_depth:
+            ncg = f.create_group('null_calibration')
+            ncg.attrs['depths'] = sorted(list(null_results_by_depth.keys()))
+            for depth, nr in null_results_by_depth.items():
+                dg = ncg.create_group(str(depth))
+                dg.attrs['coverage_level'] = depth
+                dg.attrs['n_iterations'] = nr['n_iterations']
+                for label in bin_labels:
+                    lg = dg.create_group(safe_hdf5_name(label))
+                    lg.create_dataset(
+                        'pos_null_mean',
+                        data=nr['summary'][label]['pos_null_mean'],
+                        compression='gzip')
+                    lg.create_dataset(
+                        'pos_null_std',
+                        data=nr['summary'][label]['pos_null_std'],
+                        compression='gzip')
 
         # ── Summary table (flat arrays, fast to load) ─────────────
         sumg = f.create_group('summary')
@@ -369,15 +372,28 @@ def generate_library_pdf(pdf_path, all_variant_results, variant_groups,
                     label=f'median={np.median(counts):.0f}')
         ax.legend()
 
-        # Null calibration depths
+        # Per-variant tested read count (per-variant nulls: no shared
+        # depth grid). Falls back to the legacy depth plot if provided.
         ax = axes[1]
-        depths = sorted(null_results_by_depth.keys())
-        ax.bar(range(len(depths)), depths, color='#fc8d62', alpha=0.7)
-        ax.set_xticks(range(len(depths)))
-        ax.set_xticklabels(depths, rotation=45)
-        ax.set_xlabel('Depth Index')
-        ax.set_ylabel('Coverage Level')
-        ax.set_title('Null Calibration Depths')
+        if null_results_by_depth:
+            depths = sorted(null_results_by_depth.keys())
+            ax.bar(range(len(depths)), depths, color='#fc8d62', alpha=0.7)
+            ax.set_xticks(range(len(depths)))
+            ax.set_xticklabels(depths, rotation=45)
+            ax.set_xlabel('Depth Index')
+            ax.set_ylabel('Coverage Level')
+            ax.set_title('Null Calibration Depths')
+        else:
+            ns = [vr.get('n_nc_matched', 0) for vr in all_variant_results]
+            if ns:
+                ax.hist(ns, bins=40, color='#fc8d62', alpha=0.7,
+                        edgecolor='white')
+                ax.axvline(np.median(ns), color='red', linestyle='--',
+                           label=f'median={np.median(ns):.0f}')
+                ax.legend()
+            ax.set_xlabel('Reads per Tested Variant (N)')
+            ax.set_ylabel('Count')
+            ax.set_title('Per-Variant Null Depth (= variant N)')
 
         fig.suptitle(f'Library Overview: {len(variant_groups):,} variants',
                      fontsize=14)
@@ -696,36 +712,16 @@ def main():
         logging.info(f"After variant list filter: {len(variant_groups)}")
 
     # ==================================================================
-    # Phase B: Null Calibration
-    # ==================================================================
-    logging.info("=" * 60)
-    logging.info("PHASE B: Null Calibration")
-    logging.info("=" * 60)
-
+    # Phase B removed: nulls are now PER-VARIANT (built inside
+    # run_variant_testing_parallel at each variant's exact N, WT
+    # sampled with replacement, NC-matched to the variant, Option-A
+    # NC-reweighted reference). The shared coverage-grid is obsolete.
     if args.coverage_grid:
-        coverage_grid = [int(d) for d in args.coverage_grid.split(',')]
-    else:
-        coverage_grid = auto_coverage_grid(variant_groups)
-
-    null_results_by_depth = {}
-    for depth in coverage_grid:
-        t0 = time.time()
-        nr = run_null_calibration(
-            rd, wt_idx, ground_truth_nc, coverage_level=depth,
-            min_nuc=args.min_nuc, max_nuc=args.max_nuc,
-            n_iterations=args.n_null_iterations,
-            random_seed=args.random_seed + depth,
-            analysis_region=analysis_region,
-            cluster_threshold_quantile=args.cluster_threshold_quantile,
-            absolute_delta_threshold=args.absolute_delta_threshold,
-            gap_tolerance=args.gap_tolerance,
-            merge_distance=args.merge_distance,
-            n_workers=args.threads)
-        null_results_by_depth[depth] = nr
-        logging.info(f"  Depth {depth}: {time.time() - t0:.1f}s")
+        logging.warning("--coverage-grid is deprecated and ignored "
+                        "(per-variant nulls; see docs/stage3_redesign_plan.md)")
 
     # ==================================================================
-    # Phase C: Per-Variant Testing
+    # Phase C: Per-Variant Testing (per-variant nulls)
     # ==================================================================
     logging.info("=" * 60)
     logging.info("PHASE C: Per-Variant Testing")
@@ -733,11 +729,11 @@ def main():
 
     n_total = len(variant_groups)
     all_variant_results = run_variant_testing_parallel(
-        rd, wt_idx, variant_groups, ground_truth_nc,
-        null_results_by_depth, analysis_region,
+        rd, wt_idx, variant_groups, analysis_region,
         prom_s, prom_e,
         min_nuc=args.min_nuc, max_nuc=args.max_nuc,
         random_seed=args.random_seed,
+        n_null_iterations=args.n_null_iterations,
         cluster_threshold_quantile=args.cluster_threshold_quantile,
         absolute_delta_threshold=args.absolute_delta_threshold,
         gap_tolerance=args.gap_tolerance,
@@ -773,13 +769,10 @@ def main():
     logging.info("PHASE D: Output")
     logging.info("=" * 60)
 
-    # Free null delta matrices before writing (keep only summaries)
-    for depth, nr in null_results_by_depth.items():
-        del nr['null_delta']
-
+    # Per-variant nulls: no shared per-depth null to persist.
     write_library_hdf5(
         args.output, parse_stats, ground_truth_nc,
-        null_results_by_depth, all_variant_results,
+        None, all_variant_results,
         fdr_qs if all_variant_results else np.array([]),
         bin_labels, ref_length, ref_name,
         prom_s, prom_e, analysis_region, args)
@@ -788,7 +781,7 @@ def main():
 
     generate_library_pdf(
         args.pdf, all_variant_results, variant_groups,
-        null_results_by_depth, bin_labels,
+        None, bin_labels,
         ref_length, prom_s, prom_e, analysis_region)
 
     # Summary
