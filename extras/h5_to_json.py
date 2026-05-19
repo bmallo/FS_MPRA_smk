@@ -45,8 +45,12 @@ def _attrs(group) -> dict:
     return {k: _to_pylist(group.attrs[k]) for k in group.attrs.keys()}
 
 
+def _round_list(lst, precision):
+    return [round(x, precision) for x in lst]
+
+
 def convert(h5_path: Path, sample_name: str | None = None,
-            mpra_tsv: Path | None = None) -> dict:
+            mpra_tsv: Path | None = None, precision: int = 4) -> dict:
     with h5py.File(h5_path, "r") as f:
         meta = _attrs(f["metadata"])
         if sample_name is None:
@@ -54,8 +58,12 @@ def convert(h5_path: Path, sample_name: str | None = None,
         meta["sample_name"] = sample_name
         bins = meta["bin_labels"]
 
-        # WT occupancy per bin (may not exist in all pipeline versions)
+        # WT occupancy per bin.
+        # Pipeline only writes this under shared-null calibration; for
+        # per-variant nulls the group is absent. Reconstruct post-hoc as
+        # mean(variant_occ - delta_obs) across variants (accumulated below).
         wt = {}
+        _wt_acc = {b: None for b in bins}   # filled during variant loop
         if "wt_occupancy" in f:
             wt = {b: f[f"wt_occupancy/{b}"][:].tolist() for b in bins}
 
@@ -119,15 +127,22 @@ def convert(h5_path: Path, sample_name: str | None = None,
                 for b in bins:
                     bg = grp[b]
                     delta_obs = bg["delta_obs"][:]
+                    variant_occ = bg["variant_occ"][:]
+                    q_values = bg["q_values"][:]
+                    # accumulate wt_occ = variant_occ - delta_obs
+                    implied_wt = variant_occ - delta_obs
+                    if _wt_acc[b] is None:
+                        _wt_acc[b] = implied_wt.astype(np.float64)
+                    else:
+                        _wt_acc[b] += implied_wt
                     pb = {
-                        "delta_obs": delta_obs.tolist(),
-                        "variant_occ": bg["variant_occ"][:].tolist(),
-                        "empirical_p": bg["empirical_p"][:].tolist(),
-                        "q_values": bg["q_values"][:].tolist(),
-                        "z_scores": bg["z_scores"][:].tolist(),
-                        "mde": bg["mde"][:].tolist(),
+                        "delta_obs": _round_list(delta_obs.tolist(), precision),
+                        "variant_occ": _round_list(variant_occ.tolist(), precision),
+                        "empirical_p": _round_list(bg["empirical_p"][:].tolist(), precision),
+                        "q_values": _round_list(q_values.tolist(), precision),
+                        "mde": _round_list(bg["mde"][:].tolist(), precision),
                         "max_abs_delta": float(np.max(np.abs(delta_obs))),
-                        "n_sig_positions": int(np.sum(bg["q_values"][:] < 0.10)),
+                        "n_sig_positions": int(np.sum(q_values < 0.10)),
                         "significant_clusters": [],
                     }
                     if "significant_clusters" in bg:
@@ -158,6 +173,12 @@ def convert(h5_path: Path, sample_name: str | None = None,
                 v["best_effect"] = best_eff
                 variants.append(v)
 
+        # Finalise reconstructed wt_occupancy (mean across variants)
+        if not wt and variants:
+            n = len(variants)
+            wt = {b: _round_list((_wt_acc[b] / n).tolist(), precision)
+                  for b in bins if _wt_acc[b] is not None}
+
         # ── Motifs ────────────────────────────────────────────
         motifs = []
         density_tracks = {}
@@ -165,7 +186,8 @@ def convert(h5_path: Path, sample_name: str | None = None,
             mg = f["motifs"]
             if "density_tracks" in mg:
                 for key in mg["density_tracks"]:
-                    density_tracks[key] = mg[f"density_tracks/{key}"][:].tolist()
+                    density_tracks[key] = _round_list(
+                        mg[f"density_tracks/{key}"][:].tolist(), precision)
             if "calls" in mg:
                 for mkey in mg["calls"]:
                     cg = mg[f"calls/{mkey}"]
@@ -283,12 +305,14 @@ def main():
     ap.add_argument("h5", nargs="+", type=Path, help="One or more {sample}.h5 files")
     ap.add_argument("--mpra", type=Path, help="Optional external MPRA TSV")
     ap.add_argument("-o", "--out", type=Path, default=Path("data.json"))
+    ap.add_argument("--precision", type=int, default=4,
+                    help="Decimal places for per-position float arrays (default: 4)")
     args = ap.parse_args()
 
     samples = {}
     order = []
     for p in args.h5:
-        s = convert(p, mpra_tsv=args.mpra)
+        s = convert(p, mpra_tsv=args.mpra, precision=args.precision)
         name = s["metadata"]["sample_name"]
         samples[name] = s
         order.append(name)
