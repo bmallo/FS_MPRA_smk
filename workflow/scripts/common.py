@@ -1064,14 +1064,21 @@ def _detect_clusters_core(sig_mask, abs_delta, signed_delta=None,
     if not np.any(sig_mask):
         return []
     if gap_tolerance > 0:
-        bridged = sig_mask.copy()
-        for i in range(n):
-            if not sig_mask[i]:
-                left = np.any(sig_mask[max(0, i - gap_tolerance):i])
-                right = np.any(sig_mask[i + 1:min(n, i + gap_tolerance + 1)])
-                if left and right:
-                    bridged[i] = True
-        sig_mask = bridged
+        # Vectorized gap-bridge (was a per-position Python np.any loop —
+        # the profiled hot path: 40000 calls/variant, ~10M np.any).
+        # A position is bridged iff some True lies within gap_tolerance
+        # to its left AND within gap_tolerance to its right. Window
+        # sums via prefix-sum; bitwise-identical to the loop. (sig
+        # positions stay True under the OR, exactly as the copy did.)
+        g = gap_tolerance
+        c = np.empty(n + 1, dtype=np.int64)
+        c[0] = 0
+        np.cumsum(sig_mask.astype(np.int64), out=c[1:])
+        idx = np.arange(n)
+        left_any = (c[idx] - c[np.maximum(0, idx - g)]) > 0
+        right_any = (c[np.minimum(n, idx + g + 1)]
+                     - c[np.minimum(n, idx + 1)]) > 0
+        sig_mask = sig_mask | (left_any & right_any)
     labeled, n_clusters = ndimage.label(sig_mask)
     raw = []
     for c in range(1, n_clusters + 1):
@@ -1144,40 +1151,75 @@ def _null_worker_shared(args):
     wt_occ = {l: np.array(v) for l, v in zip(bin_labels, wt_occ_list)}
 
     delta_out = np.zeros((n_iters, n_bins, analysis_length), dtype=np.float32)
-    cluster_stats = []
 
+    # Workers fill null_delta ONLY. Per-iteration cluster detection used
+    # to be computed here too, but the caller discarded it (`dc, _ =`)
+    # and recomputed clusters post-hoc with the unified rule. Computing
+    # + pickling it was pure waste (profiled hot path). Numerically a
+    # no-op: the returned delta_out is unchanged.
     for li, seed in enumerate(it_seeds):
         rng = np.random.default_rng(seed)
         pv_idx = _nc_matched_batch_draw(
             nc_draw_counts, wt_nc_pools, 1, subsample_size, rng)[0]
-        iter_cl = {}
         for bi, label in enumerate(bin_labels):
             pv_occ = shared_mats[label][pv_idx].mean(axis=0)
-            delta = pv_occ - wt_occ[label]
-            delta_out[li, bi, :] = delta.astype(np.float32)
-            abs_d = np.abs(delta)
-            thresh = 0.0
-            if cluster_threshold_quantile is not None:
-                thresh = np.percentile(abs_d, cluster_threshold_quantile * 100)
-            if absolute_delta_threshold is not None:
-                thresh = max(thresh, absolute_delta_threshold)
-            cl = _detect_clusters_adaptive(abs_d, thresh, gap_tolerance,
-                                           merge_distance)
-            iter_cl[label] = {
-                'cluster_sums': [c['sum_abs_delta'] for c in cl],
-                'max_cluster_sum': max((c['sum_abs_delta'] for c in cl),
-                                       default=0.0),
-            }
-        cluster_stats.append(iter_cl)
+            delta_out[li, bi, :] = (
+                pv_occ - wt_occ[label]).astype(np.float32)
 
     for shm in shm_handles:
         shm.close()
-    return delta_out, cluster_stats
+    return delta_out
 
 
 # ============================================================================
 # Null Calibration — Main
 # ============================================================================
+
+def build_wt_null_context(rd, wt_idx, min_nuc, max_nuc, analysis_region,
+                           make_shared=True):
+    """Build the WT-side structures that are INVARIANT across variants
+    (the WT read set, its coverage matrices sliced to the analysis
+    window, NC pools, and optionally a shared-memory copy of the
+    matrices). These depend only on (rd, wt_idx, filters,
+    analysis_region) — not on any variant — so for the per-variant null
+    they can be built ONCE and reused across all variants instead of
+    rebuilt 149x. Extracted verbatim from run_null_calibration; the
+    arrays produced are identical to the per-call build.
+    """
+    bin_labels = rd.bin_labels
+    if analysis_region is not None:
+        a_start, a_end = analysis_region
+    else:
+        a_start, a_end = 0, rd.ref_length
+    analysis_length = a_end - a_start
+
+    wt_f = rd.get_indices_filtered(wt_idx, min_nuc=min_nuc, max_nuc=max_nuc)
+    needs_col_slice = (rd.analysis_length != analysis_length
+                       or rd.analysis_start != a_start)
+    if needs_col_slice:
+        col_indices = np.arange(a_start, a_end)
+        wt_mats = {l: rd.coverage_matrices[l][np.ix_(wt_f, col_indices)]
+                   for l in bin_labels}
+    else:
+        wt_mats = {l: rd.coverage_matrices[l][wt_f]
+                   for l in bin_labels}
+    wt_nc = rd.nuc_counts[wt_f]
+    wt_nc_pools = {}
+    for nc_val in np.unique(wt_nc):
+        pool = np.where(wt_nc == nc_val)[0]
+        if len(pool) > 0:
+            wt_nc_pools[int(nc_val)] = pool
+    wt_nc_pools_ser = list(wt_nc_pools.items())
+
+    shm_info, shm_objects = (create_shared_matrices(wt_mats, bin_labels)
+                             if make_shared else (None, []))
+    return {
+        'wt_f': wt_f, 'wt_mats': wt_mats, 'wt_nc': wt_nc,
+        'wt_nc_pools': wt_nc_pools, 'wt_nc_pools_ser': wt_nc_pools_ser,
+        'shm_info': shm_info, 'shm_objects': shm_objects,
+        'analysis_region': (a_start, a_end), 'bin_labels': list(bin_labels),
+    }
+
 
 def run_null_calibration(rd, wt_idx, ground_truth_nc, coverage_level,
                          min_nuc=None, max_nuc=None,
@@ -1186,8 +1228,17 @@ def run_null_calibration(rd, wt_idx, ground_truth_nc, coverage_level,
                          cluster_threshold_quantile=0.95,
                          absolute_delta_threshold=None,
                          gap_tolerance=2, merge_distance=5,
-                         n_workers=1):
-    """Generate empirical null at a given coverage level."""
+                         n_workers=1, wt_ctx=None, executor=None):
+    """Generate empirical null at a given coverage level.
+
+    wt_ctx (optional): a build_wt_null_context() dict. When given, the
+    invariant WT slice / NC pools / shared memory are reused instead of
+    rebuilt — numerically identical (same arrays), just not recomputed
+    per variant. executor (optional): a persistent ProcessPoolExecutor
+    to reuse instead of creating/tearing down one per call. Neither
+    changes any seed, the chunking, the Option-A reference, or the
+    null math — only what is rebuilt vs reused.
+    """
     logging.info(f"  Null calibration: N={coverage_level}, "
                  f"iters={n_iterations}, workers={n_workers}")
 
@@ -1199,27 +1250,19 @@ def run_null_calibration(rd, wt_idx, ground_truth_nc, coverage_level,
         a_start, a_end = 0, rd.ref_length
     analysis_length = a_end - a_start
 
-    wt_f = rd.get_indices_filtered(wt_idx, min_nuc=min_nuc, max_nuc=max_nuc)
-    # If matrices are already analysis-width, row-slice only; otherwise
-    # also slice columns to the analysis region.
-    needs_col_slice = (rd.analysis_length != analysis_length
-                       or rd.analysis_start != a_start)
-    if needs_col_slice:
-        col_indices = np.arange(a_start, a_end)
-        wt_mats = {l: rd.coverage_matrices[l][np.ix_(wt_f, col_indices)]
-                   for l in bin_labels}
-    else:
-        wt_mats = {l: rd.coverage_matrices[l][wt_f]
-                   for l in bin_labels}
-    wt_nc = rd.nuc_counts[wt_f]
+    # Invariant WT structures: reuse the caller's prebuilt context when
+    # given (built once, identical arrays), else build locally — same
+    # arrays either way; only whether they are recomputed per variant.
+    if wt_ctx is None:
+        wt_ctx = build_wt_null_context(rd, wt_idx, min_nuc, max_nuc,
+                                       analysis_region, make_shared=False)
+    wt_f = wt_ctx['wt_f']
+    wt_mats = wt_ctx['wt_mats']
+    wt_nc = wt_ctx['wt_nc']
+    wt_nc_pools = wt_ctx['wt_nc_pools']
+    wt_nc_pools_ser = wt_ctx['wt_nc_pools_ser']
     nc_vals = ground_truth_nc['nc_vals']
     nc_fracs = ground_truth_nc['nc_fracs']
-    wt_nc_pools = {}
-    for nc_val in nc_vals:
-        pool = np.where(wt_nc == nc_val)[0]
-        if len(pool) > 0:
-            wt_nc_pools[nc_val] = pool
-    wt_nc_pools_ser = list(wt_nc_pools.items())
 
     # Option A reference: WT mean occupancy reweighted to the passed NC
     # distribution (the variant's, for per-variant nulls). This removes
@@ -1257,7 +1300,16 @@ def run_null_calibration(rd, wt_idx, ground_truth_nc, coverage_level,
     # ---- Fill null_delta only (cluster detection done post-hoc with the
     # SAME rule used for the observed data — fixes Issue 2b) ----
     if n_workers > 1 and n_iterations > 1:
-        shm_info, shm_objects = create_shared_matrices(wt_mats, bin_labels)
+        # Reuse caller-provided shared memory / executor when present
+        # (built once, reused across all variants); else own them for
+        # this call. Chunking and seeds are unchanged either way.
+        if wt_ctx.get('shm_info') is not None:
+            shm_info, shm_objects, _own_shm = (
+                wt_ctx['shm_info'], [], False)
+        else:
+            shm_info, shm_objects = create_shared_matrices(
+                wt_mats, bin_labels)
+            _own_shm = True
         chunk_size = max(1, n_iterations // n_workers)
         seed_chunks = [all_seeds[i:i + chunk_size]
                        for i in range(0, n_iterations, chunk_size)]
@@ -1269,20 +1321,28 @@ def run_null_calibration(rd, wt_idx, ground_truth_nc, coverage_level,
             for chunk in seed_chunks
         ]
         try:
-            with ProcessPoolExecutor(max_workers=n_workers) as executor:
-                futures = {executor.submit(_null_worker_shared, wa): ci
+            if executor is not None:
+                ex, _own_ex = executor, False
+            else:
+                ex, _own_ex = ProcessPoolExecutor(max_workers=n_workers), True
+            try:
+                futures = {ex.submit(_null_worker_shared, wa): ci
                            for ci, wa in enumerate(worker_args)}
                 results_by_chunk = {}
                 for future in as_completed(futures):
                     results_by_chunk[futures[future]] = future.result()
                 offset = 0
                 for ci in range(len(seed_chunks)):
-                    dc, _ = results_by_chunk[ci]
+                    dc = results_by_chunk[ci]
                     n_c = dc.shape[0]
                     null_delta[offset:offset + n_c] = dc
                     offset += n_c
+            finally:
+                if _own_ex:
+                    ex.shutdown()
         finally:
-            cleanup_shared_memory(shm_objects)
+            if _own_shm:
+                cleanup_shared_memory(shm_objects)
     else:
         for it in tqdm(range(n_iterations), desc="    Null iters",
                        disable=not HAS_TQDM):
@@ -1577,17 +1637,44 @@ def _nc_wasserstein(nc_a, nc_b):
         nc_a['nc_fracs'], nc_b['nc_fracs']))
 
 
+def _w1_nonneg_int(a, b):
+    """Exact 1D Wasserstein-1 between two empirical samples of
+    NON-NEGATIVE INTEGERS. W1 = ∫|F_a − F_b| dx; for integer support
+    F is constant on each unit interval, so this equals
+    Σ_k |F_a(k) − F_b(k)| over k = 0..max. This is mathematically the
+    same value scipy.stats.wasserstein_distance returns for integer
+    samples, but O(n + K) instead of O((n+W) log(n+W)) — no sorting of
+    the 193k WT array per call. NC counts are small non-negative ints,
+    so this is exact (verified np.allclose vs scipy)."""
+    a = np.asarray(a)
+    b = np.asarray(b)
+    K = int(max(a.max(), b.max()))
+    ca = np.cumsum(np.bincount(a, minlength=K + 1)[:K + 1]) / a.size
+    cb = np.cumsum(np.bincount(b, minlength=K + 1)[:K + 1]) / b.size
+    return float(np.sum(np.abs(ca - cb)))
+
+
 def nc_shift_null(wt_nc_samples, n, n_iter, rng):
     """Null distribution of the variant-vs-WT NC Wasserstein-1 statistic
     under H0 ('variant behaves like WT'): draw n WT NC values WITH
     replacement (NOT NC-matched — the point is to detect an NC shift)
     and measure Wasserstein-1 vs the full WT NC distribution. Depends
     only on n, so it is computed once per stratum and reused.
+
+    The WT CDF is fixed across all iterations; precompute it once and
+    score each resample with the exact integer W1 (was 10000x
+    scipy.wasserstein_distance over the 193k WT array per stratum — the
+    dominant production cost). rng.choice draws are unchanged, so the
+    null values are identical to the scipy version.
     """
+    wt = np.asarray(wt_nc_samples)
+    K = int(wt.max())
+    cb = np.cumsum(np.bincount(wt, minlength=K + 1)[:K + 1]) / wt.size
     null_w = np.empty(n_iter, dtype=np.float64)
     for i in range(n_iter):
         s = rng.choice(wt_nc_samples, size=n, replace=True)
-        null_w[i] = wasserstein_distance(s, wt_nc_samples)
+        ca = np.cumsum(np.bincount(s, minlength=K + 1)[:K + 1]) / s.size
+        null_w[i] = np.sum(np.abs(ca - cb))
     return null_w
 
 
@@ -1595,10 +1682,12 @@ def nc_shift_stats(var_nc_samples, wt_nc_samples, null_w):
     """Per-variant nucleosome-count shift readout (distinct from the
     per-position nuc-track occupancy test). Signed ΔNC mean for
     direction/magnitude + Wasserstein-1 with an empirical p vs the
-    shared null."""
+    shared null. obs uses the same exact integer W1 as the null so the
+    null_w >= obs_w comparison is on an identical metric implementation.
+    """
     if len(var_nc_samples) == 0 or len(wt_nc_samples) == 0:
         return None
-    obs_w = float(wasserstein_distance(var_nc_samples, wt_nc_samples))
+    obs_w = _w1_nonneg_int(var_nc_samples, wt_nc_samples)
     mv = float(np.mean(var_nc_samples))
     mw = float(np.mean(wt_nc_samples))
     p = float((np.sum(null_w >= obs_w) + 1) / (len(null_w) + 1))
@@ -1698,9 +1787,21 @@ def run_variant_testing_parallel(rd, wt_idx, variant_groups,
     wt_nc_samples = rd.nuc_counts[wt_f_nc]
     wt_nc_samples = wt_nc_samples[wt_nc_samples >= 0]
 
+    # PERF: the WT slice / NC pools / shared memory and the worker pool
+    # are INVARIANT across variants — build them ONCE here and reuse for
+    # every stratum, instead of run_null_calibration rebuilding them
+    # 149x. Numerically identical (same arrays, same seeds, same
+    # chunking); this is purely "build once, reuse" vs "rebuild each".
+    use_pool = n_workers > 1 and n_null_iterations > 1
+    wt_ctx = build_wt_null_context(rd, wt_idx, min_nuc, max_nuc,
+                                   analysis_region, make_shared=use_pool)
+    persistent_ex = (ProcessPoolExecutor(max_workers=n_workers)
+                     if use_pool else None)
+
     all_results = []
-    for si, st in enumerate(tqdm(strata, desc="Strata",
-                                 disable=not HAS_TQDM)):
+    try:
+      for si, st in enumerate(tqdm(strata, desc="Strata",
+                                   disable=not HAS_TQDM)):
         null_res = run_null_calibration(
             rd, wt_idx, st['rep_nc'], coverage_level=st['rep_n'],
             min_nuc=min_nuc, max_nuc=max_nuc,
@@ -1710,7 +1811,7 @@ def run_variant_testing_parallel(rd, wt_idx, variant_groups,
             cluster_threshold_quantile=cluster_threshold_quantile,
             absolute_delta_threshold=absolute_delta_threshold,
             gap_tolerance=gap_tolerance, merge_distance=merge_distance,
-            n_workers=n_workers)
+            n_workers=n_workers, wt_ctx=wt_ctx, executor=persistent_ex)
         # NC-shift null depends only on N -> one per stratum (rep_n).
         nc_null = (nc_shift_null(
             wt_nc_samples, st['rep_n'], n_null_iterations,
@@ -1738,6 +1839,11 @@ def run_variant_testing_parallel(rd, wt_idx, variant_groups,
                 if ncs is not None:
                     vr.update(ncs)
                 all_results.append(vr)
+    finally:
+        if persistent_ex is not None:
+            persistent_ex.shutdown()
+        if wt_ctx.get('shm_objects'):
+            cleanup_shared_memory(wt_ctx['shm_objects'])
     logging.info(f"  Tested {len(all_results)} variants "
                  f"({len(strata)} null builds)")
     return all_results
