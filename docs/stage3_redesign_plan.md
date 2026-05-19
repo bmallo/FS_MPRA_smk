@@ -293,8 +293,17 @@ All exposed as CLI flag + `config.yaml` key + Snakefile passthrough.
 2. **Phase 1** — per-variant NC/coverage-matched null with-replacement (§1.1),
    single cluster rule + max-statistic FDR (§1.2), B knob + stratification
    (§1.3–1.4), NC-shift readout (§2.1), MDE (§2.2). Recompute calibration.
-3. **Phase 2** — motif layer + DNA extraction + cross-variant aggregation
-   (§2.3, requires §4 reference decision).
+3. **Phase 2 — DONE.** Motif layer + DNA extraction + cross-variant
+   aggregation (§2.3). §4(1) resolved: Stage 3 `--reference` FASTA.
+   Implemented as a post-hoc annotation/aggregation layer (`common.py`
+   `annotate_variant_motifs`, `aggregate_motifs`,
+   `load_reference_sequence`, `build_motif_cfg`) that does NOT touch the
+   validated Phase 1 hot path; new `motifs` HDF5 group + per-sample
+   `_motifs.tsv`; motif fields added to the flat `clusters` table and
+   per-variant groups. Dev sanity run: coordinate self-check exact
+   (0/31 SNV ref bases mismatched); 0 calls on the 33-variant/200-iter
+   dev set (correct — gated on calibrated cross-variant FDR; needs
+   production data for real motif calls).
 4. **Phase 3** — co-occupancy module + secondary-mutation control
    (§2.4–2.5, requires §4 `PR` decision).
 
@@ -302,8 +311,10 @@ All exposed as CLI flag + `config.yaml` key + Snakefile passthrough.
 
 ## 8. Open decisions
 
-- §4(1): reference sequence — Stage 3 `--reference` vs Stage 2 carries it.
-- §4(2): `PR` — parse in Stage 3 vs re-derive from CIGAR.
+- §4(1): RESOLVED — Stage 3 takes an optional `--reference` FASTA
+  (keeps Stage 2 unchanged; reuses `reference_fasta` in config). An
+  empirical SNV-ref-base self-check logs any coordinate/contig mismatch.
+- §4(2): `PR` — parse in Stage 3 vs re-derive from CIGAR (Phase 3).
 - §1.4: default `--null-strata-nc-dist` (set from benchmark).
 - §1.3: keep adaptive mode in scope for v1, or defer to exploration tooling.
 - Backward compatibility: keep old `--n-null-iterations` / coverage-grid flags

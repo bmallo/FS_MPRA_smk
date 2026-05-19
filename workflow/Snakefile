@@ -89,6 +89,26 @@ def analyze_library_extra(wc):
     nr = config.get("nuc_range")
     if nr:
         args.append(f"--nuc-range {nr[0]} {nr[1]}")
+    # TF binding-motif layer (Phase 2). Reuses reference_fasta for
+    # motif DNA extraction (§4 decision #1: Stage 3 --reference).
+    ref = config.get("reference_fasta")
+    if ref:
+        args.append(f"--reference {ref}")
+    mb = config.get("motif_bins")
+    if mb:
+        args.append(f"--motif-bins {mb}")
+    md = config.get("motif_direction")
+    if md:
+        args.append(f"--motif-direction {md}")
+    args.append("--motif-sign-consistency "
+                f"{config.get('motif_sign_consistency', 0.90)}")
+    args.append(f"--motif-min-width {config.get('motif_min_width', 5)}")
+    args.append(f"--motif-max-width {config.get('motif_max_width', 25)}")
+    if config.get("motif_require_variant_overlap", False):
+        args.append("--motif-require-variant-overlap")
+    args.append(f"--motif-fdr {config.get('motif_fdr', 0.10)}")
+    args.append("--motif-density-threshold "
+                f"{config.get('motif_density_threshold', 2)}")
     t = config.get("threads", 8)
     args.append(f"--threads {t}")
     return " ".join(args)
@@ -158,6 +178,7 @@ rule analyze_library:
     output:
         h5="results/{sample}/analysis/{sample}.h5",
         tsv="results/{sample}/analysis/{sample}_summary.tsv",
+        motifs="results/{sample}/analysis/{sample}_motifs.tsv",
         pdf="results/{sample}/analysis/{sample}_results.pdf",
     params:
         script=os.path.join(SCRIPTS, "03_analyze_library.py"),

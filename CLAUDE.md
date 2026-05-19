@@ -78,8 +78,14 @@ python extras/fs_mpra_browser.py --h5 results.h5 --port 8050
 Raw Fiber-seq BAM
     -> 01_filter_reads.py    -> {sample}.plasmid.bam  (adds nc, bn tags)
     -> 02_call_variants.py   -> {sample}.tagged.bam   (adds PV, VC, PR, BK, CS tags)
-    -> 03_analyze_library.py -> {sample}.h5 + .tsv + .pdf
+    -> 03_analyze_library.py -> {sample}.h5 + _summary.tsv + _motifs.tsv + .pdf
 ```
+
+Stage 3 also runs the **TF binding-motif layer** (Phase 2): with an
+optional `--reference` FASTA it annotates significant clusters with
+DNA + sign-consistency + causal-variant distance, then aggregates
+across independent SNVs into motif calls (`motifs` HDF5 group +
+`_motifs.tsv`). Gated on the calibrated cross-variant FDR.
 
 ### BAM tags that flow between stages
 

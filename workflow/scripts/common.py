@@ -1741,3 +1741,306 @@ def run_variant_testing_parallel(rd, wt_idx, variant_groups,
     logging.info(f"  Tested {len(all_results)} variants "
                  f"({len(strata)} null builds)")
     return all_results
+
+
+# ============================================================================
+# Phase 2 — TF binding-motif layer (plan §2.3)
+#
+# Implemented as a post-hoc annotation + cross-variant aggregation layer on
+# top of the per-variant results. It deliberately does NOT touch the
+# validated Phase 1 statistical hot path (run_null_calibration /
+# _compute_variant_result); it only reads delta_obs and the already-detected
+# significant clusters and the calibrated per-variant FDR.
+# ============================================================================
+
+DEFAULT_MOTIF_CFG = {
+    'bins': ('TF', 'sub_TF'),
+    'direction': 'loss',          # 'loss' | 'gain' | 'both'
+    'sign_consistency': 0.90,
+    'min_width': 5,
+    'max_width': 25,
+    'require_variant_overlap': False,  # per-variant: annotate only
+    'fdr': 0.10,                  # variant gate: variant_fdr_q < fdr
+    'density_threshold': 2,       # >= N distinct variants -> motif call
+}
+
+
+def build_motif_cfg(bins=None, direction='loss', sign_consistency=0.90,
+                     min_width=5, max_width=25,
+                     require_variant_overlap=False, fdr=0.10,
+                     density_threshold=2):
+    """Assemble the motif-layer config from CLI/Snakefile values, with the
+    plan §2.3 defaults. Kept as a plain dict so it pickles trivially."""
+    return {
+        'bins': tuple(bins) if bins else DEFAULT_MOTIF_CFG['bins'],
+        'direction': direction,
+        'sign_consistency': float(sign_consistency),
+        'min_width': int(min_width),
+        'max_width': int(max_width),
+        'require_variant_overlap': bool(require_variant_overlap),
+        'fdr': float(fdr),
+        'density_threshold': int(density_threshold),
+    }
+
+
+def load_reference_sequence(fasta_path, ref_name):
+    """Load one contig's sequence (uppercase str) from a FASTA, or None.
+
+    Used only for motif DNA extraction (§4 decision #1: Stage 3 takes an
+    optional --reference rather than Stage 2 carrying the sequence)."""
+    if not fasta_path:
+        return None
+    try:
+        fa = pysam.FastaFile(fasta_path)
+    except Exception as e:
+        logging.warning(f"Could not open --reference {fasta_path}: {e}")
+        return None
+    try:
+        if ref_name not in fa.references:
+            logging.warning(
+                f"--reference has no contig '{ref_name}' "
+                f"(has: {list(fa.references)[:5]}...); "
+                f"motif DNA extraction disabled")
+            return None
+        seq = fa.fetch(ref_name).upper()
+        logging.info(f"Reference loaded for motifs: {ref_name} "
+                     f"({len(seq):,} bp)")
+        return seq
+    finally:
+        fa.close()
+
+
+def _cluster_sign_consistency(delta_obs, c):
+    """Fraction of positions inside the cluster whose signed Δ matches the
+    cluster's dominant sign. delta_obs is the analysis-window array; the
+    cluster's start/end index into it (relative coords)."""
+    seg = np.asarray(delta_obs[c['start']:c['end'] + 1], dtype=np.float64)
+    if seg.size == 0:
+        return 0.0
+    dom = 1.0 if c.get('mean_signed_delta', 0.0) >= 0 else -1.0
+    return float(np.mean(np.sign(seg) == dom))
+
+
+def annotate_variant_motifs(all_variant_results, ref_seq, analysis_region,
+                            motif_cfg):
+    """Annotate every per-variant cluster in place with the motif-layer
+    fields and flag motif clusters per plan §2.3.
+
+    Adds to each cluster dict: sign_consistency, ref_sequence (if
+    ref_seq), variant_distance (causal-variant gap; 0 = overlap),
+    variant_overlap (bool), is_motif (bool).
+
+    Coordinate note: variant IDs are 1-based ref positions
+    (02_call_variants.py emits position = 0-based + 1); cluster
+    abs_start/abs_end are 0-based ref positions. We convert the variant
+    to 0-based before comparing/extracting.
+    """
+    a_start, a_end = analysis_region
+    bins = set(motif_cfg['bins'])
+    want_dir = motif_cfg['direction']
+    sc_min = motif_cfg['sign_consistency']
+    w_min, w_max = motif_cfg['min_width'], motif_cfg['max_width']
+    req_ov = motif_cfg['require_variant_overlap']
+    n_ref = len(ref_seq) if ref_seq else 0
+    ref_base_mismatches = 0
+    ref_base_checked = 0
+
+    for vr in all_variant_results:
+        vid = vr['variant_id']
+        pos1, vref, valt, vct = parse_variant_id_fields(vid)
+        var_pos0 = (pos1 - 1) if pos1 is not None else None
+        vr['variant_pos0'] = var_pos0
+        vr['variant_alt'] = valt
+        vr['variant_change_type'] = vct
+        # Empirical coordinate self-check: ref base at the SNV should
+        # match the variant's recorded ref base (locks 1-based vs
+        # 0-based convention; logged, not fatal).
+        if (ref_seq and var_pos0 is not None and vct == 'snv'
+                and vref and 0 <= var_pos0 < n_ref):
+            ref_base_checked += 1
+            if ref_seq[var_pos0].upper() != vref.upper():
+                ref_base_mismatches += 1
+
+        for label in list(vr.keys()):
+            lr = vr.get(label)
+            if not isinstance(lr, dict) or 'delta_obs' not in lr:
+                continue
+            delta_obs = lr['delta_obs']
+            seen = set()
+            for clist_key in ('significant_clusters', 'all_promoter_clusters'):
+                for c in lr.get(clist_key, []):
+                    cid = id(c)
+                    if cid in seen:
+                        continue
+                    seen.add(cid)
+                    c['sign_consistency'] = _cluster_sign_consistency(
+                        delta_obs, c)
+                    a_s = c.get('abs_start', c['start'] + a_start)
+                    a_e = c.get('abs_end', c['end'] + a_start)
+                    c['abs_start'] = a_s
+                    c['abs_end'] = a_e
+                    if ref_seq and 0 <= a_s <= a_e < n_ref:
+                        c['ref_sequence'] = ref_seq[a_s:a_e + 1]
+                    else:
+                        c['ref_sequence'] = ''
+                    if var_pos0 is None:
+                        c['variant_overlap'] = False
+                        c['variant_distance'] = -999999
+                    elif a_s <= var_pos0 <= a_e:
+                        c['variant_overlap'] = True
+                        c['variant_distance'] = 0
+                    else:
+                        c['variant_overlap'] = False
+                        c['variant_distance'] = int(
+                            var_pos0 - a_s if var_pos0 < a_s
+                            else var_pos0 - a_e)
+                    dir_ok = (want_dir == 'both'
+                              or c.get('direction') == want_dir)
+                    c['is_motif'] = bool(
+                        label in bins
+                        and w_min <= c['width'] <= w_max
+                        and c['sign_consistency'] >= sc_min
+                        and dir_ok
+                        and (not req_ov or c['variant_overlap']))
+
+    if ref_base_checked:
+        frac = ref_base_mismatches / ref_base_checked
+        msg = (f"Motif coord check: {ref_base_mismatches}/"
+               f"{ref_base_checked} SNV ref bases disagree with "
+               f"--reference ({frac:.1%})")
+        if frac > 0.05:
+            logging.warning(
+                msg + " — possible coordinate/contig mismatch; "
+                "motif DNA may be off by one or wrong contig")
+        else:
+            logging.info(msg)
+
+
+def aggregate_motifs(all_variant_results, ref_seq, ref_name,
+                     analysis_region, motif_cfg):
+    """Cross-variant aggregation — the primary biological deliverable
+    (plan §2.3). For each motif bin and direction, build a
+    disruption-density track (# distinct FDR-significant variants whose
+    sign-consistent motif cluster covers each reference position), call
+    motif intervals where density >= threshold, and for each motif emit
+    the reference DNA plus a per-position/per-base sensitivity profile.
+
+    Returns {'tracks': {(bin,dir): np.int32[analysis_length]},
+             'motifs': [ {...} ], 'analysis_start', 'analysis_length',
+             'ref_name'} .
+    """
+    a_start, a_end = analysis_region
+    analysis_length = a_end - a_start
+    bins = list(motif_cfg['bins'])
+    if motif_cfg['direction'] == 'both':
+        directions = ['loss', 'gain']
+    else:
+        directions = [motif_cfg['direction']]
+    fdr = motif_cfg['fdr']
+    dens_thr = motif_cfg['density_threshold']
+    w_min = motif_cfg['min_width']
+    req_ov = motif_cfg['require_variant_overlap']
+    n_ref = len(ref_seq) if ref_seq else 0
+    BASES = ('A', 'C', 'G', 'T')
+    bidx = {b: i for i, b in enumerate(BASES)}
+
+    sig_variants = [vr for vr in all_variant_results
+                    if vr.get('variant_fdr_q', 1.0) < fdr]
+
+    tracks = {}
+    motifs = []
+    for label in bins:
+        for d in directions:
+            density = np.zeros(analysis_length, dtype=np.int32)
+            # per-variant: union mask of its qualifying motif clusters,
+            # plus the clusters kept for the overlap/sensitivity step.
+            per_var = []
+            for vr in sig_variants:
+                lr = vr.get(label)
+                if not isinstance(lr, dict):
+                    continue
+                qcl = [c for c in lr.get('significant_clusters', [])
+                       if c.get('is_motif')
+                       and (motif_cfg['direction'] == 'both'
+                            or c.get('direction') == d)
+                       and (not req_ov or c.get('variant_overlap'))]
+                if not qcl:
+                    continue
+                mask = np.zeros(analysis_length, dtype=bool)
+                for c in qcl:
+                    mask[c['start']:c['end'] + 1] = True
+                density += mask.astype(np.int32)
+                per_var.append((vr, qcl, mask))
+            tracks[(label, d)] = density
+
+            # Call motif intervals: contiguous runs >= threshold.
+            hot = density >= dens_thr
+            i = 0
+            while i < analysis_length:
+                if not hot[i]:
+                    i += 1
+                    continue
+                j = i
+                while j < analysis_length and hot[j]:
+                    j += 1
+                m_s, m_e = i, j - 1          # relative, inclusive
+                i = j
+                if (m_e - m_s + 1) < w_min:
+                    continue
+                abs_s, abs_e = m_s + a_start, m_e + a_start
+                L = m_e - m_s + 1
+                if ref_seq and 0 <= abs_s <= abs_e < n_ref:
+                    mseq = ref_seq[abs_s:abs_e + 1]
+                else:
+                    mseq = ''
+                sens_count = np.zeros((L, 4), dtype=np.int32)
+                sens_effect = np.zeros((L, 4), dtype=np.float64)
+                contributors = []
+                for vr, qcl, mask in per_var:
+                    if not mask[m_s:m_e + 1].any():
+                        continue
+                    contributors.append(vr['variant_id'])
+                    vp0 = vr.get('variant_pos0')
+                    valt = (vr.get('variant_alt') or '').upper()
+                    if (vr.get('variant_change_type') == 'snv'
+                            and vp0 is not None
+                            and abs_s <= vp0 <= abs_e
+                            and valt in bidx):
+                        # strongest overlapping motif cluster's signed Δ
+                        best = None
+                        for c in qcl:
+                            if c['end'] >= m_s and c['start'] <= m_e:
+                                msd = c.get('mean_signed_delta', 0.0)
+                                if best is None or abs(msd) > abs(best):
+                                    best = msd
+                        r = vp0 - abs_s
+                        b = bidx[valt]
+                        sens_count[r, b] += 1
+                        if best is not None:
+                            sens_effect[r, b] += best
+                with np.errstate(invalid='ignore', divide='ignore'):
+                    sens_mean = np.where(
+                        sens_count > 0,
+                        sens_effect / np.maximum(sens_count, 1), 0.0)
+                motifs.append({
+                    'bin': label, 'direction': d,
+                    'abs_start': int(abs_s), 'abs_end': int(abs_e),
+                    'width': int(L), 'ref_sequence': mseq,
+                    'n_variants': len(set(contributors)),
+                    'peak_density': int(density[m_s:m_e + 1].max()),
+                    'contributing_variant_ids': sorted(set(contributors)),
+                    'sensitivity_count': sens_count,
+                    'sensitivity_mean_signed_delta': sens_mean,
+                    'base_order': ''.join(BASES),
+                })
+
+    motifs.sort(key=lambda m: (-m['n_variants'], -m['peak_density']))
+    logging.info(
+        f"  Motif aggregation: {len(sig_variants)} FDR<{fdr} variants "
+        f"-> {len(motifs)} motif call(s) "
+        f"(bins={bins}, dir={motif_cfg['direction']}, "
+        f"density>={dens_thr})")
+    return {'tracks': tracks, 'motifs': motifs,
+            'analysis_start': a_start,
+            'analysis_length': analysis_length,
+            'ref_name': ref_name}

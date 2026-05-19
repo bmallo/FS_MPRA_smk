@@ -86,6 +86,36 @@ indel-bearing reads as error noise).
   could have detected — distinguishes a true "no effect" from
   "underpowered".
 
+## The TF binding-motif layer (the biological readout)
+
+Significance tells you *that* a variant changed footprints; the motif
+layer turns many such hits into *where the protein-binding DNA elements
+are*. Terms:
+
+- **Motif cluster**: a significant footprint-loss (or gain) region that
+  is contiguous, **sign-consistent** (≥90% of its positions move the
+  same way — not a noisy mix), the right width (5–25 bp, TF-sized), and
+  in a TF-sized bin (`TF`/`sub_TF`). One per affected spot in a
+  significant variant.
+- **Causal-variant cross-check**: for each motif cluster we record how
+  far it sits from the SNV that (presumably) caused it (0 = the cluster
+  covers the SNV). A local effect is the expected signature of
+  disrupting a binding site you sit in.
+- **Reference DNA**: with an optional `--reference` FASTA, every cluster
+  carries the underlying genomic sequence (a built-in self-check
+  confirms the SNV's reference base matches the FASTA, locking the
+  coordinate convention).
+- **Cross-variant aggregation** (the deliverable): a protein-binding
+  element should be hit by **many independent SNVs** tiling it, not one.
+  Per reference position we count *distinct* variants (that pass the
+  calibrated cross-variant FDR) whose motif cluster covers it — a
+  "disruption-density" track. Where density ≥ a threshold (default 2
+  independent variants) we call a **motif**: its reference sequence
+  plus a per-position/per-base **sensitivity profile** (which base
+  substitutions at which positions drive the disruption). Gating on the
+  validated FDR means the motif layer inherits Phase 1's exact
+  error control — it never invents calls the statistics don't support.
+
 ## What was fixed vs the original pipeline
 
 The original test was ~93%/55% false-positive under a no-effect

@@ -56,4 +56,16 @@ null_stratify: false              # OPT-IN speed mode; NOT calibrated (~2x
 null_strata_n_tol: 0.10           # (only used if null_stratify: true)
 null_strata_nc_dist: 0.30         # (only used if null_stratify: true)
 nuc_range: null                   # [min, max] or null for no filter
+
+# TF binding-motif layer (Phase 2 / plan §2.3).
+# Reuses reference_fasta (top of file) for motif DNA extraction.
+motif_bins: "TF,sub_TF"           # bins searched for motif clusters
+motif_direction: loss             # loss | gain | both
+motif_sign_consistency: 0.90      # min same-sign fraction in a cluster
+motif_min_width: 5                # min motif-cluster width (bp)
+motif_max_width: 25               # max motif-cluster width (bp)
+motif_require_variant_overlap: false  # require cluster to span its SNV
+motif_fdr: 0.10                   # variant FDR gate feeding aggregation
+motif_density_threshold: 2        # >= N distinct variants -> motif call
+
 threads: 8

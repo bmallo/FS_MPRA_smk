@@ -40,6 +40,8 @@ from common import (
     parse_bam, group_variants,
     compute_ground_truth_nc,
     run_variant_testing_parallel,
+    load_reference_sequence, build_motif_cfg,
+    annotate_variant_motifs, aggregate_motifs,
 )
 
 
@@ -50,7 +52,8 @@ from common import (
 def write_library_hdf5(output_path, parse_stats, ground_truth_nc,
                        null_results_by_depth, all_variant_results,
                        variant_fdr, bin_labels, ref_length, ref_name,
-                       promoter_start, promoter_end, analysis_region, args):
+                       promoter_start, promoter_end, analysis_region, args,
+                       motif_result=None):
     logging.info(f"Writing HDF5: {output_path}")
     a_start, a_end = analysis_region
     n_var = len(all_variant_results)
@@ -212,6 +215,12 @@ def write_library_hdf5(output_path, parse_stats, ground_truth_nc,
                         'direction': cl.get('direction', ''),
                         'sum_p': cl.get('sum_p', 1.0),
                         'peak_position': cl.get('peak_position', 0),
+                        'sign_consistency': cl.get('sign_consistency', 0.0),
+                        'is_motif': cl.get('is_motif', False),
+                        'variant_distance': cl.get('variant_distance',
+                                                   -999999),
+                        'variant_overlap': cl.get('variant_overlap', False),
+                        'ref_sequence': cl.get('ref_sequence', ''),
                     })
 
         if cluster_rows:
@@ -241,8 +250,20 @@ def write_library_hdf5(output_path, parse_stats, ground_truth_nc,
                 data=[r['sum_p'] for r in cluster_rows])
             clg.create_dataset('peak_position',
                 data=[r['peak_position'] for r in cluster_rows])
+            clg.create_dataset('sign_consistency',
+                data=[r['sign_consistency'] for r in cluster_rows])
+            clg.create_dataset('is_motif',
+                data=[r['is_motif'] for r in cluster_rows])
+            clg.create_dataset('variant_distance',
+                data=[r['variant_distance'] for r in cluster_rows])
+            clg.create_dataset('variant_overlap',
+                data=[r['variant_overlap'] for r in cluster_rows])
+            clg.create_dataset('ref_sequence',
+                data=[r['ref_sequence'].encode() for r in cluster_rows])
             logging.info(f"  {len(cluster_rows)} total significant clusters "
-                         f"across {n_var} variants")
+                         f"across {n_var} variants "
+                         f"({sum(r['is_motif'] for r in cluster_rows)} "
+                         f"motif clusters)")
 
         # ── Per-variant detailed arrays ───────────────────────────
         vg = f.create_group('variants')
@@ -290,6 +311,35 @@ def write_library_hdf5(output_path, parse_stats, ground_truth_nc,
                             if isinstance(v, (int, float, str, bool)):
                                 cg.attrs[k] = v
 
+        # ── Cross-variant motif calls (Phase 2 / plan §2.3) ───────
+        if motif_result is not None:
+            mg = f.create_group('motifs')
+            mg.attrs['analysis_start'] = motif_result['analysis_start']
+            mg.attrs['analysis_length'] = motif_result['analysis_length']
+            mg.attrs['ref_name'] = motif_result['ref_name']
+            tg = mg.create_group('density_tracks')
+            for (label, d), track in motif_result['tracks'].items():
+                tg.create_dataset(f'{safe_hdf5_name(label)}__{d}',
+                                  data=track, compression='gzip')
+            cg = mg.create_group('calls')
+            cg.attrs['n_motifs'] = len(motif_result['motifs'])
+            for i, m in enumerate(motif_result['motifs']):
+                g = cg.create_group(f'm{i}')
+                for k in ('bin', 'direction', 'abs_start', 'abs_end',
+                          'width', 'ref_sequence', 'n_variants',
+                          'peak_density', 'base_order'):
+                    g.attrs[k] = m[k]
+                g.create_dataset('sensitivity_count',
+                                 data=m['sensitivity_count'])
+                g.create_dataset('sensitivity_mean_signed_delta',
+                                 data=m['sensitivity_mean_signed_delta'])
+                g.create_dataset(
+                    'contributing_variant_ids',
+                    data=[s.encode()
+                          for s in m['contributing_variant_ids']])
+            logging.info(f"  {len(motif_result['motifs'])} motif call(s) "
+                         f"written to HDF5 'motifs' group")
+
     logging.info(f"HDF5 written: {output_path}")
 
 
@@ -311,7 +361,10 @@ def write_summary_tsv(tsv_path, all_variant_results, bin_labels):
                        f'{short}_top_cluster_end',
                        f'{short}_top_cluster_sum_delta',
                        f'{short}_top_cluster_p',
-                       f'{short}_top_cluster_direction'])
+                       f'{short}_top_cluster_direction',
+                       f'{short}_top_cluster_sign_consistency',
+                       f'{short}_top_cluster_is_motif',
+                       f'{short}_top_cluster_ref_seq'])
 
     with open(tsv_path, 'w', newline='') as fout:
         writer = csv.writer(fout, delimiter='\t')
@@ -336,11 +389,43 @@ def write_summary_tsv(tsv_path, all_variant_results, bin_labels):
                     row.extend([str(top['abs_start']), str(top['abs_end']),
                                 f"{top['sum_abs_delta']:.4f}",
                                 f"{top.get('max_sum_p', 1.0):.6f}",
-                                top.get('direction', '')])
+                                top.get('direction', ''),
+                                f"{top.get('sign_consistency', 0.0):.3f}",
+                                str(int(top.get('is_motif', False))),
+                                top.get('ref_sequence', '')])
                 else:
-                    row.extend(['', '', '', '', ''])
+                    row.extend(['', '', '', '', '', '', '', ''])
             writer.writerow(row)
     logging.info(f"TSV written: {tsv_path}")
+
+
+def write_motifs_tsv(tsv_path, motif_result):
+    """One row per cross-variant motif call (the primary biological
+    deliverable). Positions emitted 0-based (HDF5-consistent) and
+    1-based (genome-browser-friendly)."""
+    logging.info(f"Writing motifs TSV: {tsv_path}")
+    header = ['motif_idx', 'bin', 'direction',
+              'abs_start_0based', 'abs_end_0based',
+              'start_1based', 'end_1based', 'width',
+              'n_variants', 'peak_density', 'ref_sequence',
+              'contributing_variant_ids']
+    with open(tsv_path, 'w', newline='') as fout:
+        writer = csv.writer(fout, delimiter='\t')
+        writer.writerow(header)
+        if motif_result is None:
+            return
+        for i, m in enumerate(motif_result['motifs']):
+            writer.writerow([
+                i, m['bin'], m['direction'],
+                m['abs_start'], m['abs_end'],
+                m['abs_start'] + 1, m['abs_end'] + 1, m['width'],
+                m['n_variants'], m['peak_density'],
+                m['ref_sequence'],
+                ','.join(m['contributing_variant_ids']),
+            ])
+    logging.info(f"Motifs TSV written: {tsv_path} "
+                 f"({0 if motif_result is None else len(motif_result['motifs'])}"
+                 f" motifs)")
 
 
 # ============================================================================
@@ -647,6 +732,35 @@ def parse_args():
                    help='Alpha for the minimum-detectable-effect track '
                         '(default: 0.05)')
 
+    # TF binding-motif layer (Phase 2 / plan §2.3)
+    p.add_argument('--reference', default=None,
+                   help='Reference FASTA — enables motif DNA extraction '
+                        '(must contain the analysis contig). Optional.')
+    p.add_argument('--motif-bins', default='TF,sub_TF',
+                   help='Comma-separated bins searched for motif clusters '
+                        '(default: TF,sub_TF)')
+    p.add_argument('--motif-direction', default='loss',
+                   choices=['loss', 'gain', 'both'],
+                   help='Footprint change direction for motif clusters '
+                        '(default: loss)')
+    p.add_argument('--motif-sign-consistency', type=float, default=0.90,
+                   help='Min fraction of same-sign positions in a motif '
+                        'cluster (default: 0.90)')
+    p.add_argument('--motif-min-width', type=int, default=5,
+                   help='Min motif-cluster width bp (default: 5)')
+    p.add_argument('--motif-max-width', type=int, default=25,
+                   help='Max motif-cluster width bp (default: 25)')
+    p.add_argument('--motif-require-variant-overlap', action='store_true',
+                   help='Require the cluster to span its causal variant '
+                        '(default: off; annotation only)')
+    p.add_argument('--motif-fdr', type=float, default=0.10,
+                   help='Cross-variant FDR gate for variants feeding the '
+                        'motif aggregation (default: 0.10)')
+    p.add_argument('--motif-density-threshold', type=int, default=2,
+                   help='Min distinct significant variants covering a '
+                        'position to call a motif (default: 2 — requires '
+                        'corroboration from independent SNVs)')
+
     # Runtime
     p.add_argument('--threads', type=int, default=None)
     p.add_argument('-v', '--verbose', action='store_true')
@@ -674,6 +788,8 @@ def main():
     os.makedirs(args.output_dir, exist_ok=True)
     args.output = os.path.join(args.output_dir, f'{args.sample_name}.h5')
     args.tsv = os.path.join(args.output_dir, f'{args.sample_name}_summary.tsv')
+    args.motifs_tsv = os.path.join(
+        args.output_dir, f'{args.sample_name}_motifs.tsv')
     args.pdf = os.path.join(args.output_dir, f'{args.sample_name}_results.pdf')
 
     # Map --nuc-range to min_nuc/max_nuc for internal use
@@ -820,6 +936,34 @@ def main():
     all_variant_results.sort(key=lambda v: v['best_cluster_p'])
 
     # ==================================================================
+    # Phase C2: TF binding-motif layer (Phase 2 / plan §2.3)
+    # ==================================================================
+    logging.info("=" * 60)
+    logging.info("PHASE C2: TF binding-motif layer")
+    logging.info("=" * 60)
+    ref_seq = load_reference_sequence(args.reference, ref_name)
+    if args.reference and ref_seq is None:
+        logging.warning("--reference given but unusable; motif clusters "
+                        "will lack DNA sequence")
+    motif_cfg = build_motif_cfg(
+        bins=[b.strip() for b in args.motif_bins.split(',') if b.strip()],
+        direction=args.motif_direction,
+        sign_consistency=args.motif_sign_consistency,
+        min_width=args.motif_min_width,
+        max_width=args.motif_max_width,
+        require_variant_overlap=args.motif_require_variant_overlap,
+        fdr=args.motif_fdr,
+        density_threshold=args.motif_density_threshold)
+    if all_variant_results:
+        annotate_variant_motifs(
+            all_variant_results, ref_seq, analysis_region, motif_cfg)
+        motif_result = aggregate_motifs(
+            all_variant_results, ref_seq, ref_name,
+            analysis_region, motif_cfg)
+    else:
+        motif_result = None
+
+    # ==================================================================
     # Phase D: Output
     # ==================================================================
     logging.info("=" * 60)
@@ -832,9 +976,10 @@ def main():
         None, all_variant_results,
         fdr_qs if all_variant_results else np.array([]),
         bin_labels, ref_length, ref_name,
-        prom_s, prom_e, analysis_region, args)
+        prom_s, prom_e, analysis_region, args, motif_result)
 
     write_summary_tsv(args.tsv, all_variant_results, bin_labels)
+    write_motifs_tsv(args.motifs_tsv, motif_result)
 
     generate_library_pdf(
         args.pdf, all_variant_results, variant_groups,
