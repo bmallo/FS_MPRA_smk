@@ -1131,6 +1131,16 @@ def _detect_clusters_from_mask(sig_mask, abs_delta, signed_delta,
 # Null Calibration — Worker
 # ============================================================================
 
+def _pool_warmup(_):
+    """Trivial task to force a ProcessPoolExecutor worker to spawn. The
+    short sleep keeps a fast worker from grabbing several tasks before
+    its peers start, so mapping n_workers of these spins up all of
+    them. Module-level so it pickles."""
+    import time as _t
+    _t.sleep(0.05)
+    return None
+
+
 def _null_worker_shared(args):
     (it_seeds, shm_info, bin_labels, nc_draw_counts,
      wt_nc_pools_ser, subsample_size, wt_occ_list,
@@ -1797,6 +1807,16 @@ def run_variant_testing_parallel(rd, wt_idx, variant_groups,
                                    analysis_region, make_shared=use_pool)
     persistent_ex = (ProcessPoolExecutor(max_workers=n_workers)
                      if use_pool else None)
+    if persistent_ex is not None:
+        # Pre-spawn all workers now so the FIRST stratum does not pay
+        # the one-time cold-pool spawn (observed ~minutes at 64 workers
+        # on the cluster vs ~seconds warm). A tiny sleep per task makes
+        # each task land on a distinct worker so all n_workers spin up.
+        # Numerically inert — no statistics touched.
+        t_warm = time.time()
+        list(persistent_ex.map(_pool_warmup, range(n_workers)))
+        logging.info(f"  Worker pool pre-warmed ({n_workers} workers, "
+                     f"{time.time() - t_warm:.1f}s)")
 
     all_results = []
     try:
