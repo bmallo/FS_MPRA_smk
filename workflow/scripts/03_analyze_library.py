@@ -619,12 +619,18 @@ def parse_args():
     p.add_argument('--random-seed', type=int, default=42)
     # Null stratification (compute lever): reuse one null across
     # variants with similar N and NC distribution.
+    # DEFAULT OFF: the WT-vs-WT sweep showed stratification is ~2x
+    # anti-conservative (NC-representative mismatch, worse at high N);
+    # stratify-OFF is exactly calibrated. Opt-in speed mode only,
+    # pending the per-member-reference fix (see redesign plan).
     p.add_argument('--null-stratify', dest='null_stratify',
-                   action='store_true', default=True,
-                   help='Reuse nulls across similar variants (default: on)')
+                   action='store_true', default=False,
+                   help='OPT-IN speed mode: reuse nulls across similar '
+                        'variants. NOT yet calibrated (~2x anti-'
+                        'conservative). Default: off.')
     p.add_argument('--no-null-stratify', dest='null_stratify',
                    action='store_false',
-                   help='Force an independent null per variant')
+                   help='Independent null per variant (default; calibrated)')
     p.add_argument('--null-strata-n-tol', type=float, default=0.10,
                    help='Max relative N difference within a stratum '
                         '(default: 0.10)')
@@ -752,6 +758,11 @@ def main():
     if args.coverage_grid:
         logging.warning("--coverage-grid is deprecated and ignored "
                         "(per-variant nulls; see docs/stage3_redesign_plan.md)")
+    if args.null_stratify:
+        logging.warning(
+            "--null-stratify is ON: an OPT-IN speed mode that is NOT yet "
+            "calibrated (~2x anti-conservative; WT-vs-WT sweep, worse at "
+            "high N). Use the default stratify-OFF for trustworthy FDR.")
 
     # ==================================================================
     # Phase C: Per-Variant Testing (per-variant nulls)

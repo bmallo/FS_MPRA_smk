@@ -64,7 +64,22 @@ run with no tuning; flags exist for exploration and sensitivity analysis.
   When adaptive is on, enforce a common *minimum* B and emit the resolution
   floor for plotting.
 
-### 1.4 Null reuse via stratification (compute lever, default on)
+### 1.4 Null reuse via stratification (compute lever — OPT-IN, NOT calibrated)
+
+> **STATUS (P1.8 sweep, array 35333322):** stratification is **~2×
+> anti-conservative** and worse at high N (NC-representative mismatch:
+> the shared null uses the stratum's representative NC, but each
+> member's observed Δ uses its own reads → a small fixed bias that
+> grows as sampling noise shrinks with N). WT-vs-WT: stratify-OFF
+> pooled n=616 → BH FP 0/616, p~Uniform (exactly calibrated);
+> stratify-ON n=1540 → P(p≤.05)=0.099, BH FP 6/1540. **Resolution:
+> default is now stratify-OFF** (exact FDR, and only ~149 testable
+> variants in production so it is affordable). Stratification is an
+> opt-in speed mode pending the fix below. **Principled fix (future,
+> opt-in):** decouple the cheap per-member exact Option-A reference
+> from the expensive shared null resampling — recompute each member's
+> `wt_ref(member_nc)` and member-NC-reweight the shared subsamples,
+> instead of using the stratum representative.
 
 - Nulls depend only on (N, NC-distribution), not on variant footprint data.
   Cluster variants into strata by N (relative tolerance) and NC-distribution
