@@ -2196,3 +2196,209 @@ def aggregate_motifs(all_variant_results, ref_seq, ref_name,
             'analysis_start': a_start,
             'analysis_length': analysis_length,
             'ref_name': ref_name}
+
+
+# ============================================================================
+# Phase 3 — protein co-occupancy dependency (plan §10 / §2.4–2.5)
+#
+# P3.2: site-pair construction. Operates ONLY on the in-memory Phase-2
+# results (all_variant_results, motif_result) + rd. Does not touch any
+# validated Phase-1/2 path. Default OFF (--enable-co-occupancy).
+# ============================================================================
+
+DEFAULT_COOCCUPANCY_CFG = {
+    'site_occupancy_frac': 0.5,    # read "occupies" a site if >= this
+                                   # fraction of site positions footprinted
+    'site_merge_overlap': 0.5,     # merge same-bin candidate intervals with
+                                   # reciprocal overlap >= this -> 1 canonical
+    'min_site_separation': 30,     # bp gap required between site1 and site2
+    'min_variant_instruments': 3,  # site1 needs >= this many independent
+                                   # disrupting SNVs to be testable
+    'motif_fdr': 0.10,             # variant gate (same as the motif layer)
+}
+
+
+def build_cooccupancy_cfg(site_occupancy_frac=0.5, site_merge_overlap=0.5,
+                          min_site_separation=30,
+                          min_variant_instruments=3, motif_fdr=0.10):
+    return {
+        'site_occupancy_frac': float(site_occupancy_frac),
+        'site_merge_overlap': float(site_merge_overlap),
+        'min_site_separation': int(min_site_separation),
+        'min_variant_instruments': int(min_variant_instruments),
+        'motif_fdr': float(motif_fdr),
+    }
+
+
+def _recip_overlap(a_s, a_e, b_s, b_e):
+    """Reciprocal overlap fraction of two inclusive intervals:
+    overlap_len / min(len_a, len_b). 0 if disjoint."""
+    ov = min(a_e, b_e) - max(a_s, b_s) + 1
+    if ov <= 0:
+        return 0.0
+    return ov / min(a_e - a_s + 1, b_e - b_s + 1)
+
+
+def _merge_bin_intervals(intervals, merge_overlap):
+    """Greedily collapse a bin's candidate intervals: sort by start, fuse
+    into a running interval while reciprocal overlap >= merge_overlap.
+    Returns list of (start, end) canonical intervals (union extents)."""
+    if not intervals:
+        return []
+    iv = sorted(intervals)
+    out = [list(iv[0])]
+    for s, e in iv[1:]:
+        cs, ce = out[-1]
+        if _recip_overlap(cs, ce, s, e) >= merge_overlap:
+            out[-1][1] = max(ce, e)
+            out[-1][0] = min(cs, s)
+        else:
+            out.append([s, e])
+    return [(s, e) for s, e in out]
+
+
+def build_canonical_sites(all_variant_results, motif_result, bin_labels,
+                          cfg):
+    """Canonical footprint sites = (bin, abs_start, abs_end). Candidate
+    intervals are pooled from the cross-variant motif calls AND every
+    FDR-significant variant's significant clusters (the decided site-2
+    set), then collapsed per bin so the many per-variant clusters over
+    one element become a single site. Returns a list of dicts with a
+    stable site_id and whether the site is also a called motif.
+    """
+    fdr = cfg['motif_fdr']
+    by_bin = {b: [] for b in bin_labels}
+    motif_intervals = set()
+    if motif_result is not None:
+        for m in motif_result['motifs']:
+            by_bin.setdefault(m['bin'], []).append(
+                (m['abs_start'], m['abs_end']))
+            motif_intervals.add((m['bin'], m['abs_start'], m['abs_end']))
+    for vr in all_variant_results:
+        if vr.get('variant_fdr_q', 1.0) >= fdr:
+            continue
+        for label in bin_labels:
+            lr = vr.get(label)
+            if not isinstance(lr, dict):
+                continue
+            for c in lr.get('significant_clusters', []):
+                by_bin.setdefault(label, []).append(
+                    (c['abs_start'], c['abs_end']))
+
+    sites = []
+    for label in bin_labels:
+        for (s, e) in _merge_bin_intervals(by_bin.get(label, []),
+                                           cfg['site_merge_overlap']):
+            is_motif = any(
+                mb == label and _recip_overlap(s, e, ms, me) > 0
+                for (mb, ms, me) in motif_intervals)
+            sites.append({
+                'site_id': f"{label}:{s}-{e}",
+                'bin': label, 'abs_start': int(s), 'abs_end': int(e),
+                'is_motif_site': bool(is_motif),
+            })
+    return sites
+
+
+def _site_columns(site, analysis_start, analysis_length):
+    """Coverage-matrix column indices for a site (abs ref coords ->
+    analysis-window columns), clipped to the window."""
+    c0 = max(0, site['abs_start'] - analysis_start)
+    c1 = min(analysis_length - 1, site['abs_end'] - analysis_start)
+    if c1 < c0:
+        return np.empty(0, dtype=np.int64)
+    return np.arange(c0, c1 + 1, dtype=np.int64)
+
+
+def read_site_occupied(rd, site, read_idx, occ_frac):
+    """Per-read binary state at a site: True if the read's footprint in
+    the site's bin covers >= occ_frac of the site's positions. Returns a
+    bool array aligned to read_idx."""
+    cols = _site_columns(site, rd.analysis_start, rd.analysis_length)
+    read_idx = np.asarray(read_idx)
+    if cols.size == 0 or read_idx.size == 0:
+        return np.zeros(read_idx.size, dtype=bool)
+    sub = rd.coverage_matrices[site['bin']][np.ix_(read_idx, cols)]
+    return sub.mean(axis=1) >= occ_frac
+
+
+def assign_variant_site1(vr, sites, bin_labels, cfg):
+    """The site this variant disrupts: among canonical sites that
+    contain the causal SNV and overlap one of the variant's is_motif
+    significant clusters, pick the one with the largest such cluster
+    (Σ|Δ|). Returns the site dict or None (variant not a usable
+    instrument)."""
+    if vr.get('variant_fdr_q', 1.0) >= cfg['motif_fdr']:
+        return None
+    vp = vr.get('variant_pos0')
+    if vp is None:
+        return None
+    best = None
+    best_sum = -1.0
+    for label in bin_labels:
+        lr = vr.get(label)
+        if not isinstance(lr, dict):
+            continue
+        for c in lr.get('significant_clusters', []):
+            if not c.get('is_motif'):
+                continue
+            for site in sites:
+                if site['bin'] != label:
+                    continue
+                if not (site['abs_start'] <= vp <= site['abs_end']):
+                    continue
+                if _recip_overlap(site['abs_start'], site['abs_end'],
+                                  c['abs_start'], c['abs_end']) <= 0:
+                    continue
+                if c['sum_abs_delta'] > best_sum:
+                    best_sum = c['sum_abs_delta']
+                    best = site
+    return best
+
+
+def build_site_pairs(all_variant_results, motif_result, rd, bin_labels,
+                     cfg):
+    """Assemble co-occupancy testing units (P3.2 output):
+
+      sites              : canonical sites (build_canonical_sites)
+      site1_instruments  : {site_id: [variant_id, ...]} — independent
+                           SNVs that disrupt that site (the "instruments")
+      pairs              : [(site1_id, site2_id), ...] for every site1
+                           with >= min_variant_instruments, paired with
+                           each canonical site2 that is >= min_site_
+                           separation bp away (the decided site-2 set)
+
+    No statistics here — just the structure P3.3 will test.
+    """
+    sites = build_canonical_sites(all_variant_results, motif_result,
+                                  bin_labels, cfg)
+    by_id = {s['site_id']: s for s in sites}
+    instruments = defaultdict(list)
+    for vr in all_variant_results:
+        s1 = assign_variant_site1(vr, sites, bin_labels, cfg)
+        if s1 is not None:
+            instruments[s1['site_id']].append(vr['variant_id'])
+
+    sep = cfg['min_site_separation']
+    pairs = []
+    for s1_id, vids in instruments.items():
+        if len(vids) < cfg['min_variant_instruments']:
+            continue
+        s1 = by_id[s1_id]
+        for s2 in sites:
+            if s2['site_id'] == s1_id:
+                continue
+            gap = max(s1['abs_start'] - s2['abs_end'],
+                      s2['abs_start'] - s1['abs_end'])
+            if gap < sep:           # overlapping/too close -> not distal
+                continue
+            pairs.append((s1_id, s2['site_id']))
+
+    logging.info(
+        f"  Co-occupancy P3.2: {len(sites)} canonical sites, "
+        f"{sum(1 for v in instruments.values() if len(v) >= cfg['min_variant_instruments'])}"
+        f" testable site1 (>= {cfg['min_variant_instruments']} instruments), "
+        f"{len(pairs)} (site1,site2) pairs")
+    return {'sites': sites, 'sites_by_id': by_id,
+            'site1_instruments': dict(instruments),
+            'pairs': pairs, 'cfg': cfg}
