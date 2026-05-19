@@ -116,6 +116,51 @@ are*. Terms:
   validated FDR means the motif layer inherits Phase 1's exact
   error control — it never invents calls the statistics don't support.
 
+## The protein co-occupancy layer (optional, Phase 3)
+
+This asks a deeper question: when a mutation disrupts a protein at one
+site, does a *different* protein at a **distant** site also change —
+through a real cooperative dependency, not coincidence? Terms:
+
+- **Site 1**: a motif (from the layer above) that a variant disrupts.
+- **Site 2**: another footprint site some distance away.
+- **O1, O2**: per molecule, is site 1 / site 2 footprinted (1/0).
+- **WT channel** `P(O2|O1)`: in unmutated reads, how often site 2 is
+  occupied given site 1 is (or isn't). This is the *baseline* coupling
+  that exists with no mutation.
+- **Instruments**: the many *independent* SNVs that each disrupt
+  site 1 — different mutations, same functional perturbation.
+- **Excess**: how far a variant's site-2 occupancy falls *beyond* what
+  the WT channel predicts from its site-1 loss. Zero excess = site 2
+  only reacted through the normal site-1 coupling; non-zero = something
+  extra (candidate cooperativity).
+
+How a dependency is called:
+1. For each variant disrupting site 1, measure the site-2 excess vs a
+   **conditional-resampling null** (draw site-2 from the WT channel
+   given that variant's site-1 pattern; the WT reads are *bootstrapped*
+   so the null carries the WT-channel's own uncertainty — the Phase-1
+   "plug-in nulls are anti-conservative" lesson).
+2. **Aggregate across instruments** (the primary evidence): a real
+   dependency shows a *consistent, same-direction* excess across many
+   unrelated SNVs. The pair statistic uses a **joint null** (all
+   instruments share the same bootstrapped WT channel, so their
+   correlation is honestly modeled). BH across pairs.
+3. **Call gate**: significant by FDR **and** ≥70% of independent
+   instruments agree on direction (a significant average alone isn't
+   enough — cooperativity means independent mutations *agree*).
+4. **§2.5 control**: re-test on reads that carry **no competing
+   second mutation near site 2**; a call survives this only if it
+   wasn't just a contaminating double-mutant. A call that survives is
+   `validated`.
+5. **Power/MDE readout** (`mde`, `underpowered`): footprints are
+   sparse, so power is limited; a non-call may mean "no *detectable*
+   dependency at this depth," not "no dependency." Always read this.
+
+Calibration: a WT-vs-WT negative control (disjoint pseudo-instruments)
+is run per dataset; on the LDLR data it gave **0 false dependencies
+in 930 pairs (exact FDR)**. Default OFF; trustworthy but conservative.
+
 ## What was fixed vs the original pipeline
 
 The original test was ~93%/55% false-positive under a no-effect

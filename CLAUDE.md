@@ -78,7 +78,8 @@ python extras/fs_mpra_browser.py --h5 results.h5 --port 8050
 Raw Fiber-seq BAM
     -> 01_filter_reads.py    -> {sample}.plasmid.bam  (adds nc, bn tags)
     -> 02_call_variants.py   -> {sample}.tagged.bam   (adds PV, VC, PR, BK, CS tags)
-    -> 03_analyze_library.py -> {sample}.h5 + _summary.tsv + _motifs.tsv + .pdf
+    -> 03_analyze_library.py -> {sample}.h5 + _summary.tsv + _motifs.tsv
+                                + _cooccupancy.tsv + .pdf
 ```
 
 Stage 3 also runs the **TF binding-motif layer** (Phase 2): with an
@@ -86,6 +87,17 @@ optional `--reference` FASTA it annotates significant clusters with
 DNA + sign-consistency + causal-variant distance, then aggregates
 across independent SNVs into motif calls (`motifs` HDF5 group +
 `_motifs.tsv`). Gated on the calibrated cross-variant FDR.
+
+Optionally (`--enable-co-occupancy`, default off) Stage 3 runs the
+**protein co-occupancy module** (Phase 3 / §2.4–2.5): for each
+site 1 = a disrupted motif, test whether distal site-2 footprint
+changes exceed the WT `P(O2|O1)` channel across the many independent
+SNVs disrupting site 1, with a directional-consistency call gate and
+the §2.5 secondary-mutation control; `cooccupancy` HDF5 group +
+`_cooccupancy.tsv`. WT-vs-WT calibrated (P3.6, exact FDR) but
+conservative power on sparse data — read the `underpowered`/`mde`
+columns (a null ≠ no dependency). Calibrate per dataset with
+`tools/cooccupancy_calibration.sbatch` before trusting calls.
 
 ### BAM tags that flow between stages
 

@@ -2591,10 +2591,16 @@ def _cooccupancy_aggregate_from_states(inst_states, wt_cond, rng,
     T_obs = float((w_k * excess_k).sum() / W)
     null_T /= W
     m = float(null_T.mean())
+    sd = float(null_T.std())
     p_two = float((1 + np.count_nonzero(
         np.abs(null_T - m) >= abs(T_obs - m))) / (B + 1))
     # one-sided for the primary hypothesis (site-2 LOSS beyond channel)
     p_loss = float((1 + np.count_nonzero(null_T <= T_obs)) / (B + 1))
+    # Power/MDE readout (P3.6 lesson — sparse footprints => modest
+    # power; let a null be read as "no DETECTABLE dependency at this
+    # power" vs "underpowered"). Smallest |excess| significant at
+    # ~alpha=0.05 two-sided given THIS pair's joint-null spread.
+    mde = float(1.959963984540054 * sd)
     n_consistent = int(np.count_nonzero(
         np.sign(excess_k) == np.sign(T_obs))) if T_obs != 0 else 0
     return {
@@ -2605,7 +2611,9 @@ def _cooccupancy_aggregate_from_states(inst_states, wt_cond, rng,
         'direction': 'site2_loss' if T_obs < 0 else 'site2_gain',
         'frac_instruments_consistent': n_consistent / K,
         'null_mean': m,
-        'null_std': float(null_T.std()),
+        'null_std': sd,
+        'mde': mde,
+        'underpowered': bool(abs(T_obs) < mde),
         'per_instrument': per_inst,
     }
 

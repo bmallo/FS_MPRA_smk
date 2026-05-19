@@ -42,6 +42,7 @@ from common import (
     run_variant_testing_parallel,
     load_reference_sequence, build_motif_cfg,
     annotate_variant_motifs, aggregate_motifs,
+    build_cooccupancy_cfg, build_site_pairs, run_cooccupancy,
 )
 
 
@@ -53,7 +54,7 @@ def write_library_hdf5(output_path, parse_stats, ground_truth_nc,
                        null_results_by_depth, all_variant_results,
                        variant_fdr, bin_labels, ref_length, ref_name,
                        promoter_start, promoter_end, analysis_region, args,
-                       motif_result=None):
+                       motif_result=None, cooc_results=None):
     logging.info(f"Writing HDF5: {output_path}")
     a_start, a_end = analysis_region
     n_var = len(all_variant_results)
@@ -340,6 +341,39 @@ def write_library_hdf5(output_path, parse_stats, ground_truth_nc,
             logging.info(f"  {len(motif_result['motifs'])} motif call(s) "
                          f"written to HDF5 'motifs' group")
 
+        # ── Co-occupancy (Phase 3 / §2.4–2.5) ─────────────────────
+        if cooc_results is not None:
+            cg = f.create_group('cooccupancy')
+            cg.attrs['n_pairs'] = len(cooc_results)
+            scalar_keys = [
+                'site1_id', 'site2_id', 'site1_bin', 'site2_bin',
+                'n_instruments', 'weighted_mean_excess', 'p_two_sided',
+                'p_site2_loss', 'direction', 'frac_instruments_consistent',
+                'null_mean', 'null_std', 'mde', 'underpowered',
+                'wt_p2_given_1', 'wt_p2_given_0', 'fdr_q', 'is_call',
+                'validated_call', 'secondary_artifact']
+            for i, r in enumerate(cooc_results):
+                pg = cg.create_group(f'pair{i}')
+                for k in scalar_keys:
+                    if k in r and r[k] is not None:
+                        pg.attrs[k] = r[k]
+                pg.attrs['site1_abs'] = list(r['site1_abs'])
+                pg.attrs['site2_abs'] = list(r['site2_abs'])
+                pg.create_dataset(
+                    'instrument_variant_ids',
+                    data=[s.encode()
+                          for s in r['instrument_variant_ids']])
+                ss = r.get('secondary_screen')
+                if ss is not None:
+                    for k, v in ss.items():
+                        if v is not None:
+                            pg.attrs[f'sec_{k}'] = v
+            n_val = sum(1 for r in cooc_results
+                        if r.get('validated_call'))
+            logging.info(f"  {len(cooc_results)} co-occupancy pair(s), "
+                         f"{n_val} validated, written to HDF5 "
+                         f"'cooccupancy' group")
+
     logging.info(f"HDF5 written: {output_path}")
 
 
@@ -426,6 +460,53 @@ def write_motifs_tsv(tsv_path, motif_result):
     logging.info(f"Motifs TSV written: {tsv_path} "
                  f"({0 if motif_result is None else len(motif_result['motifs'])}"
                  f" motifs)")
+
+
+def write_cooccupancy_tsv(tsv_path, cooc_results):
+    """One row per tested (site1,site2) co-occupancy pair. validated_call
+    = the trustworthy deliverable (passed BH+consistency AND survived
+    the §2.5 secondary-mutation screen). underpowered flags pairs whose
+    |excess| < the per-pair MDE (no DETECTABLE dependency at this power
+    vs a true null — the P3.6 sparse-footprint caveat)."""
+    logging.info(f"Writing co-occupancy TSV: {tsv_path}")
+    header = ['site1_id', 'site2_id', 'site1_bin', 'site2_bin',
+              'n_instruments', 'weighted_mean_excess', 'direction',
+              'p_two_sided', 'fdr_q', 'frac_instruments_consistent',
+              'mde', 'underpowered', 'is_call', 'validated_call',
+              'secondary_artifact', 'secondary_max_freq',
+              'wt_p2_given_1', 'wt_p2_given_0',
+              'instrument_variant_ids']
+    with open(tsv_path, 'w', newline='') as fout:
+        writer = csv.writer(fout, delimiter='\t')
+        writer.writerow(header)
+        if not cooc_results:
+            return
+        for r in cooc_results:
+            ss = r.get('secondary_screen') or {}
+            writer.writerow([
+                r['site1_id'], r['site2_id'],
+                r['site1_bin'], r['site2_bin'],
+                r['n_instruments'],
+                f"{r['weighted_mean_excess']:.6f}",
+                r['direction'],
+                f"{r['p_two_sided']:.6f}",
+                f"{r.get('fdr_q', 1.0):.6f}",
+                f"{r['frac_instruments_consistent']:.3f}",
+                f"{r['mde']:.6f}",
+                int(r['underpowered']),
+                int(r.get('is_call', False)),
+                int(r.get('validated_call', False)),
+                int(r.get('secondary_artifact', False)),
+                (f"{ss.get('max_secondary_freq'):.4f}"
+                 if ss.get('max_secondary_freq') is not None else ''),
+                f"{r['wt_p2_given_1']:.4f}",
+                f"{r['wt_p2_given_0']:.4f}",
+                ','.join(r['instrument_variant_ids']),
+            ])
+    n = len(cooc_results)
+    nv = sum(1 for r in cooc_results if r.get('validated_call'))
+    logging.info(f"Co-occupancy TSV written: {tsv_path} "
+                 f"({n} pairs, {nv} validated calls)")
 
 
 # ============================================================================
@@ -761,6 +842,40 @@ def parse_args():
                         'position to call a motif (default: 2 — requires '
                         'corroboration from independent SNVs)')
 
+    # Protein co-occupancy dependency (Phase 3 / §2.4–2.5).
+    # OFF by default; calibrated (P3.6 WT-vs-WT PASS) but conservative
+    # power on sparse-footprint data — read `underpowered` / `mde`.
+    p.add_argument('--enable-co-occupancy', action='store_true',
+                   help='Run the protein co-occupancy module '
+                        '(default: off)')
+    p.add_argument('--cooccupancy-n-iter', type=int, default=10000,
+                   help='Co-occupancy bootstrap iterations (default: 10000)')
+    p.add_argument('--cooccupancy-site-occupancy-frac', type=float,
+                   default=0.5, help='Read occupies a site if >= this '
+                   'fraction of its positions are footprinted (0.5)')
+    p.add_argument('--cooccupancy-site-merge-overlap', type=float,
+                   default=0.5, help='Merge same-bin candidate site '
+                   'intervals with reciprocal overlap >= this (0.5)')
+    p.add_argument('--cooccupancy-min-site-separation', type=int,
+                   default=30, help='Min bp gap between site1 and site2 '
+                   '(0.5)')
+    p.add_argument('--cooccupancy-min-variant-instruments', type=int,
+                   default=3, help='Min independent disrupting SNVs for '
+                   'a site1 to be testable (default: 3)')
+    p.add_argument('--cooccupancy-min-stratum', type=int, default=25,
+                   help='Min WT reads in each O1 stratum (default: 25)')
+    p.add_argument('--cooccupancy-call-q', type=float, default=0.10,
+                   help='BH q threshold for a co-occupancy call (0.10)')
+    p.add_argument('--cooccupancy-min-consistency', type=float,
+                   default=0.70, help='Min fraction of instruments '
+                   'agreeing in sign to CALL a dependency (0.70)')
+    p.add_argument('--no-secondary-mutation-screen', action='store_true',
+                   help='Disable the §2.5 secondary-mutation control '
+                        '(NOT recommended)')
+    p.add_argument('--cooccupancy-secondary-window', type=int,
+                   default=10, help='bp pad around site2 for "local" '
+                   'secondary raw mutations (default: 10)')
+
     # Runtime
     p.add_argument('--threads', type=int, default=None)
     p.add_argument('-v', '--verbose', action='store_true')
@@ -790,6 +905,8 @@ def main():
     args.tsv = os.path.join(args.output_dir, f'{args.sample_name}_summary.tsv')
     args.motifs_tsv = os.path.join(
         args.output_dir, f'{args.sample_name}_motifs.tsv')
+    args.cooc_tsv = os.path.join(
+        args.output_dir, f'{args.sample_name}_cooccupancy.tsv')
     args.pdf = os.path.join(args.output_dir, f'{args.sample_name}_results.pdf')
 
     # Map --nuc-range to min_nuc/max_nuc for internal use
@@ -964,6 +1081,34 @@ def main():
         motif_result = None
 
     # ==================================================================
+    # Phase C3: protein co-occupancy dependency (Phase 3 / §2.4–2.5)
+    # ==================================================================
+    cooc_results = None
+    if args.enable_co_occupancy and all_variant_results \
+            and motif_result is not None:
+        logging.info("=" * 60)
+        logging.info("PHASE C3: protein co-occupancy dependency")
+        logging.info("=" * 60)
+        cooc_cfg = build_cooccupancy_cfg(
+            site_occupancy_frac=args.cooccupancy_site_occupancy_frac,
+            site_merge_overlap=args.cooccupancy_site_merge_overlap,
+            min_site_separation=args.cooccupancy_min_site_separation,
+            min_variant_instruments=args.cooccupancy_min_variant_instruments,
+            motif_fdr=args.motif_fdr,
+            min_stratum=args.cooccupancy_min_stratum,
+            call_q=args.cooccupancy_call_q,
+            min_consistency=args.cooccupancy_min_consistency,
+            secondary_screen=not args.no_secondary_mutation_screen,
+            secondary_window=args.cooccupancy_secondary_window)
+        site_pairs = build_site_pairs(
+            all_variant_results, motif_result, rd, bin_labels, cooc_cfg)
+        cooc_results = run_cooccupancy(
+            rd, site_pairs, args.cooccupancy_n_iter, args.random_seed)
+    elif args.enable_co_occupancy:
+        logging.warning("--enable-co-occupancy set but no motif "
+                        "result / variants; skipping co-occupancy")
+
+    # ==================================================================
     # Phase D: Output
     # ==================================================================
     logging.info("=" * 60)
@@ -976,10 +1121,12 @@ def main():
         None, all_variant_results,
         fdr_qs if all_variant_results else np.array([]),
         bin_labels, ref_length, ref_name,
-        prom_s, prom_e, analysis_region, args, motif_result)
+        prom_s, prom_e, analysis_region, args, motif_result,
+        cooc_results)
 
     write_summary_tsv(args.tsv, all_variant_results, bin_labels)
     write_motifs_tsv(args.motifs_tsv, motif_result)
+    write_cooccupancy_tsv(args.cooc_tsv, cooc_results)
 
     generate_library_pdf(
         args.pdf, all_variant_results, variant_groups,

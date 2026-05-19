@@ -109,6 +109,30 @@ def analyze_library_extra(wc):
     args.append(f"--motif-fdr {config.get('motif_fdr', 0.10)}")
     args.append("--motif-density-threshold "
                 f"{config.get('motif_density_threshold', 2)}")
+    # Protein co-occupancy dependency (Phase 3). Off unless enabled.
+    if config.get("enable_co_occupancy", False):
+        args.append("--enable-co-occupancy")
+        args.append("--cooccupancy-n-iter "
+                    f"{config.get('cooccupancy_n_iter', 10000)}")
+        args.append("--cooccupancy-site-occupancy-frac "
+                    f"{config.get('cooccupancy_site_occupancy_frac', 0.5)}")
+        args.append("--cooccupancy-site-merge-overlap "
+                    f"{config.get('cooccupancy_site_merge_overlap', 0.5)}")
+        args.append("--cooccupancy-min-site-separation "
+                    f"{config.get('cooccupancy_min_site_separation', 30)}")
+        args.append(
+            "--cooccupancy-min-variant-instruments "
+            f"{config.get('cooccupancy_min_variant_instruments', 3)}")
+        args.append("--cooccupancy-min-stratum "
+                    f"{config.get('cooccupancy_min_stratum', 25)}")
+        args.append("--cooccupancy-call-q "
+                    f"{config.get('cooccupancy_call_q', 0.10)}")
+        args.append("--cooccupancy-min-consistency "
+                    f"{config.get('cooccupancy_min_consistency', 0.70)}")
+        if not config.get("cooccupancy_secondary_screen", True):
+            args.append("--no-secondary-mutation-screen")
+        args.append("--cooccupancy-secondary-window "
+                    f"{config.get('cooccupancy_secondary_window', 10)}")
     t = config.get("threads", 8)
     args.append(f"--threads {t}")
     return " ".join(args)
@@ -179,6 +203,7 @@ rule analyze_library:
         h5="results/{sample}/analysis/{sample}.h5",
         tsv="results/{sample}/analysis/{sample}_summary.tsv",
         motifs="results/{sample}/analysis/{sample}_motifs.tsv",
+        cooccupancy="results/{sample}/analysis/{sample}_cooccupancy.tsv",
         pdf="results/{sample}/analysis/{sample}_results.pdf",
     params:
         script=os.path.join(SCRIPTS, "03_analyze_library.py"),

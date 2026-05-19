@@ -304,10 +304,15 @@ All exposed as CLI flag + `config.yaml` key + Snakefile passthrough.
    (0/31 SNV ref bases mismatched); 0 calls on the 33-variant/200-iter
    dev set (correct — gated on calibrated cross-variant FDR; needs
    production data for real motif calls).
-4. **Phase 3 — IN PROGRESS.** Co-occupancy module + secondary-mutation
-   control (§2.4–2.5). Full design in §10. §4(2) resolved: parse `PR`
-   in `parse_bam`. Phasing P3.1–P3.7; calibration gate (P3.6) before
-   any biological claim.
+4. **Phase 3 — DONE (P3.1–P3.7).** Co-occupancy module + §2.5
+   secondary-mutation control (§2.4–2.5). §4(2) resolved: parse `PR`
+   in `parse_bam`. Full design in §10. P3.6 WT-vs-WT calibration
+   PASSED on real LDLR data (0/930 false calls, exact FDR). P3.7
+   integrated into Stage 3 behind `--enable-co-occupancy` (default
+   off) + knobs/config/Snakefile, `cooccupancy` HDF5 group +
+   `_cooccupancy.tsv`, power/MDE readout, docs. Remaining: production
+   co-occupancy biological run; P3.5b (lighter BK/CS readout, #41);
+   P4.1 (motif→TF, #40).
 
 ---
 

@@ -68,4 +68,20 @@ motif_require_variant_overlap: false  # require cluster to span its SNV
 motif_fdr: 0.10                   # variant FDR gate feeding aggregation
 motif_density_threshold: 2        # >= N distinct variants -> motif call
 
+# Protein co-occupancy dependency (Phase 3 / plan §2.4–2.5).
+# OFF by default. Calibrated (P3.6 WT-vs-WT PASS, exact FDR) but
+# conservative power on sparse-footprint data — interpret with the
+# emitted `underpowered`/`mde` columns. Requires the motif layer.
+enable_co_occupancy: false
+cooccupancy_n_iter: 10000              # bootstrap iterations
+cooccupancy_site_occupancy_frac: 0.5   # read occupies a site if >= frac
+cooccupancy_site_merge_overlap: 0.5    # merge same-bin site intervals
+cooccupancy_min_site_separation: 30    # min bp gap site1<->site2
+cooccupancy_min_variant_instruments: 3 # min independent SNVs per site1
+cooccupancy_min_stratum: 25            # min WT reads per O1 stratum
+cooccupancy_call_q: 0.10               # BH q to call a dependency
+cooccupancy_min_consistency: 0.70      # sign-agreement frac to call
+cooccupancy_secondary_screen: true     # §2.5 secondary-mutation control
+cooccupancy_secondary_window: 10       # bp pad around site2 for it
+
 threads: 8
