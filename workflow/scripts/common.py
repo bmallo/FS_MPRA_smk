@@ -2402,3 +2402,114 @@ def build_site_pairs(all_variant_results, motif_result, rd, bin_labels,
     return {'sites': sites, 'sites_by_id': by_id,
             'site1_instruments': dict(instruments),
             'pairs': pairs, 'cfg': cfg}
+
+
+# ---- P3.3: WT conditional model + per-variant excess test --------------
+#
+# Statistics are factored into pure array-level helpers (unit-testable on
+# synthetic ground truth) with thin rd-facing wrappers. Null = conditional
+# resampling with the WT reads BOOTSTRAPPED each iteration so it carries
+# the WT-conditional's own estimation uncertainty (Phase-1 lesson: plug-in
+# nulls are anti-conservative). The WT-conditional bootstrap is computed
+# ONCE per site-pair and reused across all that site-1's instruments.
+
+def _wt_conditional_from_states(o1w, o2w, n_iter, rng, min_stratum):
+    """WT P(O2|O1) point estimates + a bootstrap distribution.
+
+    The WT joint is fully summarized by the 4 cell counts
+    (O1,O2)∈{0,1}², so a WT read-resample is exactly a multinomial
+    draw over those 4 cells — O(n_iter), not O(n_iter·W), and
+    identical in distribution to resampling reads. Returns None if
+    either O1 stratum has < min_stratum WT reads (pair untestable).
+    """
+    o1w = np.asarray(o1w, dtype=bool)
+    o2w = np.asarray(o2w, dtype=bool)
+    N = o1w.size
+    c11 = int(np.count_nonzero(o1w & o2w))
+    c10 = int(np.count_nonzero(o1w & ~o2w))
+    c01 = int(np.count_nonzero(~o1w & o2w))
+    c00 = int(np.count_nonzero(~o1w & ~o2w))
+    n1 = c10 + c11          # WT reads with O1=1
+    n0 = c00 + c01          # WT reads with O1=0
+    if n1 < min_stratum or n0 < min_stratum or N == 0:
+        return None
+    p1 = c11 / n1
+    p0 = c01 / n0
+    probs = np.array([c00, c01, c10, c11], dtype=np.float64) / N
+    m = rng.multinomial(N, probs, size=n_iter)        # (B,4): 00,01,10,11
+    m00, m01, m10, m11 = m[:, 0], m[:, 1], m[:, 2], m[:, 3]
+    d1 = m10 + m11
+    d0 = m00 + m01
+    overall = (m01 + m11) / N                          # fallback if a
+    p1_boot = np.where(d1 > 0, m11 / np.maximum(d1, 1), overall)
+    p0_boot = np.where(d0 > 0, m01 / np.maximum(d0, 1), overall)
+    return {'p1': p1, 'p0': p0, 'p1_boot': p1_boot,
+            'p0_boot': p0_boot, 'n_w1': n1, 'n_w0': n0,
+            'counts': (c00, c01, c10, c11)}
+
+
+def _cooccupancy_test_from_states(o1v, o2v, wt_cond, rng,
+                                  chunk=2_000_000):
+    """Per-variant excess test given the variant's per-read site states
+    and a precomputed WT-conditional bootstrap (reused across the
+    site-1's instruments). H0: site 2 follows WT's P(O2|O1) given the
+    variant's realized O1. Two-sided empirical p; signed excess vs the
+    parametric prediction as the effect-size readout."""
+    o1v = np.asarray(o1v, dtype=bool)
+    o2v = np.asarray(o2v, dtype=bool)
+    n_v = o1v.size
+    if n_v == 0:
+        return None
+    p1, p0 = wt_cond['p1'], wt_cond['p0']
+    p1b, p0b = wt_cond['p1_boot'], wt_cond['p0_boot']
+    B = p1b.size
+    obs = float(o2v.mean())
+    # Parametric prediction (effect-size readout): expected site-2
+    # occupancy if site 2 only responds via the WT O2|O1 channel.
+    predicted = float(np.where(o1v, p1, p0).mean())
+
+    # Null: per bootstrap b, draw each variant read's O2 ~
+    # Bernoulli(p_{O1v,i}^*(b)); statistic = mean(O2). Chunk over B so
+    # the (B × n_v) draw stays bounded in RAM.
+    null_stats = np.empty(B, dtype=np.float64)
+    step = max(1, chunk // max(n_v, 1))
+    for s in range(0, B, step):
+        e = min(B, s + step)
+        P = np.where(o1v[None, :],
+                     p1b[s:e, None], p0b[s:e, None])      # (k, n_v)
+        U = rng.random((e - s, n_v))
+        null_stats[s:e] = (U < P).mean(axis=1)
+
+    m = float(null_stats.mean())
+    p_two = float((1 + np.count_nonzero(
+        np.abs(null_stats - m) >= abs(obs - m))) / (B + 1))
+    excess = obs - predicted
+    return {
+        'n_var': int(n_v),
+        'obs_site2_occ': obs,
+        'predicted_site2_occ': predicted,
+        'excess': float(excess),
+        'p_two_sided': p_two,
+        'direction': 'site2_loss' if excess < 0 else 'site2_gain',
+        'null_mean': m,
+        'null_std': float(null_stats.std()),
+    }
+
+
+def wt_conditional_bootstrap(rd, site1, site2, wt_idx, occ_frac,
+                             n_iter, rng, min_stratum):
+    """rd-facing: extract WT per-read site states then build the
+    reusable WT-conditional bootstrap. None -> pair untestable."""
+    o1w = read_site_occupied(rd, site1, wt_idx, occ_frac)
+    o2w = read_site_occupied(rd, site2, wt_idx, occ_frac)
+    return _wt_conditional_from_states(o1w, o2w, n_iter, rng,
+                                       min_stratum)
+
+
+def cooccupancy_variant_test(rd, site1, site2, var_idx, occ_frac,
+                             wt_cond, rng):
+    """rd-facing per-variant test (uses the pair's precomputed
+    wt_cond)."""
+    o1v = read_site_occupied(rd, site1, var_idx, occ_frac)
+    o2v = read_site_occupied(rd, site2, var_idx, occ_frac)
+    return _cooccupancy_test_from_states(o1v, o2v, wt_cond, rng)

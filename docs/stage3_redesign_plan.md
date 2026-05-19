@@ -374,19 +374,30 @@ duplicates Stage 2 and can diverge). Store per-read raw-call info in
 **Statistical core (must stay sound — empirical, FDR-controlled, like
 Phase 1):**
 - *Sites.* Site 1 = a Phase-2 significant motif cluster overlapping the
-  causal variant. Site 2 candidates = the other motif intervals (and,
-  optionally, a binned promoter scan), each ≥ a min distance from
-  site 1.
+  causal variant. **Site 2 candidates (DECIDED) = the cross-variant
+  motif calls ∪ per-variant FDR-significant footprint clusters**, each
+  ≥ a min distance from site 1. Data-driven middle ground: site 2 need
+  not itself be a called motif (more sensitive) but stays anchored to
+  detected signal (bounded multiple-testing, BH-controlled). A binned
+  promoter scan is a deferred opt-in knob, not v1.
 - *Per-read joint state.* From the un-collapsed footprint matrix, the
   binary footprint state at site 1 and site 2 per molecule (occupied =
   footprint covers ≥X% of the site).
 - *WT dependency baseline.* From WT reads, P(fp@2 | fp@1) vs
   P(fp@2 | ¬fp@1) — the cooperative structure that exists with no
   mutation. Empirical CI by WT resampling.
-- *Variant test.* For a variant that loses site 1: is the observed
-  site-2 change **larger than** what propagating its site-1 loss
-  through the WT conditional model predicts? Excess = cooperative;
-  within prediction = explained by pre-existing structure.
+- *Variant test (DECIDED: conditional resampling).* Hold the variant's
+  realized per-read site-1 state `O1`; under H0 draw each read's site-2
+  state from WT's empirical `P(O2|O1)`. Observed `mean(O2_var)` vs this
+  null = excess test. **The null bootstraps the WT reads each iteration**
+  so it carries the WT-conditional's own estimation uncertainty (not
+  just the Bernoulli draw) — the Phase-1 lesson that plug-in/fixed-
+  reference nulls are anti-conservative. The WT-conditional bootstrap
+  is computed **once per site-pair and reused across all that site-1's
+  instruments** (Phase-1 "null once per stratum" pattern; also what
+  P3.4 consumes). Two-sided empirical p; signed excess + the parametric
+  `p2|1·P(O1)+p2|0·P(¬O1)` prediction emitted as the effect-size
+  readout. Untestable if either WT `O1` stratum < a min count.
 - *Library aggregation (primary, strongest).* Across the many
   *independent* SNVs that disrupt site 1, is the site-2 shift
   consistent and directional? Mirrors the Phase-2 multiple-instrument
