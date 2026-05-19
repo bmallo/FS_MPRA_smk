@@ -2774,3 +2774,88 @@ def run_cooccupancy(rd, site_pairs, n_iter, random_seed):
         f"screen)={n_valid}; secondary-mutation artifacts="
         f"{n_artifact}")
     return results
+
+
+# ---- P3.6: WT-vs-WT calibration gate (BLOCKING) ----------------------
+#
+# Certify on REAL data + REAL footprint structure (spatial
+# autocorrelation / heterogeneity a synthetic Bernoulli model misses —
+# exactly why Phase-1 needed WT-vs-WT) that the co-occupancy machinery
+# produces ~0 false dependencies when none exist. Pseudo-instruments are
+# random WT subsets that are DISJOINT from the WT pool estimating the
+# conditional (overlap = the Phase-1 anti-conservative trap). Under H0
+# both follow the same WT P(O2|O1) -> excess ~ 0 -> p ~ Uniform.
+
+def cooccupancy_wt_vs_wt(rd, sites, cfg, n_instruments, instr_n,
+                         n_iter, seed, max_pairs=None,
+                         inject_dependency=0.0):
+    """Run the co-occupancy aggregate on WT-only pseudo-instruments
+    (disjoint from the conditional WT pool) across many real
+    (site1,site2) geometries. Returns one record per testable pair with
+    p_two_sided / weighted_mean_excess / frac_consistent. BH across
+    records is applied by the caller. inject_dependency>0 is a positive
+    control: it pushes pseudo-instrument O2 toward 0 when site-1 is lost
+    (a fake cooperative loss) to prove the gate has teeth.
+    """
+    wt = np.asarray(rd.wt_indices)
+    occ = cfg['site_occupancy_frac']
+    sep = cfg['min_site_separation']
+    need = n_instruments * instr_n + cfg['min_stratum'] * 4
+    rng = np.random.default_rng(seed)
+    # candidate pairs from the real site geometry (same distal rule)
+    pairs = []
+    for a in sites:
+        for b in sites:
+            if a['site_id'] == b['site_id']:
+                continue
+            gap = max(a['abs_start'] - b['abs_end'],
+                      b['abs_start'] - a['abs_end'])
+            if gap >= sep:
+                pairs.append((a, b))
+    rng.shuffle(pairs)
+    if max_pairs:
+        pairs = pairs[:max_pairs]
+    if len(wt) < need:
+        logging.warning(f"  WT-vs-WT: only {len(wt)} WT reads < "
+                        f"{need} needed; reduce n_instruments/instr_n")
+        return []
+
+    recs = []
+    for (s1, s2) in pairs:
+        o1_all = read_site_occupied(rd, s1, wt, occ)
+        o2_all = read_site_occupied(rd, s2, wt, occ)
+        perm = rng.permutation(len(wt))
+        blk = n_instruments * instr_n
+        inst_pos = perm[:blk].reshape(n_instruments, instr_n)
+        cond_pos = perm[blk:]                       # DISJOINT
+        wt_cond = _wt_conditional_from_states(
+            o1_all[cond_pos], o2_all[cond_pos], n_iter,
+            np.random.default_rng(stable_variant_seed(
+                seed, f"wvw_cond_{s1['site_id']}|{s2['site_id']}")),
+            cfg['min_stratum'])
+        if wt_cond is None:
+            continue
+        inst_states = []
+        for k in range(n_instruments):
+            idx = inst_pos[k]
+            o1k = o1_all[idx].copy()
+            o2k = o2_all[idx].copy()
+            if inject_dependency > 0:
+                drop = (~o1k) & (rng.random(idx.size)
+                                 < inject_dependency)
+                o2k[drop] = False                  # fake coop loss
+            inst_states.append((o1k, o2k))
+        agg = _cooccupancy_aggregate_from_states(
+            inst_states, wt_cond,
+            np.random.default_rng(stable_variant_seed(
+                seed, f"wvw_agg_{s1['site_id']}|{s2['site_id']}")))
+        if agg is None:
+            continue
+        recs.append({
+            'site1_id': s1['site_id'], 'site2_id': s2['site_id'],
+            'p_two_sided': agg['p_two_sided'],
+            'weighted_mean_excess': agg['weighted_mean_excess'],
+            'frac_instruments_consistent':
+                agg['frac_instruments_consistent'],
+        })
+    return recs
