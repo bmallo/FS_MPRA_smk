@@ -286,6 +286,27 @@ def convert(h5_path: Path, sample_name: str | None = None,
                         "pvalue": float(row.get("pvalue", 1)),
                     })
 
+        # Dense MPRA track arrays (length = analysis_length, index 0 = analysis_start).
+        # At each position keep the alt with the lowest p-value. Null where no data.
+        # These are indexable like wt_occupancy, making dashboard rendering straightforward.
+        mpra_track = {"score": [None] * meta["analysis_length"],
+                      "pvalue": [None] * meta["analysis_length"],
+                      "significant": [False] * meta["analysis_length"]}
+        if mpra_records:
+            a_start = meta["analysis_start"]
+            # per position: pick most significant alt
+            best = {}  # pos -> record with lowest pvalue
+            for r in mpra_records:
+                pos = r["position"]
+                if pos not in best or r["pvalue"] < best[pos]["pvalue"]:
+                    best[pos] = r
+            for pos, r in best.items():
+                idx = pos - a_start
+                if 0 <= idx < meta["analysis_length"]:
+                    mpra_track["score"][idx] = round(r["score"], precision)
+                    mpra_track["pvalue"][idx] = round(r["pvalue"], precision)
+                    mpra_track["significant"][idx] = r["pvalue"] < 0.05
+
     return {
         "metadata": meta,
         "ref_sequence": ref_seq,
@@ -297,6 +318,7 @@ def convert(h5_path: Path, sample_name: str | None = None,
         "cooccupancy": cooccupancy,
         "tf_candidates": tf_candidates,
         "mpra": mpra_records,
+        "mpra_track": mpra_track,
     }
 
 
