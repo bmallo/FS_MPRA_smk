@@ -413,9 +413,15 @@ Phase 1):**
   requires *independent SNVs to agree on direction*. Validated: under
   inconsistent scatter the p is significant ~85% but 0/60 are CALLED.
 - *Null & calibration.* Reuse the empirical-null + WT-vs-WT discipline:
-  a no-dependency null (permute molecule labels / resample WT) and a
-  pseudo-pair negative control, certified per dataset like
-  `tools/calibration_sweep/`.
+  a no-dependency null (disjoint WT pseudo-instruments) certified per
+  dataset. **P3.6 PASSED on real LDLR data** (`tools/cooccupancy_wt_
+  vs_wt_prod.py` + `.sbatch`, job 35349999): n=930, mean(p)=0.548,
+  FP@0.05=0.049, FP@0.10=0.088, 0/930 false calls — exact FDR control,
+  no false cooperativity under H0. Positive control (inject=0.7)
+  p<0.05=0.40 → calibrated but **modest power on this sparse-footprint
+  dataset**: absence of calls ≠ absence of cooperativity (an
+  MDE-style caveat; emit a co-occupancy power/MDE readout in P3.7 so
+  nulls are interpreted correctly).
 
 **§2.5 spurious-second-mutation control (validity gate, ship with 2.4).**
 DONE (P3.5, secondary-mutation screen): re-test each call on reads
