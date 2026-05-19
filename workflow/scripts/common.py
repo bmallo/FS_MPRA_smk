@@ -82,6 +82,7 @@ CLUSTER_WIDTH_RANGES = {
 TAG_NUC_COUNT = 'nc'
 TAG_PROMOTER_VARIANT = 'PV'
 TAG_VARIANT_COUNT = 'VC'
+TAG_RAW_VARIANT = 'PR'   # per-read raw (pre-cluster-consensus) calls
 TAG_FP_STARTS = 'ns'
 TAG_FP_LENGTHS = 'nl'
 TAG_FP_QUAL = 'nq'
@@ -385,6 +386,7 @@ class ReadData:
             self._nuc_counts = np.empty(self._capacity, dtype=np.int32)
             self._variant_ids = np.empty(self._capacity, dtype=object)
             self._variant_counts = np.empty(self._capacity, dtype=np.int32)
+            self._raw_calls = np.empty(self._capacity, dtype=object)
             self._coverage_matrices = {
                 label: np.zeros((self._capacity, self.analysis_length),
                                 dtype=np.uint8)
@@ -396,12 +398,14 @@ class ReadData:
             self._nuc_counts = []
             self._variant_ids = []
             self._variant_counts = []
+            self._raw_calls = []
             self._coverage_rows = {label: [] for label in bin_labels}
 
         # Populated on freeze()
         self.nuc_counts = None
         self.variant_ids = None
         self.variant_counts = None
+        self.raw_calls = None   # per-read tuple of raw variant IDs (PR)
         self.coverage_matrices = None
         self.wt_indices = None
         self.variant_indices = None
@@ -423,6 +427,10 @@ class ReadData:
         new_vc[:self._capacity] = self._variant_counts
         self._variant_counts = new_vc
 
+        new_rc = np.empty(new_cap, dtype=object)
+        new_rc[:self._capacity] = self._raw_calls
+        self._raw_calls = new_rc
+
         for label in self.bin_labels:
             new_mat = np.zeros((new_cap, self.analysis_length), dtype=np.uint8)
             new_mat[:self._capacity] = self._coverage_matrices[label]
@@ -430,7 +438,7 @@ class ReadData:
         self._capacity = new_cap
 
     def add_read_coverage(self, nuc_count, variant_id, variant_count,
-                          bin_coverage):
+                          bin_coverage, raw_calls=()):
         """Add a read using pre-computed per-bin coverage arrays.
 
         Parameters
@@ -449,6 +457,7 @@ class ReadData:
         self._nuc_counts[i] = nuc_count if nuc_count is not None else -1
         self._variant_ids[i] = variant_id
         self._variant_counts[i] = variant_count
+        self._raw_calls[i] = raw_calls
         for label, cov in bin_coverage.items():
             if label in self.bin_to_idx:
                 self._coverage_matrices[label][i] = cov
@@ -456,12 +465,13 @@ class ReadData:
         self.n_reads += 1
 
     def add_read(self, nuc_count, variant_id, variant_count, footprints,
-                 ref_length):
+                 ref_length, raw_calls=()):
         """Legacy add_read: append-based, used when analysis_length not set."""
         assert not self._preallocated and not self._frozen
         self._nuc_counts.append(nuc_count if nuc_count is not None else -1)
         self._variant_ids.append(variant_id)
         self._variant_counts.append(variant_count)
+        self._raw_calls.append(raw_calls)
         coverage = {label: np.zeros(ref_length, dtype=np.uint8)
                     for label in self.bin_labels}
         for bin_label, ref_positions, quality, size in footprints:
@@ -487,6 +497,7 @@ class ReadData:
             self.nuc_counts = self._nuc_counts[:n].copy()
             self.variant_ids = self._variant_ids[:n].copy()
             self.variant_counts = self._variant_counts[:n].copy()
+            self.raw_calls = self._raw_calls[:n].copy()
             self.coverage_matrices = {}
             for label in self.bin_labels:
                 self.coverage_matrices[label] = (
@@ -497,6 +508,8 @@ class ReadData:
             self.nuc_counts = np.array(self._nuc_counts, dtype=np.int32)
             self.variant_ids = np.array(self._variant_ids, dtype=object)
             self.variant_counts = np.array(self._variant_counts, dtype=np.int32)
+            self.raw_calls = np.empty(len(self._raw_calls), dtype=object)
+            self.raw_calls[:] = self._raw_calls
             self.coverage_matrices = {}
             for label in self.bin_labels:
                 if self._coverage_rows[label]:
@@ -522,6 +535,7 @@ class ReadData:
         self._nuc_counts = None
         self._variant_ids = None
         self._variant_counts = None
+        self._raw_calls = None
 
     def get_indices_filtered(self, indices, min_nuc=None, max_nuc=None):
         if min_nuc is None and max_nuc is None:
@@ -841,6 +855,18 @@ def parse_bam(bam_path, analysis_bins, target_chrom=None,
                 nuc_count = int(read.get_tag(TAG_NUC_COUNT))
             except KeyError:
                 nuc_count = None
+            # Per-read RAW (pre-cluster-consensus) calls for the
+            # co-occupancy secondary-mutation control (§2.5). Absent on
+            # older BAMs -> empty (feature simply has no data then).
+            try:
+                pr_value = read.get_tag(TAG_RAW_VARIANT)
+            except KeyError:
+                pr_value = None
+            if pr_value is None or pr_value == "WT":
+                raw_calls = ()
+            else:
+                raw_calls = tuple(
+                    v for v in parse_variant_tag(pr_value) if v != "WT")
 
             tracks = get_read_tracks(read)
             if not tracks:
@@ -860,7 +886,7 @@ def parse_bam(bam_path, analysis_bins, target_chrom=None,
             bin_cov = convert_tracks_to_coverage(
                 tracks, q2r_arr, a_start, a_length, analysis_bins)
             rd.add_read_coverage(nuc_count, variant_id, int(vc_value),
-                                 bin_cov)
+                                 bin_cov, raw_calls=raw_calls)
             stats['parsed'] += 1
 
     logging.info(f"Parsed {stats['parsed']:,} / {stats['total']:,}")

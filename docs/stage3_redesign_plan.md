@@ -304,8 +304,10 @@ All exposed as CLI flag + `config.yaml` key + Snakefile passthrough.
    (0/31 SNV ref bases mismatched); 0 calls on the 33-variant/200-iter
    dev set (correct — gated on calibrated cross-variant FDR; needs
    production data for real motif calls).
-4. **Phase 3** — co-occupancy module + secondary-mutation control
-   (§2.4–2.5, requires §4 `PR` decision).
+4. **Phase 3 — IN PROGRESS.** Co-occupancy module + secondary-mutation
+   control (§2.4–2.5). Full design in §10. §4(2) resolved: parse `PR`
+   in `parse_bam`. Phasing P3.1–P3.7; calibration gate (P3.6) before
+   any biological claim.
 
 ---
 
@@ -314,7 +316,8 @@ All exposed as CLI flag + `config.yaml` key + Snakefile passthrough.
 - §4(1): RESOLVED — Stage 3 takes an optional `--reference` FASTA
   (keeps Stage 2 unchanged; reuses `reference_fasta` in config). An
   empirical SNV-ref-base self-check logs any coordinate/contig mismatch.
-- §4(2): `PR` — parse in Stage 3 vs re-derive from CIGAR (Phase 3).
+- §4(2): RESOLVED — parse the `PR` tag in `parse_bam` (single source
+  of truth vs re-deriving from CIGAR). See §10.
 - §1.4: default `--null-strata-nc-dist` (set from benchmark).
 - §1.3: keep adaptive mode in scope for v1, or defer to exploration tooling.
 - Backward compatibility: keep old `--n-null-iterations` / coverage-grid flags
@@ -332,3 +335,85 @@ All exposed as CLI flag + `config.yaml` key + Snakefile passthrough.
   `as`/`al`→nucleosome and `ns`/`nl`→footprint mapping is not inverted
   relative to fibertools-rs / FiberHMM conventions. Resolve before Phase 1
   statistical changes.
+- **Motif → candidate-TF annotation (planned, post-Phase-3).** Cross-check
+  each Phase-2 motif call's reference DNA (and its per-position/per-base
+  sensitivity profile) against a TF motif database (JASPAR and/or
+  HOCOMOCO) to nominate candidate transcription factors. Design sketch:
+  (1) obtain PWMs/PFMs (JASPAR CORE vertebrates, HOCOMOCO v12 human) as a
+  local bundled resource — no network at runtime; (2) score each motif
+  interval's reference sequence (both strands) against every PWM
+  (log-odds with a genomic-background or library-background model);
+  (3) rank candidates by score, and *cross-validate against the
+  sensitivity profile* — the SNV positions/bases that most reduce
+  occupancy should coincide with the PWM's high-information-content
+  positions for a true match (a strong, MPRA-specific corroboration most
+  pure-sequence scanners lack); (4) emit a `motif_tf_candidates` table
+  (motif_idx, db, TF, matrix_id, strand, score, offset,
+  sensitivity-concordance). Open choices: DB(s) and version; scoring
+  (MOODS vs simple log-odds); background model; whether it lives in
+  Stage 3 or a post-hoc `extras/` tool reading the HDF5 (leaning
+  post-hoc tool — keeps Stage 3 dependency-light, mirrors the browser
+  pattern). Not started; revisit after Phase 3.
+
+---
+
+## 10. Phase 3 design — protein co-occupancy dependency (§2.4–2.5)
+
+Goal: detect **case B** — a variant that disrupts a protein at *site 1*
+(its local motif, from the Phase-2 layer) and, *through a real
+cooperative dependency*, also changes occupancy at a *distal site 2* —
+and distinguish that from (i) two independent effects and (ii)
+contaminating double-mutant molecules.
+
+**Pipeline contract (§4(2)).** Co-occupancy needs raw per-read variant
+calls. Decision: **parse the `PR` tag in `parse_bam`** (single source of
+truth — it is exactly what Stage 2 called; re-deriving from CIGAR
+duplicates Stage 2 and can diverge). Store per-read raw-call info in
+`ReadData`; propagate nothing new to Stage 2.
+
+**Statistical core (must stay sound — empirical, FDR-controlled, like
+Phase 1):**
+- *Sites.* Site 1 = a Phase-2 significant motif cluster overlapping the
+  causal variant. Site 2 candidates = the other motif intervals (and,
+  optionally, a binned promoter scan), each ≥ a min distance from
+  site 1.
+- *Per-read joint state.* From the un-collapsed footprint matrix, the
+  binary footprint state at site 1 and site 2 per molecule (occupied =
+  footprint covers ≥X% of the site).
+- *WT dependency baseline.* From WT reads, P(fp@2 | fp@1) vs
+  P(fp@2 | ¬fp@1) — the cooperative structure that exists with no
+  mutation. Empirical CI by WT resampling.
+- *Variant test.* For a variant that loses site 1: is the observed
+  site-2 change **larger than** what propagating its site-1 loss
+  through the WT conditional model predicts? Excess = cooperative;
+  within prediction = explained by pre-existing structure.
+- *Library aggregation (primary, strongest).* Across the many
+  *independent* SNVs that disrupt site 1, is the site-2 shift
+  consistent and directional? Mirrors the Phase-2 multiple-instrument
+  principle; cross-variant test → BH FDR.
+- *Null & calibration.* Reuse the empirical-null + WT-vs-WT discipline:
+  a no-dependency null (permute molecule labels / resample WT) and a
+  pseudo-pair negative control, certified per dataset like
+  `tools/calibration_sweep/`.
+
+**§2.5 spurious-second-mutation control (validity gate, ship with 2.4).**
+Using `PR`: for molecules driving a distal site-2 change, test for
+enrichment of a specific raw SNV at/near site 2 → a contaminating
+double-mutant/haplotype, not cooperativity. Plus `BK`/`CS` barcode-
+collision check; cross-variant replication is the strongest filter.
+
+**Knobs (CLI + config + Snakefile, logical defaults):**
+`--enable-co-occupancy` (default **off**),
+`--cooccupancy-min-variant-instruments` (e.g. 3),
+`--cooccupancy-distal-min-effect`, `--cooccupancy-site-occupancy-frac`,
+`--secondary-mutation-screen` (default on when co-occupancy on),
+`--secondary-mutation-max-freq`.
+
+**Phasing.** P3.1 `PR` into `parse_bam`/`ReadData` (+ tiny unit check).
+P3.2 site-pair construction from Phase-2 motifs. P3.3 WT conditional
+model + per-variant excess test. P3.4 cross-variant aggregation + BH.
+P3.5 §2.5 secondary-mutation + barcode control. P3.6 WT-vs-WT /
+pseudo-pair calibration (no false dependencies under H0) — **gate
+before any biological claim**. P3.7 HDF5/TSV outputs + knobs + docs.
+Profile P3.3–P3.5 at production scale *before* a cluster run (Phase-2
+lesson: WT-scale per-read costs hide in dev/component profiles).
