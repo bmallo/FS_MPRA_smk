@@ -418,10 +418,19 @@ Phase 1):**
   `tools/calibration_sweep/`.
 
 **§2.5 spurious-second-mutation control (validity gate, ship with 2.4).**
-Using `PR`: for molecules driving a distal site-2 change, test for
-enrichment of a specific raw SNV at/near site 2 → a contaminating
-double-mutant/haplotype, not cooperativity. Plus `BK`/`CS` barcode-
-collision check; cross-variant replication is the strongest filter.
+DONE (P3.5, secondary-mutation screen): re-test each call on reads
+that carry NO competing site-2-local raw `PR` SNV (± `secondary_window`,
+excluding the instrument's own id); a call is `validated_call` only if
+the secondary-free re-test still passes the same q/consistency gate
+with the same sign, else `secondary_artifact`. Also report
+`max_secondary_freq` (cross-instrument recurrence of any single
+site-2-local secondary SNV). Validated synthetically: artifact (loss
+carried by a recurrent secondary SNV) flagged 38/40; genuine
+cooperative loss validated 40/40. REMAINING (P3.5b, lighter): `BK`/`CS`
+barcode-collision readout — needs BK/CS plumbed into ReadData like
+`PR`; flag calls whose site-2-affected reads are dominated by few
+barcode clusters. Cross-variant replication remains the strongest
+filter (already the basis of P3.4 + the secondary screen).
 
 **Knobs (CLI + config + Snakefile, logical defaults):**
 `--enable-co-occupancy` (default **off**),

@@ -17,7 +17,7 @@ import logging
 import re
 import struct
 import time
-from collections import defaultdict
+from collections import Counter, defaultdict
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from multiprocessing import shared_memory
 
@@ -2223,6 +2223,11 @@ DEFAULT_COOCCUPANCY_CFG = {
                                    # cooperativity = independent SNVs
                                    # AGREE on direction, not just a
                                    # nonzero mean excess)
+    'secondary_screen': True,      # §2.5 control: validate calls by
+                                   # re-testing on reads with NO
+                                   # competing site-2-local raw SNV
+    'secondary_window': 10,        # bp pad around site 2 for "local"
+                                   # secondary raw mutations
 }
 
 
@@ -2230,7 +2235,8 @@ def build_cooccupancy_cfg(site_occupancy_frac=0.5, site_merge_overlap=0.5,
                           min_site_separation=30,
                           min_variant_instruments=3, motif_fdr=0.10,
                           min_stratum=25, call_q=0.10,
-                          min_consistency=0.70):
+                          min_consistency=0.70, secondary_screen=True,
+                          secondary_window=10):
     return {
         'site_occupancy_frac': float(site_occupancy_frac),
         'site_merge_overlap': float(site_merge_overlap),
@@ -2240,6 +2246,8 @@ def build_cooccupancy_cfg(site_occupancy_frac=0.5, site_merge_overlap=0.5,
         'min_stratum': int(min_stratum),
         'call_q': float(call_q),
         'min_consistency': float(min_consistency),
+        'secondary_screen': bool(secondary_screen),
+        'secondary_window': int(secondary_window),
     }
 
 
@@ -2602,6 +2610,31 @@ def _cooccupancy_aggregate_from_states(inst_states, wt_cond, rng,
     }
 
 
+def _secondary_free_mask(raw_calls_seq, lo0, hi0, exclude_ids=()):
+    """§2.5 control. Boolean mask over reads: True = the read carries
+    NO raw (pre-consensus) SNV located within the site-2 window
+    [lo0, hi0] (0-based ref), excluding the instrument's own site-1
+    call ids. A read with a competing site-2-local mutation could
+    explain a distal site-2 change by itself (double-mutant /
+    barcode-collision haplotype) rather than cooperativity, so the
+    call must survive when those reads are removed.
+    """
+    excl = set(exclude_ids)
+    n = len(raw_calls_seq)
+    keep = np.ones(n, dtype=bool)
+    for i in range(n):
+        for vid in raw_calls_seq[i]:
+            if vid in excl:
+                continue
+            pos1, _r, _a, _ct = parse_variant_id_fields(vid)
+            if pos1 is None:
+                continue
+            if lo0 <= (pos1 - 1) <= hi0:    # 1-based id -> 0-based ref
+                keep[i] = False
+                break
+    return keep
+
+
 def run_cooccupancy(rd, site_pairs, n_iter, random_seed):
     """Driver: for each (site1, site2) pair, build the WT-conditional
     bootstrap ONCE (reused across the site-1's instruments), aggregate
@@ -2631,8 +2664,10 @@ def run_cooccupancy(rd, site_pairs, n_iter, random_seed):
         if wt_cond is None:
             continue
         inst_states = []
+        inst_vi = []
         for vid in vids:
             vi = rd.variant_indices[vid]
+            inst_vi.append((vid, vi))
             inst_states.append((
                 read_site_occupied(rd, s1, vi, occ_frac),
                 read_site_occupied(rd, s2, vi, occ_frac)))
@@ -2649,6 +2684,55 @@ def run_cooccupancy(rd, site_pairs, n_iter, random_seed):
             'wt_p2_given_0': wt_cond['p0'],
             'instrument_variant_ids': vids,
         })
+
+        # ---- §2.5 secondary-mutation control (P3.5) ----
+        # Re-test on reads carrying NO competing site-2-local raw SNV;
+        # a genuine cooperative call survives this, a double-mutant /
+        # haplotype artifact collapses. Cross-instrument: report the
+        # max frequency of any single such secondary SNV.
+        if cfg['secondary_screen']:
+            W = cfg['secondary_window']
+            lo0 = s2['abs_start'] - W
+            hi0 = s2['abs_end'] + W
+            sec_counts = Counter()
+            n_pool = 0
+            sf_states = []
+            for (vid, vi), (o1, o2) in zip(inst_vi, inst_states):
+                raw_seq = rd.raw_calls[vi]
+                keep = _secondary_free_mask(raw_seq, lo0, hi0,
+                                            exclude_ids=(vid,))
+                n_pool += len(vi)
+                for i in range(len(vi)):
+                    for rv in raw_seq[i]:
+                        if rv == vid:
+                            continue
+                        p1pos, _r, _a, _c = parse_variant_id_fields(rv)
+                        if p1pos is not None and lo0 <= p1pos - 1 <= hi0:
+                            sec_counts[rv] += 1
+                if keep.sum() >= cfg['min_stratum']:
+                    sf_states.append((np.asarray(o1)[keep],
+                                      np.asarray(o2)[keep]))
+            max_sec_freq = (max(sec_counts.values()) / n_pool
+                            if sec_counts and n_pool else 0.0)
+            sf_rng = np.random.default_rng(stable_variant_seed(
+                random_seed, f"cooc_secfree_{s1_id}|{s2_id}"))
+            sf_agg = (_cooccupancy_aggregate_from_states(
+                          sf_states, wt_cond, sf_rng)
+                      if len(sf_states) >= cfg['min_variant_instruments']
+                      else None)
+            agg['secondary_screen'] = {
+                'max_secondary_freq': float(max_sec_freq),
+                'n_secondary_distinct': len(sec_counts),
+                'n_instruments_secfree': len(sf_states),
+                'reads_total': int(n_pool),
+                'secfree_excess': (sf_agg['weighted_mean_excess']
+                                   if sf_agg else None),
+                'secfree_p_two_sided': (sf_agg['p_two_sided']
+                                        if sf_agg else None),
+                'secfree_frac_consistent': (
+                    sf_agg['frac_instruments_consistent']
+                    if sf_agg else None),
+            }
         results.append(agg)
     if results:
         qs = benjamini_hochberg(np.array(
@@ -2659,12 +2743,34 @@ def run_cooccupancy(rd, site_pairs, n_iter, random_seed):
             r['is_call'] = bool(
                 q < cq
                 and r['frac_instruments_consistent'] >= mc)
+            # §2.5: a call is VALIDATED only if it survives the
+            # secondary-mutation screen — the secondary-free re-test is
+            # still significant, consistent, and SAME direction.
+            ss = r.get('secondary_screen')
+            if not cfg['secondary_screen']:
+                survives = True
+            elif not r['is_call']:
+                survives = False
+            elif ss is None or ss['secfree_p_two_sided'] is None:
+                survives = False        # could not confirm -> not valid
+            else:
+                survives = bool(
+                    ss['secfree_p_two_sided'] < cq
+                    and ss['secfree_frac_consistent'] >= mc
+                    and (np.sign(ss['secfree_excess'])
+                         == np.sign(r['weighted_mean_excess'])))
+            r['secondary_artifact'] = bool(r['is_call']
+                                           and not survives)
+            r['validated_call'] = bool(r['is_call'] and survives)
         results.sort(key=lambda r: r['p_two_sided'])
     n_call = sum(1 for r in results if r.get('is_call'))
+    n_valid = sum(1 for r in results if r.get('validated_call'))
+    n_artifact = sum(1 for r in results if r.get('secondary_artifact'))
     logging.info(
-        f"  Co-occupancy P3.4: tested {len(results)} (site1,site2) "
-        f"pairs; FDR<{cfg['call_q']}="
+        f"  Co-occupancy P3.4/3.5: tested {len(results)} "
+        f"(site1,site2) pairs; FDR<{cfg['call_q']}="
         f"{sum(1 for r in results if r.get('fdr_q', 1) < cfg['call_q'])}"
-        f"; CALLS (q<{cfg['call_q']} & consistency>="
-        f"{cfg['min_consistency']})={n_call}")
+        f"; calls={n_call}; VALIDATED (survive §2.5 secondary "
+        f"screen)={n_valid}; secondary-mutation artifacts="
+        f"{n_artifact}")
     return results
