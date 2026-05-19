@@ -340,7 +340,22 @@ All exposed as CLI flag + `config.yaml` key + Snakefile passthrough.
   `as`/`al`→nucleosome and `ns`/`nl`→footprint mapping is not inverted
   relative to fibertools-rs / FiberHMM conventions. Resolve before Phase 1
   statistical changes.
-- **Motif → candidate-TF annotation (planned, post-Phase-3).** Cross-check
+- **Motif → candidate-TF annotation — DONE (P4.1).** Post-hoc
+  `extras/fs_mpra_tf_annotate.py` reads the Stage-3 HDF5, scores each
+  motif call's reference DNA (both strands, all offsets) against
+  bundled JASPAR 2024 CORE vertebrates (879) + HOCOMOCO v12 H12CORE
+  (1443) with a pure-numpy log-odds model (configurable
+  pseudocount/GC background), and cross-checks each match against the
+  motif's per-position sensitivity profile (IC↔sensitivity Pearson r —
+  the MPRA-specific corroboration). Emits `_tf_candidates.tsv`
+  (no new deps; bundled DBs `extras/data/*`, no runtime network).
+  Synthetic planted-motif test passes; on production LDLR the
+  concordance correctly demotes promiscuous short-PWM sequence hits
+  and elevates VAX2 / CPEB1 (sequence + sensitivity agree). Short-
+  window concordance is noisy on sparse data → follow-up hypotheses,
+  not confident calls. Original sketch below (now implemented):
+
+- **(original sketch)** Cross-check
   each Phase-2 motif call's reference DNA (and its per-position/per-base
   sensitivity profile) against a TF motif database (JASPAR and/or
   HOCOMOCO) to nominate candidate transcription factors. Design sketch:

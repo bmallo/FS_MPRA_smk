@@ -23,6 +23,8 @@ extras/
   mpra_analysis_qc.py        # Single-variant deep-dive analysis
   MPRA_qc_visualization.py   # PDF report from QC HDF5
   mpra_library_browser.ipynb # Notebook for library exploration
+  fs_mpra_tf_annotate.py     # P4.1: motif -> candidate-TF (JASPAR+HOCOMOCO)
+  data/                      # Bundled PWM DBs (JASPAR 2024, HOCOMOCO v12)
 results/{sample}/            # Created by Snakemake at runtime
   filtered/                  # Stage 1 output
   variants/                  # Stage 2 output
