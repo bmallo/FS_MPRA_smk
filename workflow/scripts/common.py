@@ -2215,18 +2215,31 @@ DEFAULT_COOCCUPANCY_CFG = {
     'min_variant_instruments': 3,  # site1 needs >= this many independent
                                    # disrupting SNVs to be testable
     'motif_fdr': 0.10,             # variant gate (same as the motif layer)
+    'min_stratum': 25,             # min WT reads in each O1 stratum
+    'call_q': 0.10,                # BH q threshold for a co-occ CALL
+    'min_consistency': 0.70,       # frac of instruments agreeing in sign
+                                   # required to CALL a dependency
+                                   # (Phase-2 sign-consistency analogue:
+                                   # cooperativity = independent SNVs
+                                   # AGREE on direction, not just a
+                                   # nonzero mean excess)
 }
 
 
 def build_cooccupancy_cfg(site_occupancy_frac=0.5, site_merge_overlap=0.5,
                           min_site_separation=30,
-                          min_variant_instruments=3, motif_fdr=0.10):
+                          min_variant_instruments=3, motif_fdr=0.10,
+                          min_stratum=25, call_q=0.10,
+                          min_consistency=0.70):
     return {
         'site_occupancy_frac': float(site_occupancy_frac),
         'site_merge_overlap': float(site_merge_overlap),
         'min_site_separation': int(min_site_separation),
         'min_variant_instruments': int(min_variant_instruments),
         'motif_fdr': float(motif_fdr),
+        'min_stratum': int(min_stratum),
+        'call_q': float(call_q),
+        'min_consistency': float(min_consistency),
     }
 
 
@@ -2513,3 +2526,145 @@ def cooccupancy_variant_test(rd, site1, site2, var_idx, occ_frac,
     o1v = read_site_occupied(rd, site1, var_idx, occ_frac)
     o2v = read_site_occupied(rd, site2, var_idx, occ_frac)
     return _cooccupancy_test_from_states(o1v, o2v, wt_cond, rng)
+
+
+# ---- P3.4: cross-variant aggregation (the PRIMARY evidence) + BH ------
+#
+# A real cooperative dependency is corroborated by MANY INDEPENDENT SNVs
+# that all disrupt site 1 showing a consistent, directional site-2 shift
+# beyond the WT channel. We test a pair-level weighted-mean-excess
+# statistic against a JOINT null: per bootstrap b, every instrument's H0
+# site-2 mean is drawn under the SAME WT-conditional bootstrap b (shared
+# WT-estimation noise -> the instruments' nulls are correlated; the joint
+# resample captures that correlation, which a per-variant-then-combine
+# scheme would miss — the Phase-1 calibration lesson). BH across pairs.
+
+def _cooccupancy_aggregate_from_states(inst_states, wt_cond, rng,
+                                       weight='equal',
+                                       chunk=2_000_000):
+    """inst_states: list of (o1_k, o2_k) per instrument (independent
+    SNVs disrupting the shared site 1). Returns the pair-level
+    aggregate test + per-instrument readouts. Weight 'equal' (each
+    independent instrument = one evidence unit; robust, the truer
+    'many SNVs agree' test) or 'n' (read-count weighted)."""
+    p1, p0 = wt_cond['p1'], wt_cond['p0']
+    p1b, p0b = wt_cond['p1_boot'], wt_cond['p0_boot']
+    B = p1b.size
+    K = len(inst_states)
+    if K == 0:
+        return None
+    obs_k = np.empty(K)
+    pred_k = np.empty(K)
+    w_k = np.empty(K)
+    per_inst = []
+    null_T = np.zeros(B, dtype=np.float64)
+    for k, (o1, o2) in enumerate(inst_states):
+        o1 = np.asarray(o1, dtype=bool)
+        o2 = np.asarray(o2, dtype=bool)
+        n_k = o1.size
+        obs_k[k] = o2.mean() if n_k else 0.0
+        pred_k[k] = np.where(o1, p1, p0).mean() if n_k else 0.0
+        w_k[k] = n_k if weight == 'n' else 1.0
+        # this instrument's H0 null mean(O2) for every bootstrap b
+        nb = np.empty(B)
+        step = max(1, chunk // max(n_k, 1))
+        for s in range(0, B, step):
+            e = min(B, s + step)
+            P = np.where(o1[None, :], p1b[s:e, None], p0b[s:e, None])
+            U = rng.random((e - s, n_k))
+            nb[s:e] = (U < P).mean(axis=1)
+        # accumulate into the JOINT pair statistic (same b across k)
+        null_T += w_k[k] * (nb - pred_k[k])
+        per_inst.append({'n': int(n_k), 'obs': float(obs_k[k]),
+                         'predicted': float(pred_k[k]),
+                         'excess': float(obs_k[k] - pred_k[k])})
+    W = w_k.sum()
+    excess_k = obs_k - pred_k
+    T_obs = float((w_k * excess_k).sum() / W)
+    null_T /= W
+    m = float(null_T.mean())
+    p_two = float((1 + np.count_nonzero(
+        np.abs(null_T - m) >= abs(T_obs - m))) / (B + 1))
+    # one-sided for the primary hypothesis (site-2 LOSS beyond channel)
+    p_loss = float((1 + np.count_nonzero(null_T <= T_obs)) / (B + 1))
+    n_consistent = int(np.count_nonzero(
+        np.sign(excess_k) == np.sign(T_obs))) if T_obs != 0 else 0
+    return {
+        'n_instruments': K,
+        'weighted_mean_excess': T_obs,
+        'p_two_sided': p_two,
+        'p_site2_loss': p_loss,
+        'direction': 'site2_loss' if T_obs < 0 else 'site2_gain',
+        'frac_instruments_consistent': n_consistent / K,
+        'null_mean': m,
+        'null_std': float(null_T.std()),
+        'per_instrument': per_inst,
+    }
+
+
+def run_cooccupancy(rd, site_pairs, n_iter, random_seed):
+    """Driver: for each (site1, site2) pair, build the WT-conditional
+    bootstrap ONCE (reused across the site-1's instruments), aggregate
+    across instruments, BH across all tested pairs, then mark
+    co-occupancy CALLS = BH q < call_q AND directional consistency
+    across independent instruments >= min_consistency (the Phase-2
+    sign-consistency analogue: cooperativity requires independent SNVs
+    to AGREE on direction, not merely a nonzero mean excess). Returns
+    pair results sorted by q."""
+    cfg = site_pairs['cfg']
+    occ_frac = cfg['site_occupancy_frac']
+    min_stratum = cfg['min_stratum']
+    sites_by_id = site_pairs['sites_by_id']
+    instruments = site_pairs['site1_instruments']
+    results = []
+    for s1_id, s2_id in site_pairs['pairs']:
+        s1, s2 = sites_by_id[s1_id], sites_by_id[s2_id]
+        vids = [v for v in instruments.get(s1_id, [])
+                if v in rd.variant_indices]
+        if not vids:
+            continue
+        rng = np.random.default_rng(
+            stable_variant_seed(random_seed, f"cooc_{s1_id}|{s2_id}"))
+        wt_cond = wt_conditional_bootstrap(
+            rd, s1, s2, rd.wt_indices, occ_frac, n_iter, rng,
+            min_stratum)
+        if wt_cond is None:
+            continue
+        inst_states = []
+        for vid in vids:
+            vi = rd.variant_indices[vid]
+            inst_states.append((
+                read_site_occupied(rd, s1, vi, occ_frac),
+                read_site_occupied(rd, s2, vi, occ_frac)))
+        agg = _cooccupancy_aggregate_from_states(
+            inst_states, wt_cond, rng)
+        if agg is None:
+            continue
+        agg.update({
+            'site1_id': s1_id, 'site2_id': s2_id,
+            'site1_bin': s1['bin'], 'site2_bin': s2['bin'],
+            'site1_abs': (s1['abs_start'], s1['abs_end']),
+            'site2_abs': (s2['abs_start'], s2['abs_end']),
+            'wt_p2_given_1': wt_cond['p1'],
+            'wt_p2_given_0': wt_cond['p0'],
+            'instrument_variant_ids': vids,
+        })
+        results.append(agg)
+    if results:
+        qs = benjamini_hochberg(np.array(
+            [r['p_two_sided'] for r in results]))
+        cq, mc = cfg['call_q'], cfg['min_consistency']
+        for r, q in zip(results, qs):
+            r['fdr_q'] = float(q)
+            r['is_call'] = bool(
+                q < cq
+                and r['frac_instruments_consistent'] >= mc)
+        results.sort(key=lambda r: r['p_two_sided'])
+    n_call = sum(1 for r in results if r.get('is_call'))
+    logging.info(
+        f"  Co-occupancy P3.4: tested {len(results)} (site1,site2) "
+        f"pairs; FDR<{cfg['call_q']}="
+        f"{sum(1 for r in results if r.get('fdr_q', 1) < cfg['call_q'])}"
+        f"; CALLS (q<{cfg['call_q']} & consistency>="
+        f"{cfg['min_consistency']})={n_call}")
+    return results

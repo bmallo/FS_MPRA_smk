@@ -400,8 +400,18 @@ Phase 1):**
   readout. Untestable if either WT `O1` stratum < a min count.
 - *Library aggregation (primary, strongest).* Across the many
   *independent* SNVs that disrupt site 1, is the site-2 shift
-  consistent and directional? Mirrors the Phase-2 multiple-instrument
-  principle; cross-variant test → BH FDR.
+  consistent and directional? Pair statistic = weighted-mean per-
+  instrument excess; **joint null** — per bootstrap b every instrument's
+  H0 site-2 mean is drawn under the SAME WT-conditional bootstrap b, so
+  the instruments' shared-WT-estimation correlation is captured (a
+  per-variant-then-combine scheme would miss it → anti-conservative;
+  the Phase-1 lesson). BH across pairs. **CALL gate (added P3.4, the
+  Phase-2 sign-consistency analogue):** a pair is a co-occupancy *call*
+  only if BH q < `call_q` AND the fraction of instruments agreeing in
+  sign ≥ `min_consistency` (default 0.70). Rationale: a significant
+  mean-excess p only says "site 2 deviates on average"; cooperativity
+  requires *independent SNVs to agree on direction*. Validated: under
+  inconsistent scatter the p is significant ~85% but 0/60 are CALLED.
 - *Null & calibration.* Reuse the empirical-null + WT-vs-WT discipline:
   a no-dependency null (permute molecule labels / resample WT) and a
   pseudo-pair negative control, certified per dataset like
