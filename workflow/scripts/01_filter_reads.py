@@ -47,6 +47,7 @@ class ProcessingConfig:
     exact_alignment: bool = True
     skip_methylation: bool = False
     write_genomic: bool = False
+    split_chromosomes: bool = False
     verbose: bool = False
 
 
@@ -124,8 +125,6 @@ def classify_chromosome(chrom_name: str) -> str:
     if chrom_lower.startswith('chrun') or '_random' in chrom_name.lower():
         result = 'skip'
     elif chrom_lower in GENOMIC_CHROMOSOMES:
-        result = 'genomic'
-    elif any(chrom_lower.startswith(f'{g}_') for g in GENOMIC_CHROMOSOMES if g.startswith('chr')):
         result = 'genomic'
     else:
         result = 'plasmid'
@@ -355,18 +354,22 @@ def process_bam_single_pass(
     sample_name: str,
     reference_dict: Dict[str, int],
     config: ProcessingConfig
-) -> Tuple[ProcessingStats, Dict[str, str]]:
+) -> Tuple[ProcessingStats, Dict[str, str], Dict[str, str]]:
     """
     Process BAM file in a single pass.
 
     Writes a single merged plasmid BAM ({sample}.plasmid.bam) and optionally
     a genomic BAM ({sample}.genomic.bam) if config.write_genomic is True.
+    If config.split_chromosomes is True, also writes one BAM per chromosome
+    into a plasmid_bams/ subdirectory.
 
-    Returns (stats, output_bams) where output_bams maps labels to paths,
-    e.g. {'plasmid': '/path/to/sample.plasmid.bam', 'genomic': '...'}.
+    Returns (stats, output_bams, chrom_bams) where output_bams maps labels
+    ('plasmid', 'genomic') to merged BAM paths, and chrom_bams maps each
+    chromosome name to its per-chromosome BAM path.
     """
     stats = ProcessingStats()
     output_bams: Dict[str, str] = {}
+    chrom_bams: Dict[str, str] = {}
 
     # Pre-classify chromosomes
     chrom_classifications = precompute_chromosome_classifications(list(reference_dict.keys()))
@@ -389,6 +392,12 @@ def process_bam_single_pass(
     if config.write_genomic:
         genomic_path = os.path.join(output_folder, f"{sample_name}.genomic.bam")
         genomic_writer = pysam.AlignmentFile(genomic_path, "wb", header=header)
+
+    chrom_writers: Dict[str, pysam.AlignmentFile] = {}
+    chrom_bams_dir = None
+    if config.split_chromosomes:
+        chrom_bams_dir = os.path.join(output_folder, 'plasmid_bams')
+        os.makedirs(chrom_bams_dir, exist_ok=True)
 
     try:
         pysam_bam = pysam.AlignmentFile(input_bam, "rb")
@@ -453,6 +462,12 @@ def process_bam_single_pass(
             # Write to appropriate output
             if chrom_type == 'plasmid':
                 plasmid_writer.write(read)
+                if config.split_chromosomes:
+                    if chrom not in chrom_writers:
+                        p = os.path.join(chrom_bams_dir, f"{chrom}.bam")
+                        chrom_bams[chrom] = p
+                        chrom_writers[chrom] = pysam.AlignmentFile(p, "wb", header=header)
+                    chrom_writers[chrom].write(read)
             elif chrom_type == 'genomic' and genomic_writer is not None:
                 genomic_writer.write(read)
             else:
@@ -477,12 +492,14 @@ def process_bam_single_pass(
         plasmid_writer.close()
         if genomic_writer is not None:
             genomic_writer.close()
+        for w in chrom_writers.values():
+            w.close()
 
     output_bams['plasmid'] = plasmid_path
     if genomic_path:
         output_bams['genomic'] = genomic_path
 
-    return stats, output_bams
+    return stats, output_bams, chrom_bams
 
 
 def count_reads_fast(bam_path: str) -> int:
@@ -857,7 +874,8 @@ def _natural_sort_key(s: str):
 def generate_report(
     input_bam: str, output_folder: str, sample_name: str, reference_dict: Dict[str, int],
     fasta_source: str, config: ProcessingConfig, stats: ProcessingStats,
-    output_bams: Dict[str, str], command_line: str
+    output_bams: Dict[str, str], command_line: str,
+    chrom_bams: Optional[Dict[str, str]] = None
 ) -> str:
     """Generate comprehensive filtering report."""
     report_dir = os.path.join(output_folder, 'report')
@@ -942,6 +960,14 @@ def generate_report(
                 rel_path = os.path.relpath(output_bams[label], output_folder)
                 f.write(f"{label}: {rel_path}\n")
             f.write("\n")
+
+        if chrom_bams:
+            f.write("PER-CHROMOSOME BAM FILES\n")
+            f.write("-" * 40 + "\n")
+            for chrom in sorted(chrom_bams.keys()):
+                rel_path = os.path.relpath(chrom_bams[chrom], output_folder)
+                f.write(f"{chrom}: {rel_path}\n")
+            f.write("\n")
         
         f.write("COMMAND LINE\n")
         f.write("-" * 40 + "\n")
@@ -1013,6 +1039,8 @@ Examples:
                         help='Skip methylation filtering')
     parser.add_argument('--write-genomic', action='store_true',
                         help='Also write genomic reads to a separate BAM')
+    parser.add_argument('--split-chromosomes', action='store_true',
+                        help='Write a separate BAM per chromosome into a plasmid_bams/ subdirectory')
 
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='Verbose logging')
@@ -1083,6 +1111,7 @@ def main():
         exact_alignment=args.exact_alignment,
         skip_methylation=args.skip_methylation,
         write_genomic=args.write_genomic,
+        split_chromosomes=args.split_chromosomes,
         verbose=args.verbose
     )
 
@@ -1090,7 +1119,7 @@ def main():
 
     # Process BAM
     logging.info("Starting processing...")
-    stats, output_bams = process_bam_single_pass(
+    stats, output_bams, chrom_bams = process_bam_single_pass(
         args.input_bam,
         args.output_dir,
         sample_name,
@@ -1099,8 +1128,9 @@ def main():
     )
 
     # Index output BAMs
-    if output_bams:
-        index_bam_files(list(output_bams.values()))
+    all_bam_paths = list(output_bams.values()) + list(chrom_bams.values())
+    if all_bam_paths:
+        index_bam_files(all_bam_paths)
 
     # Generate QC plots
     logging.info("Generating QC plots...")
@@ -1110,7 +1140,8 @@ def main():
     command_line = ' '.join(sys.argv)
     report_path = generate_report(
         args.input_bam, args.output_dir, sample_name, reference_dict,
-        fasta_source, config, stats, output_bams, command_line
+        fasta_source, config, stats, output_bams, command_line,
+        chrom_bams=chrom_bams or None
     )
 
     # Print summary

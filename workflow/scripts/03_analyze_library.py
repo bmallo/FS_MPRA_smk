@@ -85,6 +85,7 @@ def write_library_hdf5(output_path, parse_stats, ground_truth_nc,
         if args.max_nuc is not None:
             meta.attrs['max_nuc'] = args.max_nuc
         meta.attrs['include_multi_variant'] = args.include_multi_variant
+        meta.attrs['null_model'] = args.null_model
         for k, v in parse_stats.items():
             meta.attrs[f'parse_{k}'] = v
 
@@ -773,6 +774,21 @@ def parse_args():
                    help='Min reads per variant after filtering (default: 50)')
     p.add_argument('--include-multi-variant', action='store_true',
                    help='Include multi-variant reads (assigned to primary)')
+    p.add_argument('--null-model', choices=['wt', 'marginal'], default='wt',
+                   help='How the per-variant null and variant pools are '
+                        'built. "wt" (default): null is sampled from '
+                        'WT-only reads and a variant pool is its '
+                        'single-variant reads (plus multi-variant reads '
+                        'assigned to their primary variant if '
+                        '--include-multi-variant). "marginal": for '
+                        'saturating-mutagenesis libraries whose true-WT '
+                        'pool is too small to subsample a stable null — '
+                        'the null is sampled from ALL reads and every read '
+                        'counts toward every variant it carries. In '
+                        'marginal mode the test measures each variant '
+                        'against the library mean; effects are re-expressed '
+                        'relative to wild-type via a separately estimated '
+                        'offset. Implies --include-multi-variant.')
     p.add_argument('--variant-list', default=None,
                    help='File with variant IDs to test (one per line)')
 
@@ -958,16 +974,39 @@ def main():
     wt_idx = rd.wt_indices
     logging.info(f"WT reads: {len(wt_idx):,}")
 
-    # Ground truth NC
+    # Null pool selection (--null-model). The same index set is used as
+    # the null sampling pool AND the Option-A baseline, so the null is
+    # always correctly centered at zero.
+    #   'wt'       -> WT-only reads (default; original behavior).
+    #   'marginal' -> ALL reads. For saturating-mutagenesis libraries
+    #                 whose true-WT pool is too small to subsample a
+    #                 stable null. The variant baseline becomes the
+    #                 library mean (not wild-type); WT-referencing of
+    #                 effect sizes is handled downstream by a separately
+    #                 estimated offset. Marginal mode also forces
+    #                 all-variant pooling (each read -> every variant).
+    if args.null_model == 'marginal':
+        null_idx = np.arange(rd.n_reads)
+        include_multi, multi_mode = True, 'all'
+        logging.info(
+            f"Null model: MARGINAL - null pool = all {len(null_idx):,} "
+            f"reads (true-WT pool is only {len(wt_idx):,}); per-variant "
+            f"test baseline is the library mean")
+    else:
+        null_idx = wt_idx
+        include_multi, multi_mode = args.include_multi_variant, 'primary'
+        logging.info("Null model: WT (standard)")
+
+    # Ground truth NC (NC distribution of the null pool)
     ground_truth_nc = compute_ground_truth_nc(
-        rd, wt_idx, min_nuc=args.min_nuc, max_nuc=args.max_nuc)
+        rd, null_idx, min_nuc=args.min_nuc, max_nuc=args.max_nuc)
     if ground_truth_nc is None:
         logging.error("No valid NC data. Exiting.")
         sys.exit(1)
 
     # Group variants
     variant_groups = group_variants(
-        rd, include_multi=args.include_multi_variant,
+        rd, include_multi=include_multi, multi_mode=multi_mode,
         min_reads=args.min_reads,
         min_nuc=args.min_nuc, max_nuc=args.max_nuc)
 
@@ -1006,7 +1045,7 @@ def main():
 
     n_total = len(variant_groups)
     all_variant_results = run_variant_testing_parallel(
-        rd, wt_idx, variant_groups, analysis_region,
+        rd, null_idx, variant_groups, analysis_region,
         prom_s, prom_e,
         min_nuc=args.min_nuc, max_nuc=args.max_nuc,
         random_seed=args.random_seed,

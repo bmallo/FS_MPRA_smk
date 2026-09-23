@@ -521,7 +521,12 @@ class ReadData:
                 self._coverage_rows[label] = None
 
         self.wt_indices = np.where(self.variant_ids == 'WT')[0]
-        unique_variants = set(self.variant_ids) - {'WT'}
+        # sorted(): set iteration order over strings depends on
+        # PYTHONHASHSEED (different per process), which propagates into
+        # variant_indices key order and downstream stratum-index seeding,
+        # making Stage 3 results non-reproducible across runs. Sorting
+        # the variant IDs makes the order deterministic.
+        unique_variants = sorted(set(self.variant_ids) - {'WT'})
         self.variant_indices = {
             vid: np.where(self.variant_ids == vid)[0]
             for vid in unique_variants
@@ -899,8 +904,19 @@ def parse_bam(bam_path, analysis_bins, target_chrom=None,
 # ============================================================================
 
 def group_variants(rd, include_multi=False, min_reads=50,
-                   min_nuc=None, max_nuc=None):
-    """Identify testable variants and their read indices."""
+                   min_nuc=None, max_nuc=None, multi_mode='primary'):
+    """Identify testable variants and their read indices.
+
+    multi_mode controls how a multi-variant read is assigned when
+    include_multi is True (ignored otherwise):
+      'primary' — read assigned only to its first (primary) variant.
+                  Default; preserves the original behavior.
+      'all'     — read assigned to EVERY variant it carries. This is the
+                  marginal-pooling mode for saturating-mutagenesis
+                  libraries (--null-model marginal): a variant's pool is
+                  then every read carrying that variant, regardless of
+                  what other variants share the molecule.
+    """
     logging.info("Grouping variants...")
 
     single_variants = {}
@@ -923,12 +939,15 @@ def group_variants(rd, include_multi=False, min_reads=50,
     multi_assigned = 0
     if include_multi:
         for raw_vid, (parsed, raw_indices) in multi_variants.items():
-            primary = parsed[0]
-            if primary not in variant_indices:
-                variant_indices[primary] = raw_indices
-            else:
-                variant_indices[primary] = np.concatenate(
-                    [variant_indices[primary], raw_indices])
+            # 'all' -> read counts toward every variant it carries;
+            # 'primary' -> only the first variant (original behavior).
+            targets = parsed if multi_mode == 'all' else parsed[:1]
+            for tgt in targets:
+                if tgt not in variant_indices:
+                    variant_indices[tgt] = raw_indices
+                else:
+                    variant_indices[tgt] = np.concatenate(
+                        [variant_indices[tgt], raw_indices])
             multi_assigned += len(raw_indices)
 
     filtered = {}
@@ -944,7 +963,8 @@ def group_variants(rd, include_multi=False, min_reads=50,
     logging.info(f"  Single-variant IDs: {len(single_variants)}")
     logging.info(f"  Multi-variant raw IDs: {len(multi_variants)}")
     if include_multi:
-        logging.info(f"  Multi-variant reads assigned: {multi_assigned:,}")
+        logging.info(f"  Multi-variant reads assigned: {multi_assigned:,} "
+                     f"(mode={multi_mode})")
     logging.info(f"  Variants passing min_reads={min_reads}: {len(filtered)}")
     logging.info(f"  Variants skipped (low reads): {skipped_low}")
 
