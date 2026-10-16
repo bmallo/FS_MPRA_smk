@@ -1,5 +1,6 @@
 # Runtime outputs
 results/
+.snakemake/
 
 # Pixi environment
 .pixi/

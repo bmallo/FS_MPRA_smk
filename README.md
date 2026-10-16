@@ -1,5 +1,17 @@
 # FS_MPRA_smk
 
+> **Redesign pilot:** the new, replicate-aware LDLR implementation is available
+> through `python -m fsmpra`. See [pilot usage and limitations](docs/pilot_usage.md)
+> and the [scientific design plan](docs/redesign_scope_and_plan.md). It imports
+> the newer HepG2 library and produces descriptive small-footprint and
+> accessibility measurements with a self-contained interactive HTML viewer.
+> The workflow described below is the legacy analysis; the pilot does not yet
+> replace its statistical analysis.
+>
+> **Condition comparison:** the pilot now distinguishes the two Hia5 reaction
+> conditions and compares runs without pooling. See the
+> [comparison report](docs/condition_comparison_20261014.md).
+
 A Snakemake pipeline for analyzing **Fiber-seq MPRA** (Massively Parallel Reporter Assay) data. It processes PacBio Fiber-seq reads from a saturation mutagenesis plasmid library to measure how single nucleotide variants affect chromatin architecture — protein footprints, nucleosome positioning, and transcription factor binding.
 
 ## Overview

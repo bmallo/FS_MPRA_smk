@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>LDLR · Chromatin explorer</title>
+  <style>/* STYLE_PLACEHOLDER */</style>
+</head>
+<body>
+  <header>
+    <div><div class="eyebrow">PLASMID FIBER-SEQ / LDLR</div><h1>Chromatin explorer</h1></div>
+    <div class="header-actions"><label class="button">Load pilot JSON<input id="file" type="file" accept=".json" multiple hidden></label><select id="sample" aria-label="Biological replicate"></select></div>
+  </header>
+  <div id="status" role="status" class="status">Load a pilot.json file to explore its measured molecules.</div>
+  <main id="app" hidden>
+    <section class="stats" id="stats" aria-label="Dataset summary"></section>
+    <section class="panel overview" id="comparison-panel" hidden>
+      <h2>Reaction conditions and run quality</h2>
+      <p>Runs remain separate. Shared reaction settings do not establish that every preparation or processing detail was identical.</p>
+      <div id="comparison-summary" class="table-scroll"></div>
+      <details><summary>WT landscapes across runs</summary><div id="comparison-profiles"></div></details>
+      <details><summary>Comparison definitions and processing evidence</summary><div id="comparison-methods"></div></details>
+    </section>
+    <section class="panel overview">
+      <div class="panel-heading"><div><h2>One base at a time</h2><p>Click an alternate allele to inspect its footprint and accessibility profiles.</p></div>
+        <div class="controls"><select id="metric" aria-label="Overview measurement"><option value="msp_common_site_delta">Δ region-wide MSP coverage</option><option value="tf_small_common_site_delta">Δ region-wide small-footprint coverage</option><option value="n_reads">Sampled molecules</option></select>
+          <label>Min. molecules <input id="minimum" type="number" value="10" min="1" max="1000000"></label></div></div>
+      <div class="canvas-wrap"><canvas id="alleles" height="160" aria-label="Alternate-base effect map. Use the allele selector below for keyboard navigation."></canvas></div>
+      <div class="map-footer"><span id="map-help">A / C / G / T rows · oligo positions</span><span id="scale"></span></div>
+    </section>
+    <div class="workspace">
+      <aside class="panel">
+        <h2>Inspect an allele</h2>
+        <label class="field">Search position or substitution<input id="search" type="search" placeholder="e.g. 127 or G&gt;A"></label>
+        <select id="variant" size="13" aria-label="Variant selection"></select>
+        <div class="button-row"><button id="previous" aria-label="Previous allele">←</button><button id="next" aria-label="Next allele">→</button><button id="wildtype">Wild type</button></div>
+        <div id="variant-info" class="variant-info"></div>
+        <h3>Published activity</h3><div id="mpra"></div>
+        <button id="export" class="wide">Download selected evidence</button>
+        <button id="export-summary" class="wide secondary">Download summary CSV</button>
+      </aside>
+      <div class="detail">
+        <section class="panel"><div class="panel-heading"><div><h2 id="detail-title">Chromatin profiles</h2><p id="detail-subtitle"></p></div><label>Display <select id="mode"><option value="occupancy">Called occupancy</option><option value="delta">Difference from WT</option></select></label></div>
+          <div class="legend"><span class="variant-key">Selected allele</span><span class="wt-key">WT · dashed</span><span>Vertical line · changed base</span></div>
+          <div id="profiles"></div><button id="export-profile" class="secondary">Download profiles SVG</button>
+          <div id="across-runs" class="table-scroll"></div>
+        </section>
+        <div class="distribution-grid">
+          <section class="panel"><h2>Accessibility across molecules</h2><p>Fraction of the mutable element covered by accessible segments (MSPs).</p><div id="msp-distribution"></div></section>
+          <section class="panel"><h2>Global methylation</h2><p>All methylation levels retained; these are observed populations.</p><div id="meth-distribution"></div></section>
+        </div>
+        <section class="panel"><h2>Individual molecules</h2><p>Deterministic examples, not selected for the size of an effect. Hover for read identity.</p>
+          <div class="legend"><span class="msp-key">Accessible segment</span><span class="nuc-key">Nucleosome-sized</span><span class="tf-key">Small footprint</span></div><div id="molecules"></div>
+        </section>
+      </div>
+    </div>
+    <section class="panel provenance"><details><summary>Measurement definitions, cohort, and provenance</summary><div id="methods"></div></details></section>
+  </main>
+  <footer>LDLR chromatin pilot · local, self-contained results viewer · no data uploads</footer>
+  <script id="pilot-data" type="application/json">null</script>
+  <script>/* APP_PLACEHOLDER */</script>
+</body>
+</html>

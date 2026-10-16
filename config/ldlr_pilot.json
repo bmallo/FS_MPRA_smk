@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "project_root": "/gscratch/stergachislab/bmallo/large_home/projects/LDLR_MPRA",
+  "libraries": [
+    {
+      "id": "LDLR_HepG2_newer",
+      "label": "Newer LDLR library (local identifier)",
+      "reference_fasta": "fiberseq/HepG2/replicate_3/ref/LDLR_MPRA_NotI.fa",
+      "reference_sequence_sha256": "3c50c7ddff403865331b8c87d56db8a199b66c48cd721ee533828e9ad5edbf4d",
+      "contig": "LDLR_MPRA_NotI",
+      "design_oligos": "/gscratch/stergachislab/bmallo/large_home/projects/APC_Promoter_SGE/probe_design/LDLR_oligos.txt",
+      "design_trim_left": 20,
+      "design_trim_right": 54,
+      "mutable_ref_start0": 1234,
+      "mutable_ref_end0": 1445,
+      "oligo_mutable_start1": 21,
+      "genomic_assembly": "GRCh38",
+      "genomic_chrom": "chr19",
+      "genomic_mutable_start1": 11089285,
+      "genomic_strand": "+",
+      "analysis_interval_status": "User-confirmed primary analysis interval: 211-bp mutable LDLR element (oligo positions 21\u2013231).",
+      "expected_unique_classes": {
+        "WT": 1,
+        "SNV": 633,
+        "DEL": 146,
+        "INS": 637
+      }
+    }
+  ],
+  "samples": [
+    {
+      "id": "HepG2_rep1",
+      "library_id": "LDLR_HepG2_newer",
+      "cell_type": "HepG2",
+      "biological_replicate": "1",
+      "protocol_equivalence": "Replicates 1 and 2 share the stated reaction condition; replicate 3 differs. Other preparation details are not yet documented.",
+      "inputs": {
+        "ledger": "fiberseq/HepG2/replicate_1/reanalysis_2026-10/genotyped/rep1.read_ledger.tsv.gz",
+        "metrics": "fiberseq/HepG2/replicate_1/reanalysis_2026-10/plasmid_fs/process/rep1_LDLR_HepG2/rep1_LDLR_HepG2.read_metrics.tsv.gz",
+        "footprints_bam": "fiberseq/HepG2/replicate_1/reanalysis_2026-10/plasmid_fs/footprints/rep1_LDLR_HepG2.fiberhmm.bam"
+      },
+      "reaction_condition_id": "Hia5_10min_1p5uL_per_2M",
+      "reaction": {
+        "duration_minutes": 10,
+        "hia5_volume_uL": 1.5,
+        "cells": 2000000,
+        "source": "User experimental clarification, 2026-10-14",
+        "enzyme_stock_activity": "not_documented"
+      },
+      "footprint_contract": {
+        "format": "fiberhmm_ma_sparse",
+        "evaluated_tracks": [
+          "nuc",
+          "msp",
+          "tf"
+        ],
+        "evidence": "replicate_1/reanalysis_2026-10/plasmid_fs/logs circular and linear logs document fiberhmm-call; installed FiberHMM io/ma_tags.py format_ma_tag omits empty sections"
+      }
+    },
+    {
+      "id": "HepG2_rep2",
+      "library_id": "LDLR_HepG2_newer",
+      "cell_type": "HepG2",
+      "biological_replicate": "2",
+      "protocol_equivalence": "Replicates 1 and 2 share the stated reaction condition; replicate 3 differs. Other preparation details are not yet documented.",
+      "inputs": {
+        "ledger": "fiberseq/HepG2/replicate_2/reanalysis_2026-10/genotyped/rep2.read_ledger.tsv.gz",
+        "metrics": "fiberseq/HepG2/replicate_2/reanalysis_2026-10/plasmid_fs/process/rep2_LDLR_HepG2/rep2_LDLR_HepG2.read_metrics.tsv.gz",
+        "footprints_bam": "fiberseq/HepG2/replicate_2/reanalysis_2026-10/plasmid_fs/footprints/rep2_LDLR_HepG2.fiberhmm.bam"
+      },
+      "reaction_condition_id": "Hia5_10min_1p5uL_per_2M",
+      "reaction": {
+        "duration_minutes": 10,
+        "hia5_volume_uL": 1.5,
+        "cells": 2000000,
+        "source": "User experimental clarification, 2026-10-14",
+        "enzyme_stock_activity": "not_documented"
+      },
+      "footprint_contract": {
+        "format": "fiberhmm_ma_sparse",
+        "evaluated_tracks": [
+          "nuc",
+          "msp",
+          "tf"
+        ],
+        "evidence": "replicate_2/reanalysis_2026-10/plasmid_fs/logs circular and linear logs document fiberhmm-call; installed FiberHMM io/ma_tags.py format_ma_tag omits empty sections"
+      }
+    },
+    {
+      "id": "HepG2_rep3",
+      "library_id": "LDLR_HepG2_newer",
+      "cell_type": "HepG2",
+      "biological_replicate": "3",
+      "protocol_equivalence": "Replicates 1 and 2 share the stated reaction condition; replicate 3 differs. Other preparation details are not yet documented.",
+      "footprint_contract": {
+        "format": "fiberhmm_ma_sparse",
+        "evaluated_tracks": [
+          "nuc",
+          "msp",
+          "tf"
+        ],
+        "evidence": "run_plasmid_fs.sh calls fiberhmm-call; FiberHMM io/ma_tags.py format_ma_tag omits empty track sections"
+      },
+      "inputs": {
+        "ledger": "fiberseq/HepG2/replicate_3/genotyped/PS01898.read_ledger.tsv.gz",
+        "metrics": "fiberseq/HepG2/replicate_3/plasmid_fs/process/PS01898_LDLR_HepG2/PS01898_LDLR_HepG2.read_metrics.tsv.gz",
+        "footprints_bam": "fiberseq/HepG2/replicate_3/plasmid_fs/footprints/PS01898_LDLR_HepG2.fiberhmm.bam",
+        "design_coverage": "fiberseq/HepG2/replicate_3/final/final_design_coverage.tsv"
+      },
+      "reaction_condition_id": "Hia5_5min_3uL_per_2M",
+      "reaction": {
+        "duration_minutes": 5,
+        "hia5_volume_uL": 3,
+        "cells": 2000000,
+        "source": "User experimental clarification, 2026-10-14",
+        "enzyme_stock_activity": "not_documented"
+      }
+    }
+  ],
+  "mpra_sources": [
+    {
+      "id": "published_LDLR",
+      "path": "mpra_published/GRCh38_LDLR.tsv",
+      "delimiter": "\t",
+      "cell_type": "HepG2",
+      "relationship": "external_published_assay",
+      "combination_policy": "keep_separate"
+    },
+    {
+      "id": "published_LDLR_2",
+      "path": "mpra_published/GRCh38_LDLR.2.csv",
+      "delimiter": ",",
+      "cell_type": "HepG2",
+      "relationship": "external_published_assay",
+      "combination_policy": "keep_separate"
+    }
+  ]
+}
