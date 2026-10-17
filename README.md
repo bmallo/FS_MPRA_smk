@@ -1,5 +1,14 @@
 # FS_MPRA_smk
 
+> **Raw-BAM redesign:** start with the new [processing workflow](docs/processing_workflow.md)
+> for replicate 3. It produces molecule QC/features, barcode assignments and
+> coverage, and an MPRAsnakeflow-compatible assignment export. Barcode correction
+> remains conservative. The [barcode benchmark](docs/barcode_benchmark.md)
+> compares exact grouping, quality-based correction, and Pacybara's clustering core.
+> See the [replicate-3 benchmark findings](docs/barcode_benchmark_20261016.md).
+> The [complete-ledger workflow](docs/rep3_ledger.md) reuses an indexed alignment
+> to generate all primary-plasmid genotype/barcode records and coverage summaries.
+
 > **Redesign pilot:** the new, replicate-aware LDLR implementation is available
 > through `python -m fsmpra`. See [pilot usage and limitations](docs/pilot_usage.md)
 > and the [scientific design plan](docs/redesign_scope_and_plan.md). It imports
@@ -11,6 +20,9 @@
 > **Condition comparison:** the pilot now distinguishes the two Hia5 reaction
 > conditions and compares runs without pooling. See the
 > [comparison report](docs/condition_comparison_20261014.md).
+>
+> **Full-data processing:** version 0.2 adds bounded SQLite processing and read
+> recovery QC. See the [complete-ledger report](docs/full_data_20261016.md).
 
 A Snakemake pipeline for analyzing **Fiber-seq MPRA** (Massively Parallel Reporter Assay) data. It processes PacBio Fiber-seq reads from a saturation mutagenesis plasmid library to measure how single nucleotide variants affect chromatin architecture — protein footprints, nucleosome positioning, and transcription factor binding.
 

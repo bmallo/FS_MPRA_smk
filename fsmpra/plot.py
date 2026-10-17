@@ -84,7 +84,8 @@ def plot_pilot(pilot_path, output, min_reads=10):
         ax.bar(edges[:-1], vals, width=np.diff(edges), align="edge", color="#3d6e95", edgecolor="white")
         ax.set(title=title, xlabel=xlabel, ylabel="Fraction of measured WT", xlim=(0, 1))
     fraction = pilot["sampling"]["fraction"]
-    fig.suptitle(f"{pilot['sample']['id']} · descriptive {fraction:.0%} pilot sample\n"
+    sampling_label = "complete genotype ledger" if fraction == 1 else f"{fraction:.0%} ledger sample"
+    fig.suptitle(f"{pilot['sample']['id']} · descriptive measurements · {sampling_label}\n"
                  f"{length}-bp mutable element · effects shown for ≥{min_reads} molecules · no significance tests\n"
                  "Gray = reference base, missing data, or low coverage; effect color limits use the 98th percentile",
                  fontsize=12)

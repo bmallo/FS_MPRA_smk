@@ -1,10 +1,10 @@
 {
   "comparison_manifest": "config/ldlr_pilot.json",
   "comparison_inputs": [
-    "results/conditions_20261014/HepG2_rep1/measurements/pilot.json",
-    "results/conditions_20261014/HepG2_rep2/measurements/pilot.json",
+    "results/full_20261016/HepG2_rep1/measurements/pilot.json",
+    "results/full_20261016/HepG2_rep2/measurements/pilot.json",
     "results/pilot_20261014/HepG2_rep3/measurements/pilot.json"
   ],
-  "comparison_output": "results/condition_comparison",
+  "comparison_output": "results/full_condition_comparison",
   "comparison_min_reads": 10
 }

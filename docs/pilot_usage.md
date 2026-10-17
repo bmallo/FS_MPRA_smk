@@ -90,9 +90,55 @@ The importer scans the complete compressed ledger and metrics files. It retains
 all selected genotype classes, missing metric rows, barcodes, source confidence
 tiers, global methylation, and original pipeline filter annotations. Duplicate
 selected keys and stale sources cause errors. No methylation filter is applied.
-An explicit selected-read cap bounds memory; exceeding it fails rather than
-silently truncating or changing the sampling scheme. The pilot is intended for
-bounded samples; full-library storage needs a subsequent disk-backed adapter.
+For the memory backend an explicit selected-read cap bounds memory; exceeding
+it fails rather than silently truncating or changing the sampling scheme.
+Use the SQLite backend below for full ledgers.
+
+## Full-data processing with bounded memory
+
+Version 0.2 adds a SQLite backend for both the ledger/metrics join and the
+measurement cohort/read-identity index. It uses a fixed-size SQLite cache,
+bounded input batches, and streamed output; molecule feature rows and seen
+read IDs are not accumulated in Python memory. The per-variant profiles still
+scale with library size and interval length, not molecule count.
+
+```bash
+python -m fsmpra molecules --catalog results/full/catalog/catalog.json \
+  --sample HepG2_rep1 --fraction 1 --backend sqlite \
+  --scratch-dir /tmp --cache-mib 64 --max-disk-gib 10 --batch-size 10000 \
+  --output results/full/HepG2_rep1/molecules
+
+python -m fsmpra measure --catalog results/full/catalog/catalog.json \
+  --molecules results/full/HepG2_rep1/molecules --backend sqlite \
+  --scratch-dir /tmp --cache-mib 64 --max-disk-gib 10 \
+  --output results/full/HepG2_rep1/measurements
+```
+
+Build the catalog first with the ordinary `catalog` command. Choose a fresh
+output directory for each run. In Snakemake, use `pilot_backend=sqlite`,
+`pilot_fraction=1`, `pilot_scratch_dir=/tmp`, `pilot_cache_mib=64`,
+`pilot_max_disk_gib=10`, and optionally `pilot_batch_size=10000` through
+`--config`. The memory-only `--max-molecules` limit does not cap SQLite imports.
+
+Select node-local scratch (`$TMPDIR` if set appropriately, otherwise the node's
+`/tmp`); avoid SQLite random I/O on GPFS. The disk limit caps the database file;
+rollback journals add batch-sized overhead. Final compressed TSVs and JSON go
+to the requested output directory. Scratch is removed on normal completion or
+handled exceptions. A hard kill can leave a `fsmpra-sqlite-*` temporary directory;
+remove only the directory belonging to that failed job. Interrupted stages
+restart from the beginning; this is **not** checkpoint/resume support.
+
+SQLite imports and all measurements publish their output directory only after
+success. Duplicate selected ledger IDs, duplicate matched metrics, duplicate
+eligible primary alignments, source changes, and resource-limit errors fail
+explicitly. Raw experimental inputs remain read-only.
+
+SQLite import also writes `recovery.json` and `recovery.tsv`. These cross-tabulate
+upstream plasmid class against genotype, length-based ledger structure,
+genotype tier, pass-count bin, read-length/reference-length bin, and global
+methylation bin. Missing metrics are separate. The genotype ledger population
+and all-metrics population have separate denominators. These are observations
+about imported classifications, not a causal diagnosis or a methylation filter.
 
 ## Initial measurements
 

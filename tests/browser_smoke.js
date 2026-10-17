@@ -38,6 +38,11 @@
     if(bundle.datasets) {
       check(!$("comparison-panel").hidden,"Comparison panel hidden");
       check($("comparison-profiles").querySelectorAll("svg").length===2,"WT comparison profiles missing");
+      check($("agreement-summary").textContent.includes("Pearson"),"Agreement summary missing");
+      if(bundle.comparison.recovery && Object.values(bundle.comparison.recovery).some(Boolean)) {
+        check($("recovery-summary").textContent.includes("plasmid_partial"),"Recovery classes missing");
+        check($("comparison-summary").textContent.includes("100%"),"Full-ledger fraction missing");
+      }
       check($("across-runs").querySelectorAll("button").length===bundle.datasets.length,"Allele comparison incomplete");
       $("across-runs").querySelector("button").click();
       check($("sample").value===bundle.datasets[0].sample.id,"Run switch failed");

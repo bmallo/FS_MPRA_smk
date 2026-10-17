@@ -118,6 +118,18 @@ def pairwise(datasets, min_reads):
     return result
 
 
+def recovery_evidence(data):
+    """Optional full-import QC; older pilot bundles remain readable."""
+    path = Path(data["provenance"]["molecules"]["path"]).parent / "recovery.json"
+    if not path.exists():
+        return None
+    recovery = read_json(path)
+    if (recovery["sample_id"] != data["sample"]["id"] or recovery["fraction"] != data["sampling"]["fraction"]
+            or sum(g["molecules"] for g in recovery["by_plasmid_class"].values()) != data["counts"]["imported"]):
+        raise ValueError("Recovery summary does not match measurement population")
+    return {"source": source_info(path, True), "summary": recovery}
+
+
 def compare_pilots(paths, manifest_path, output, min_reads=10, include_processing=True):
     if min_reads < 1 or len(paths) < 2:
         raise ValueError("Comparison needs at least two samples and a positive display minimum")
@@ -160,6 +172,7 @@ def compare_pilots(paths, manifest_path, output, min_reads=10, include_processin
                          "tf_small_common_site_delta": v["summary"]["tf_small_common_site_delta"]})
     report = {"display_minimum_reads": min_reads, "sample_qc": [sample_qc(d, min_reads) for d in datasets],
               "pairwise": pairwise(datasets, min_reads), "processing_evidence": processing,
+              "recovery": {d["sample"]["id"]: recovery_evidence(d) for d in datasets},
               "limitations": ["Descriptive comparison; no pooling, hypothesis tests, or biological-replicate uncertainty estimates.",
                               "Reaction assignments come from the supplied metadata manifest. Unrecorded preparation details remain unknown.",
                               "Reaction, run, software, and biological effects cannot be separated where a reaction condition has only one biological preparation.",

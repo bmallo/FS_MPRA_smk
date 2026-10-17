@@ -1,0 +1,94 @@
+{
+  "schema_version": "fsmpra.processing.v1",
+  "project_root": "/gscratch/stergachislab/bmallo/large_home/projects/LDLR_MPRA",
+  "output_dir": "results/processing_rep3",
+  "scratch_dir": "/tmp",
+  "sample": {
+    "id": "HepG2_rep3",
+    "library_id": "LDLR_HepG2_newer",
+    "cell_type": "HepG2",
+    "biological_replicate": "3",
+    "protocol_equivalence": "Replicates 1 and 2 share the stated reaction condition; replicate 3 differs. Other preparation details are not yet documented.",
+    "reaction_condition_id": "Hia5_5min_3uL_per_2M",
+    "reaction": {
+      "duration_minutes": 5,
+      "hia5_volume_uL": 3,
+      "cells": 2000000,
+      "source": "User experimental clarification, 2026-10-14",
+      "enzyme_stock_activity": "not_documented"
+    }
+  },
+  "library": {
+    "id": "LDLR_HepG2_newer",
+    "label": "Newer LDLR library (local identifier)",
+    "reference_fasta": "fiberseq/HepG2/replicate_3/ref/LDLR_MPRA_NotI.fa",
+    "reference_sequence_sha256": "3c50c7ddff403865331b8c87d56db8a199b66c48cd721ee533828e9ad5edbf4d",
+    "contig": "LDLR_MPRA_NotI",
+    "design_oligos": "/gscratch/stergachislab/bmallo/large_home/projects/APC_Promoter_SGE/probe_design/LDLR_oligos.txt",
+    "design_trim_left": 20,
+    "design_trim_right": 54,
+    "mutable_ref_start0": 1234,
+    "mutable_ref_end0": 1445,
+    "oligo_mutable_start1": 21,
+    "genomic_assembly": "GRCh38",
+    "genomic_chrom": "chr19",
+    "genomic_mutable_start1": 11089285,
+    "genomic_strand": "+",
+    "analysis_interval_status": "User-confirmed primary analysis interval: 211-bp mutable LDLR element (oligo positions 21\u2013231).",
+    "expected_unique_classes": {
+      "WT": 1,
+      "SNV": 633,
+      "DEL": 146,
+      "INS": 637
+    },
+    "barcode_start0": 3294,
+    "barcode_end0": 3309,
+    "barcode_length": 15,
+    "barcode_orientation": "reference"
+  },
+  "input": {
+    "bam": "/mmfs1/gscratch/stergachislab/bmallo/large_home/data/pacbio/r84046_20261002_184948_1_A01/ft_bams/PS01898.m84046_261003_041040_s2.bc2012.ft.bam",
+    "modifications": "existing"
+  },
+  "alignment": {
+    "reference_fasta": "/gscratch/stergachislab/bmallo/large_home/projects/LDLR_MPRA/fiberseq/HepG2/replicate_3/ref/hg38.analysisSet_LDLR_MPRA_NotI.fa",
+    "index": "/gscratch/stergachislab/bmallo/large_home/projects/LDLR_MPRA/fiberseq/HepG2/replicate_3/ref/hg38.analysisSet_LDLR_MPRA_NotI.mmi"
+  },
+  "tools": {
+    "pbmm2": "/mmfs1/home/bmallo/miniconda3/envs/general/bin/pbmm2",
+    "ft": "/mmfs1/gscratch/stergachislab/bin/fibertools-rs/bin/ft",
+    "fiberhmm": "/mmfs1/home/bmallo/miniconda3/envs/general/bin/fiberhmm-call"
+  },
+  "qc": {
+    "min_passes": 10,
+    "min_read_quality": 0.99,
+    "min_mapq": 20,
+    "min_base_quality": 20,
+    "ml_threshold": 128,
+    "end_slop": 50,
+    "max_softclip": 100,
+    "concatemer_length_fraction": 1.1,
+    "methylation_min": 0.0,
+    "methylation_max": 1.0
+  },
+  "footprints": {
+    "model": "/mmfs1/home/bmallo/miniconda3/envs/general/lib/python3.12/site-packages/fiberhmm/models/hia5_pacbio.json",
+    "model_sha256": "13342f5fc7ad1cbb5bf04fdd9cffd58823f327ce36fd0a43570a98350946b269",
+    "min_llr": 5,
+    "min_opps": 3
+  },
+  "barcodes": {
+    "method": "exact",
+    "min_assignment_reads": 2,
+    "min_seed_reads": 3,
+    "min_seed_quality": 30,
+    "max_error_quality": 19,
+    "abundance_ratio": 5,
+    "max_correction_reads": 10,
+    "max_disk_gib": 20
+  },
+  "tool_versions": {
+    "pbmm2": "26.1.99",
+    "fiberhmm": "2.12.0"
+  }
+}

@@ -1,5 +1,15 @@
 # LDLR plasmid Fiber-seq redesign: scope and proposed plan
 
+**2026-10-16 direction update:** prioritize a raw-BAM processing workflow on
+replicate 3, barcode-to-variant reconstruction and coverage, calibrated
+within-sample variant effects, interactive occupancy views, motif interpretation,
+and functional integration. Further optimization of comparisons among the current
+runs is deferred. Multiple independently constructed barcodes per variant are
+expected. MPRAsnakeflow compatibility is required for future functional data.
+The first processing implementation and its current limitations are documented in
+[processing_workflow.md](processing_workflow.md). The older cross-run roadmap below
+is retained as historical context, not the immediate priority.
+
 Updated 2026-10-14. This plan now has a descriptive pilot implementation;
 calibrated inference remains planned. Existing analyses are exploratory and
 subject to reassessment.
@@ -272,3 +282,14 @@ comparison dashboard. The primary interval is now confirmed. The 1% samples
 from runs 1–2 have insufficient shared SNV coverage for effect concordance;
 larger imports and within-condition calibration are prerequisites. See
 [condition comparison report](condition_comparison_20261014.md).
+
+### Implementation status — 2026-10-16
+
+Bounded SQLite processing now handles the complete run-1 and run-2 ledgers.
+Those runs yield 210,294 and 21,078 measured WT/SNV molecules, respectively;
+run 3 remains the existing 1% pilot. Read-structure recovery summaries,
+cross-run coverage and regional agreement tables, and updated dashboards are
+available. See [full-data processing and recovery audit](full_data_20261016.md).
+The regional summaries currently show little positive agreement between runs
+1–2. Promoter-complete partial-read sensitivity analysis, observability/null
+calibration, and localized footprint comparisons are the next scientific work.

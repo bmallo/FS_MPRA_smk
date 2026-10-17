@@ -19,6 +19,11 @@ FRACTION = float(config.get("pilot_fraction", 0.01))
 SEED = int(config.get("pilot_seed", 42))
 CAP = int(config.get("pilot_max_molecules", 200000))
 PYTHON = str(config.get("pilot_python", sys.executable))
+BACKEND = config.get("pilot_backend", "memory")
+SCRATCH = str(config.get("pilot_scratch_dir", "/tmp"))
+CACHE = int(config.get("pilot_cache_mib", 64))
+DISK = float(config.get("pilot_max_disk_gib", 10))
+BATCH = int(config.get("pilot_batch_size", 10000))
 SOURCE_SAMPLE = next(s for s in MAN["samples"] if s["id"] == SAMPLE)
 
 
@@ -69,6 +74,7 @@ rule pilot_molecules:
     params:
         repo=str(REPO), python=PYTHON, sample=SAMPLE,
         fraction=FRACTION, seed=SEED, cap=CAP,
+        backend=BACKEND, scratch=SCRATCH, cache=CACHE, disk=DISK, batch=BATCH,
     threads: 1
     resources:
         mem_mb=2048,
@@ -76,6 +82,8 @@ rule pilot_molecules:
         "cd {params.repo:q} && {params.python:q} -m fsmpra molecules "
         "--catalog {input.catalog:q}/catalog.json --sample {params.sample:q} "
         "--fraction {params.fraction} --seed {params.seed} --max-molecules {params.cap} "
+        "--backend {params.backend:q} --scratch-dir {params.scratch:q} --cache-mib {params.cache} "
+        "--max-disk-gib {params.disk} --batch-size {params.batch} "
         "--output {output.bundle:q}"
 
 
@@ -90,6 +98,7 @@ rule pilot_measure:
         bundle=directory(RUN + "/" + SAMPLE + "/measurements"),
     params:
         repo=str(REPO), python=PYTHON,
+        backend=BACKEND, scratch=SCRATCH, cache=CACHE, disk=DISK,
         min_passes=int(config.get("pilot_min_passes", 10)),
         tf_min=int(config.get("pilot_tf_min", 10)), tf_max=int(config.get("pilot_tf_max", 60)),
         nuc_min=int(config.get("pilot_nuc_min", 85)), mask=int(config.get("pilot_mask_radius", 2)),
@@ -100,6 +109,7 @@ rule pilot_measure:
         "cd {params.repo:q} && {params.python:q} -m fsmpra measure "
         "--catalog {input.catalog:q}/catalog.json --molecules {input.molecules:q} "
         "--min-passes {params.min_passes} --tf-min {params.tf_min} --tf-max {params.tf_max} "
+        "--backend {params.backend:q} --scratch-dir {params.scratch:q} --cache-mib {params.cache} --max-disk-gib {params.disk} "
         "--nuc-min {params.nuc_min} --mask-radius {params.mask} --output {output.bundle:q}"
 
 

@@ -4,6 +4,9 @@ import csv
 import gzip
 import hashlib
 import json
+import shutil
+import tempfile
+from contextlib import contextmanager
 from pathlib import Path
 
 
@@ -96,3 +99,21 @@ def new_output(path):
     path = Path(path)
     path.mkdir(parents=True, exist_ok=False)
     return path
+
+
+@contextmanager
+def atomic_output(path):
+    """Publish a complete output directory only after every stage succeeds."""
+    path = Path(path)
+    if path.exists():
+        raise FileExistsError(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    stage = Path(tempfile.mkdtemp(prefix=f".{path.name}-", dir=path.parent))
+    try:
+        yield stage
+        if path.exists():
+            raise FileExistsError(path)
+        stage.rename(path)
+    finally:
+        if stage.exists():
+            shutil.rmtree(stage)

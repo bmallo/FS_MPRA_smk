@@ -11,7 +11,8 @@ from collections import Counter
 from pathlib import Path
 
 from . import SCHEMA_VERSION, __version__
-from .io import new_output, open_text, read_json, source_info, write_json, write_table
+from .io import atomic_output, open_text, read_json, source_info, write_json, write_table
+from .storage import cohort_store
 
 
 def parse_ma(value, query_length):
@@ -75,13 +76,24 @@ def masked_mean(counts, n_reads, positions):
 
 
 def measure(catalog_path, molecules_dir, output, min_passes=10, tf_min=10, tf_max=60,
-            nuc_min=85, mask_radius=2, examples_per_variant=4):
-    import pysam
-
+            nuc_min=85, mask_radius=2, examples_per_variant=4, backend="memory", scratch_dir=None,
+            cache_mib=64, max_disk_gib=10):
     if min_passes < 0 or not 1 <= tf_min <= tf_max or nuc_min < 1 or mask_radius < 0 or examples_per_variant < 0:
         raise ValueError("Invalid measurement parameters")
-    if Path(output).exists():
-        raise FileExistsError(output)
+    with atomic_output(output) as out, cohort_store(backend, scratch_dir, cache_mib, max_disk_gib) as eligible:
+        result = _measure(catalog_path, molecules_dir, out, min_passes, tf_min, tf_max, nuc_min,
+                          mask_radius, examples_per_variant, eligible,
+                          {"backend": backend, "cache_mib": cache_mib if backend == "sqlite" else None,
+                           "max_database_gib": max_disk_gib if backend == "sqlite" else None,
+                           "molecule_features": "streamed"})
+    result["output"] = str(output)
+    return result
+
+
+def _measure(catalog_path, molecules_dir, output, min_passes, tf_min, tf_max,
+             nuc_min, mask_radius, examples_per_variant, eligible, storage):
+    import pysam
+
     catalog = read_json(catalog_path)
     mol_dir = Path(molecules_dir)
     audit = read_json(mol_dir / "audit.json")
@@ -105,8 +117,7 @@ def measure(catalog_path, molecules_dir, output, min_passes=10, tf_min=10, tf_ma
     by_id = {v["variant_id"]: v for v in lib["variants"]}
     specs = {"tf_small": ("tf", tf_min, tf_max), "nucleosome": ("nuc", nuc_min, None),
              "msp": ("msp", 1, None)}
-    counts = Counter()
-    eligible = {}
+    counts = Counter({"imported": 0, "measured": 0})
     with open_text(mol_dir / "molecules.tsv.gz") as handle:
         for row in csv.DictReader(handle, delimiter="\t"):
             counts["imported"] += 1
@@ -120,9 +131,8 @@ def measure(catalog_path, molecules_dir, output, min_passes=10, tf_min=10, tf_ma
                 continue
             if row["variant_id"] not in by_id:
                 raise ValueError("Unknown molecule variant_id")
-            if row["read_id"] in eligible:
-                raise ValueError("Duplicate molecule ID")
-            eligible[row["read_id"]] = row
+            eligible.add(row)
+    eligible.finish()
     logging.info("Measurement cohort: %s sampled WT/SNV molecules", f"{len(eligible):,}")
     aggregate = {}
     for v in lib["variants"]:
@@ -136,9 +146,11 @@ def measure(catalog_path, molecules_dir, output, min_passes=10, tf_min=10, tf_ma
                                              "full_coverage_counts": [0] * length, "n_full_coverage": 0,
                                              "footprint_length_histogram": Counter()}
                                         for key in specs}}
-    seen = set()
-    feature_rows = []
-    with pysam.AlignmentFile(bam_path, "rb", threads=1) as bam:
+    fields = ["sample_id", "read_id", "variant_id", "source_variant", "global_methylation_fraction", "strand", "aligned_region_bases"]
+    fields += [field for name in specs for field in (f"{name}_fraction", f"{name}_segments")]
+    with open_text(Path(output) / "molecule_features.tsv.gz", "wt") as features_handle, pysam.AlignmentFile(bam_path, "rb", threads=1) as bam:
+        writer = csv.DictWriter(features_handle, fieldnames=fields, delimiter="\t")
+        writer.writeheader()
         if bam.get_reference_length(lib["contig"]) != lib["reference_length"]:
             raise ValueError("BAM reference length disagrees with catalog")
         for i, read in enumerate(bam.fetch(lib["contig"], start, end), 1):
@@ -146,12 +158,9 @@ def measure(catalog_path, molecules_dir, output, min_passes=10, tf_min=10, tf_ma
                 logging.info("BAM: %s alignments scanned, %s sampled reads measured", f"{i:,}", f"{counts['measured']:,}")
             if read.is_secondary or read.is_supplementary or read.is_unmapped:
                 continue
-            mol = eligible.get(read.query_name)
+            mol = eligible.take(read.query_name)
             if mol is None:
                 continue
-            if read.query_name in seen:
-                raise ValueError(f"Duplicate primary alignment {read.query_name}")
-            seen.add(read.query_name)
             qmap = read.get_reference_positions(full_length=True)
             pairs = [(q, r - start) for q, r in enumerate(qmap) if r is not None and start <= r < end]
             aligned = {p for q, p in pairs}
@@ -209,7 +218,7 @@ def measure(catalog_path, molecules_dir, output, min_passes=10, tf_min=10, tf_ma
                     item["msp_fraction_histogram"][min(19, int(fraction * 20))] += 1
                     item["msp_fraction_n"] += 1
                     item["msp_fraction_sum"] += fraction
-            feature_rows.append(count_row)
+            writer.writerow(count_row)
             # Representative examples: deterministic bottom-k by read hash, not BAM order.
             if examples_per_variant:
                 rank = hashlib.sha256(read.query_name.encode()).hexdigest()
@@ -220,9 +229,13 @@ def measure(catalog_path, molecules_dir, output, min_passes=10, tf_min=10, tf_ma
                     examples.sort(key=lambda x: x["rank"])
                     del examples[examples_per_variant:]
             counts["measured"] += 1
-    counts["eligible_missing_from_BAM_region"] = len(eligible) - len(seen)
+    counts["eligible_missing_from_BAM_region"] = eligible.missing()
     if source_info(bam_path) != bam_source:
         raise ValueError("BAM changed during measurement")
+    if source_info(mol_dir / "molecules.tsv.gz", True) != molecule_source:
+        raise ValueError("Molecule table changed during measurement")
+    if source_info(catalog_path, True) != audit["catalog"]:
+        raise ValueError("Catalog changed during measurement")
     wt_id = next(v["variant_id"] for v in lib["variants"] if v["class"] == "WT")
     wt = aggregate[wt_id]
     summary, records = [], []
@@ -259,26 +272,23 @@ def measure(catalog_path, molecules_dir, output, min_passes=10, tf_min=10, tf_ma
               "region": {"contig": lib["contig"], "start0": start, "end0": end,
                          "oligo_start1": lib["oligo_mutable_start1"], "sequence": lib["mutable_sequence"],
                          "status": lib["analysis_interval_status"]},
-              "sampling": audit["sampling"], "counts": dict(counts),
+              "sampling": audit["sampling"], "counts": dict(counts), "storage": storage,
               "method": {"caller": "existing FiberHMM MA", "MA_coordinates": "1-based stored-SEQ; no reverse-strand flip",
                          "footprint_contract": contract,
                          "tracks": specs, "min_passes": min_passes, "methylation_selection": None,
                          "common_site_exclusion_radius_bp": mask_radius, "histogram_edges": [i / 20 for i in range(21)],
                          "inference": "descriptive_only", "cohort": "full plasmid, WT or single SNV, pass threshold, exact designed mutable sequence"},
               "provenance": {"catalog": source_info(catalog_path, True), "molecules": molecule_source, "bam": bam_source},
-              "limitations": ["Pilot sample; no p-values, confidence intervals, or claims of discovery.",
+              "limitations": ["Descriptive measurements; no p-values, confidence intervals, or claims of discovery.",
                               "MSP coverage is a caller-derived accessibility proxy, not absolute accessibility.",
                               "Sequence-dependent footprint observability is not calibrated; masking is a sensitivity readout, not a validated correction.",
-                              "Only the 211-bp mutable region is summarized; promoter boundary selection remains provisional.",
+                              f"Only the declared {length}-bp mutable interval is summarized; see region status for its experimental definition.",
                               "Exact sequence validation is confined to the mutable interval; flanking mutations remain unassessed.",
                               "Absent MA is missing data. Omitted tracks are zero only when the manifest declares they were evaluated by the sparse writer. All methylation levels remain represented."],
               "variants": records,
               "mpra": [r for r in catalog["mpra"] if r["variant_id"] in aggregate]}
-    out = new_output(output)
+    out = Path(output)
     write_json(out / "pilot.json", result)
     write_table(out / "variant_summary.tsv", summary, list(summary[0]))
-    fields = ["sample_id", "read_id", "variant_id", "source_variant", "global_methylation_fraction", "strand", "aligned_region_bases"]
-    fields += [field for name in specs for field in (f"{name}_fraction", f"{name}_segments")]
-    write_table(out / "molecule_features.tsv.gz", feature_rows, fields)
-    write_json(out / "audit.json", {k: result[k] for k in ("schema_version", "sample", "sampling", "counts", "method", "provenance", "limitations")})
+    write_json(out / "audit.json", {k: result[k] for k in ("schema_version", "sample", "sampling", "counts", "method", "storage", "provenance", "limitations")})
     return {"sample_id": sample["id"], "counts": dict(counts), "output": str(out)}

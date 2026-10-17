@@ -36,7 +36,44 @@ def finite_float(value, name):
     return result
 
 
-def import_molecules(catalog_path, sample_id, output, fraction=0.01, seed=42, max_molecules=200000):
+
+def ledger_molecule(row, sample_id, lib, alias, by_seq):
+    label = row["variant"]
+    vid = None
+    if row["class"] in ("WT", "SNV", "INS", "DEL"):
+        if label not in alias:
+            seq = source_variant_sequence(lib["mutable_sequence"], label, lib["oligo_mutable_start1"])
+            alias[label] = by_seq[seq]
+        vid = alias[label]
+    return {
+        "sample_id": sample_id, "read_id": row["read"], "variant_id": vid,
+        "genotype_class": row["class"], "source_variant": label,
+        "source_design": row["design"], "barcode": row["barcode"],
+        "passes": int(row["np"]), "read_quality": finite_float(row["rq"], "rq"),
+        "read_length": int(row["len"]), "strand": row["strand"],
+        "n_edits": int(row["n_edits"]), "max_del_run": int(row["max_del_run"]),
+        "genotype_tier": row["tier"], "ledger_structure": row["structure"],
+        "metrics_present": 0}
+
+
+def join_metric(mol, row, lib):
+    mf = finite_float(row["mf"], "mf")
+    if not 0 <= mf <= 1:
+        raise ValueError(f"Invalid methylation fraction for {row['read']}")
+    if row["contig"] != lib["contig"]:
+        raise ValueError(f"Ledger/metrics contig disagreement for {row['read']}")
+    mol.update(plasmid_class=row["pc"], global_methylation_fraction=mf,
+               nucleosome_count=int(row["nc"]), unresolved_fraction=finite_float(row["rf"], "rf"),
+               source_filter_status=row["fs"], metrics_present=1,
+               source_at_count=int(row["at"]), source_m6a_count=int(row["m6a"]))
+
+def import_molecules(catalog_path, sample_id, output, fraction=0.01, seed=42, max_molecules=200000,
+                     backend="memory", scratch_dir=None, cache_mib=64, max_disk_gib=10, batch_size=10000):
+    if backend == "sqlite":
+        from .disk_import import import_disk
+        return import_disk(catalog_path, sample_id, output, fraction, seed, scratch_dir, cache_mib, max_disk_gib, batch_size)
+    if backend != "memory":
+        raise ValueError("Unknown storage backend")
     if not 0 < fraction <= 1 or max_molecules < 1:
         raise ValueError("fraction must be in (0,1]; max_molecules must be positive")
     catalog = read_json(catalog_path)
@@ -64,23 +101,8 @@ def import_molecules(catalog_path, sample_id, output, fraction=0.01, seed=42, ma
                 raise ValueError(f"Duplicate selected ledger read: {row['read']}")
             if len(molecules) >= max_molecules:
                 raise ValueError("Selected molecule cap exceeded; reduce fraction or explicitly raise --max-molecules")
-            label = row["variant"]
-            vid = None
-            if row["class"] in ("WT", "SNV", "INS", "DEL"):
-                if label not in alias:
-                    seq = source_variant_sequence(lib["mutable_sequence"], label, lib["oligo_mutable_start1"])
-                    alias[label] = by_seq[seq]
-                vid = alias[label]
             selected_classes[row["class"]] += 1
-            molecules[row["read"]] = {
-                "sample_id": sample_id, "read_id": row["read"], "variant_id": vid,
-                "genotype_class": row["class"], "source_variant": label,
-                "source_design": row["design"], "barcode": row["barcode"],
-                "passes": int(row["np"]), "read_quality": finite_float(row["rq"], "rq"),
-                "read_length": int(row["len"]), "strand": row["strand"],
-                "n_edits": int(row["n_edits"]), "max_del_run": int(row["max_del_run"]),
-                "genotype_tier": row["tier"], "ledger_structure": row["structure"],
-                "metrics_present": 0}
+            molecules[row["read"]] = ledger_molecule(row, sample_id, lib, alias, by_seq)
     n_metrics = 0
     with open_text(metrics_path) as handle:
         reader = csv.DictReader(handle, delimiter="\t")
@@ -94,15 +116,7 @@ def import_molecules(catalog_path, sample_id, output, fraction=0.01, seed=42, ma
                 continue
             if mol["metrics_present"]:
                 raise ValueError(f"Duplicate selected metric read: {row['read']}")
-            mf = finite_float(row["mf"], "mf")
-            if not 0 <= mf <= 1:
-                raise ValueError(f"Invalid methylation fraction for {row['read']}")
-            if row["contig"] != lib["contig"]:
-                raise ValueError(f"Ledger/metrics contig disagreement for {row['read']}")
-            mol.update(plasmid_class=row["pc"], global_methylation_fraction=mf,
-                       nucleosome_count=int(row["nc"]), unresolved_fraction=finite_float(row["rf"], "rf"),
-                       source_filter_status=row["fs"], metrics_present=1,
-                       source_at_count=int(row["at"]), source_m6a_count=int(row["m6a"]))
+            join_metric(mol, row, lib)
     for source in sources:
         if source_info(source["path"]) != source:
             raise ValueError("An input changed during import")
