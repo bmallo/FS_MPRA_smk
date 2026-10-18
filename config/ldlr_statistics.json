@@ -1,0 +1,31 @@
+{
+  "schema_version": "fsmpra.statistics_config.v1",
+  "sample_id": "HepG2_rep3",
+  "joined_dir": "results/rep3_footprints_20261017",
+  "catalog": "results/rep3_ledger_20261016/catalog/catalog.json",
+  "interval": [1234, 1445],
+  "tracks": ["tf_small", "msp"],
+  "primary_cohort": "footprint_analysis_eligible_with_barcode",
+  "primary_weighting": "equal_barcode",
+  "tf_window_width": 20,
+  "tf_window_step": 10,
+  "include_terminal_window": true,
+  "min_barcodes": 50,
+  "min_molecules": 100,
+  "min_nonzero_barcodes": 10,
+  "min_nonone_barcodes": 10,
+  "confidence_level": 0.95,
+  "fdr_method": "BY",
+  "fdr_alpha": 0.05,
+  "sensitivity_mask_radius": 2,
+  "max_barcodes": 1000000,
+  "seed": 17012026,
+  "calibration": {
+    "iterations": 200,
+    "wt_pseudo_variant_barcodes": [50, 100, 400, 1000],
+    "null_rate_upper_limit": 0.10,
+    "ci_coverage_lower_limit": 0.90,
+    "minimum_testable_iterations": 100
+  },
+  "interpretation": "Exploratory within-sample caller associations. Statistical calibration does not establish sequence-independent detectability or biological replication."
+}

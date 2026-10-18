@@ -8,6 +8,22 @@
 > See the [replicate-3 benchmark findings](docs/barcode_benchmark_20261016.md).
 > The [complete-ledger workflow](docs/rep3_ledger.md) reuses an indexed alignment
 > to generate all primary-plasmid genotype/barcode records and coverage summaries.
+> See the [completed replicate-3 ledger and coverage report](docs/rep3_ledger_20261016.md).
+> The [footprint join](docs/footprint_join.md) links existing FiberHMM calls to
+> this ledger, preserving molecule IDs, barcode assignments and annotation missingness.
+> See the [completed replicate-3 footprint join](docs/rep3_footprints_20261017.md).
+> The new [statistical specification](docs/rep3_statistics_design.md) and
+> [statistics workflow](docs/statistics_usage.md) use barcode-level comparisons
+> in fixed windows, with WT A/A and simulation checks before releasing effects.
+> These replace the legacy statistical assumptions for the replicate-3 redesign.
+> See the [first full-data statistical report](docs/rep3_statistics_20261017.md):
+> effect estimates are available, but the initial calibration failed and
+> significance labels are withheld.
+> The [heterogeneity design](docs/rep3_heterogeneity_design.md) and
+> [heterogeneity workflow](docs/heterogeneity_usage.md) characterize observed
+> whole-plasmid, distal and element methylation/footprint variation before
+> choosing filters or a replacement statistical test.
+> See the [completed replicate-3 heterogeneity report](docs/rep3_heterogeneity_20261017.md).
 
 > **Redesign pilot:** the new, replicate-aware LDLR implementation is available
 > through `python -m fsmpra`. See [pilot usage and limitations](docs/pilot_usage.md)

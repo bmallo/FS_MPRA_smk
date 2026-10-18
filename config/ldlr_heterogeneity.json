@@ -1,0 +1,25 @@
+{
+  "schema_version": "fsmpra.heterogeneity_config.v1",
+  "ledger_run_dir": "results/rep3_ledger_20261016",
+  "footprint_run_dir": "results/rep3_footprints_20261017",
+  "footprint_contract": "config/rep3_existing_footprints.json",
+  "output_dir": "results/rep3_heterogeneity_20261017",
+  "regions": {
+    "whole": [[0, 4647]],
+    "element": [[1234, 1445]],
+    "distal": [[0, 1134], [1545, 3269], [3334, 4647]]
+  },
+  "tile_size": 100,
+  "tile_min_at": 20,
+  "thresholds": [128, 204],
+  "tf_min": 10,
+  "tf_max": 60,
+  "nuc_min": 85,
+  "summary": {
+    "max_barcodes": 1000000,
+    "histogram_bins": 40,
+    "state_edges": [0, 0.1, 0.25, 0.5, 0.75, 1.0],
+    "plot_min_barcodes": 50,
+    "interpretation": "Descriptive observed heterogeneity. No new filters, significance tests, efficiency correction, compartment assignment, or causal within-state claims."
+  }
+}

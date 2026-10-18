@@ -1,5 +1,10 @@
 # Detection sensitivity & power — FS-MPRA Stage 3
 
+**Historical scope:** the molecule-independent planning formulas below are not
+validated power calculations for the new barcode-aware replicate-3 analysis.
+Use the [new specification](rep3_statistics_design.md); it separates barcode
+support, empirical calibration, and nominal versus multiplicity-adjusted power.
+
 How much sequencing (physical) and how much null computation
 (computational) you need to detect an occupancy change of a given
 size. Use this for experimental design and for interpreting whether a

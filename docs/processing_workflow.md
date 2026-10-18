@@ -150,6 +150,13 @@ of read support, not a number of biological replicates.
 | `footprints/footprints.bam` | Original molecules with recalled footprint annotations |
 | `features/molecule_features.tsv.gz` | QC, genotype, barcode, and footprint features joined per molecule |
 
+For the complete replicate-3 ledger with existing caller output, use the
+[separate footprint join](footprint_join.md). Its `molecule_footprints.tsv.gz`
+also retains individual region-overlapping calls, original lengths and raw AQ
+quality values. It explicitly retains ledger rows missing from the annotation
+BAM. This entrypoint reuses historical calls and does not run the recall stage
+listed above.
+
 The `sequence_assigned` coverage cohort includes observed exact design matches,
 including those subsequently rejected for sequencing quality; inspect genotype
 status for confidence. `sequence_qualified` applies genotype and sequencing QC

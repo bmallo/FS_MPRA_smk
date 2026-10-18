@@ -1,0 +1,16 @@
+{
+  "schema_version": "fsmpra.footprint_contract.v1",
+  "sample_id": "HepG2_rep3",
+  "bam": "/gscratch/stergachislab/bmallo/large_home/projects/LDLR_MPRA/fiberseq/HepG2/replicate_3/plasmid_fs/footprints/PS01898_LDLR_HepG2.fiberhmm.bam",
+  "format": "fiberhmm_ma_sparse",
+  "evaluated_tracks": ["tf", "nuc", "msp"],
+  "source": "Existing October 2026 FiberHMM annotations; no recall in this join",
+  "evidence": {
+    "caller_logs": [
+      "/gscratch/stergachislab/bmallo/large_home/projects/LDLR_MPRA/fiberseq/HepG2/replicate_3/plasmid_fs/logs/PS01898_LDLR_HepG2.circ.fiberhmm.log",
+      "/gscratch/stergachislab/bmallo/large_home/projects/LDLR_MPRA/fiberseq/HepG2/replicate_3/plasmid_fs/logs/PS01898_LDLR_HepG2.linear.fiberhmm.log"
+    ],
+    "sparse_writer": "/mmfs1/home/bmallo/miniconda3/envs/general/lib/python3.12/site-packages/fiberhmm/io/ma_tags.py",
+    "interpretation": "Caller logs document fused apply and TF recall. The installed format_ma_tag writer omits empty tracks. Current source is supporting evidence, not a byte-identical historical software snapshot."
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "schema_version": "fsmpra.footprint_quality_config.v1",
+  "barcode_metadata": "results/rep3_statistics_20261017/aggregates/barcode_metadata.tsv.gz",
+  "barcode_audit": "results/rep3_statistics_20261017/aggregates/audit.json",
+  "features": "results/rep3_heterogeneity_20261017/features/molecule_heterogeneity.tsv.gz",
+  "feature_audit": "results/rep3_heterogeneity_20261017/features/audit.json",
+  "catalog": "results/rep3_ledger_20261016/catalog/catalog.json",
+  "ledger_config": "results/rep3_ledger_20261016/config.json",
+  "footprint_contract": "config/rep3_existing_footprints.json",
+  "output_dir": "results/rep3_footprint_quality_20261018",
+  "seed": 20261018,
+  "sample_barcodes": 10000,
+  "max_molecules": 1000000,
+  "representative_n": 6,
+  "tf_min": 10,
+  "tf_max": 60,
+  "nuc_min": 85,
+  "nuc_band_edges": [85, 251, 501, 1001],
+  "processing_python": "/mmfs1/home/bmallo/miniconda3/bin/python",
+  "benchmark": {
+    "seed": 20261019,
+    "iterations": 200,
+    "permutations": 499,
+    "variant_barcode_counts": [100, 400],
+    "control_barcodes": 1000,
+    "windows": [[120, 140], [140, 160]],
+    "alpha": 0.05,
+    "interpretation": "Fixed diagnostic comparison of candidate tests, not a variant discovery analysis or validation of small multiple-testing tails. Release remains withheld."
+  }
+}

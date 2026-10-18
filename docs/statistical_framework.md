@@ -1,8 +1,12 @@
 # FS-MPRA statistical framework (plain-language reference)
 
 What the pipeline does, end to end, and why — every term defined.
-Status: Phase 1 complete and validated (exact FDR control at
-production scale with the default config).
+Status: historical legacy implementation. Its calibration claims below do not
+validate the new replicate-3 barcode-aware analysis. In particular, physical
+molecule counts are not automatically independent observations, conditioning
+on nucleosome state changes the target question, and motif selection does not
+automatically inherit a preceding test's error control. Use the
+[replicate-3 statistical specification](rep3_statistics_design.md) for new work.
 
 ## The question being answered
 
