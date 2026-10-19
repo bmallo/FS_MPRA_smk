@@ -24,6 +24,21 @@
 > whole-plasmid, distal and element methylation/footprint variation before
 > choosing filters or a replacement statistical test.
 > See the [completed replicate-3 heterogeneity report](docs/rep3_heterogeneity_20261017.md).
+> The [WT footprint-quality design](docs/rep3_footprint_quality_design.md) and
+> [audit workflow](docs/footprint_quality_usage.md) inspect original call lengths,
+> sequence observability and barcode outcomes, then benchmark Welch and
+> studentized permutation tests without releasing variant significance.
+> See the [completed WT audit and benchmark](docs/rep3_footprint_quality_20261018.md)
+> for caller-score limitations, reproducibility and candidate-test results.
+> The [expanded calibration design](docs/rep3_heldout_calibration_design.md) and
+> [workflow](docs/heldout_calibration_usage.md) evaluate all fixed endpoints
+> against a much larger WT reference, including sparse unequal-variance stress
+> tests, smaller effects and interval coverage. The
+> [caller provenance audit](docs/rep3_caller_provenance_20261018.md) traces
+> retained m6A scores and the uninformative nucleosome-score field.
+> See the [completed expanded calibration](docs/rep3_heldout_calibration_20261018.md):
+> permutation testing improves false-positive control, but sparse effects and
+> confidence intervals still need calibration before variant significance is released.
 
 > **Redesign pilot:** the new, replicate-aware LDLR implementation is available
 > through `python -m fsmpra`. See [pilot usage and limitations](docs/pilot_usage.md)

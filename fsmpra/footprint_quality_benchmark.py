@@ -5,13 +5,14 @@ This diagnostic never updates variant inference, q-values, or release status.
 import argparse
 import csv
 import json
-from collections import defaultdict
+from collections import Counter, defaultdict
 from pathlib import Path
 
 import numpy as np
 from scipy.stats import binomtest, t as student_t
 
 from .io import atomic_output, read_json, source_info, write_json, write_table
+from .processing import check_sources
 from .statistics import fixed_endpoints
 
 
@@ -114,14 +115,23 @@ def _validate_config(cfg, pilot_iterations, pilot_permutations):
 
 def _load_summary(config_path, summary_dir):
     summary_dir = Path(summary_dir)
-    report = read_json(summary_dir / "summary.json")
+    summary_path = summary_dir / "summary.json"
+    summary_source = source_info(summary_path, True)
+    report = read_json(summary_path)
     if report.get("schema_version") != "fsmpra.footprint_quality_summary.v1" or not report.get("sample_id"):
         raise ValueError("Expected a complete footprint-quality summary")
+    if (report.get("complete") is not True or report.get("pilot") is not False or
+            report.get("sampled_barcodes") != 10_000 or report.get("endpoint_count") != 22 or
+            report.get("endpoint_matrix") != "barcode_endpoint_matrix.npz"):
+        raise ValueError("Benchmark requires the complete 10,000-barcode summary")
     records = {item["path"]: item for item in report.get("sources", [])}
+    if len(records) != len(report.get("sources", [])) or not records:
+        raise ValueError("Duplicate or missing summary source records")
     for path in (config_path, summary_dir / "barcode_endpoint_matrix.npz"):
         current = source_info(path, True)
         if records.get(current["path"]) != current:
             raise ValueError("Summary source provenance mismatch")
+    check_sources(report["sources"])
     with np.load(summary_dir / "barcode_endpoint_matrix.npz", allow_pickle=False) as data:
         expected_keys = {"barcodes", "endpoint_ids", "presence", "coverage", "valid_molecules", "depths",
                          "splits", "relative_starts", "relative_ends", "reference_starts0", "reference_ends0"}
@@ -145,6 +155,8 @@ def _load_summary(config_path, summary_dir):
             raise ValueError("Endpoint matrix shape mismatch")
     if arrays["depths"].shape != (n,) or arrays["splits"].shape != (n,) or not set(arrays["splits"]) == {"A", "B"}:
         raise ValueError("Invalid barcode depths or independent splits")
+    if dict(Counter(arrays["splits"])) != report.get("split_barcodes"):
+        raise ValueError("Matrix and summary split barcode counts differ")
     valid = arrays["valid_molecules"]
     if np.any(valid < 0) or np.any(valid > arrays["depths"][:, None]) or np.any(arrays["depths"] <= 0):
         raise ValueError("Invalid endpoint molecule denominators")
@@ -154,7 +166,15 @@ def _load_summary(config_path, summary_dir):
             raise ValueError("Missingness or fraction range differs from molecule counts")
     if report.get("sampled_barcodes") != n:
         raise ValueError("Summary barcode count mismatch")
+    if source_info(summary_path, True) != summary_source:
+        raise ValueError("Summary JSON changed while being read")
     return report, arrays
+
+
+def _draw_wt_groups(rng, pool, n_variant, n_control):
+    """Draw unique barcode rows, with disjoint pseudo-variant and control arms."""
+    selected = rng.choice(pool, n_variant + n_control, replace=False)
+    return selected[:n_variant], selected[n_variant:]
 
 
 def _targets(endpoints):
@@ -195,6 +215,10 @@ def benchmark(config_path, summary_dir, output, pilot_iterations=None, pilot_per
     cfg = read_json(config_path)
     b, iterations, permutations, partial = _validate_config(cfg, pilot_iterations, pilot_permutations)
     summary, arrays = _load_summary(config_path, summary_dir)
+    source_paths = [config_path, Path(summary_dir) / "summary.json",
+                    Path(summary_dir) / "barcode_endpoint_matrix.npz", __file__,
+                    Path(__file__).with_name("statistics.py")]
+    sources = [source_info(path, True) for path in source_paths]
     endpoints = fixed_endpoints()
     targets = _targets(endpoints)
     endpoint_index = {name: j for j, name in enumerate(arrays["endpoint_ids"])}
@@ -206,6 +230,11 @@ def benchmark(config_path, summary_dir, output, pilot_iterations=None, pilot_per
         complete &= np.isfinite(arrays[metric][:, j])
     records = []
     available = {}
+    missing_by_target = {f"{eid}:{metric}": int(np.count_nonzero(~np.isfinite(arrays[metric][:, j])))
+                         for (eid, metric), (_, j) in zip(targets, columns)}
+    if any(count == len(arrays["barcodes"]) for count in missing_by_target.values()):
+        raise ValueError("A fixed target has no observed WT barcodes")
+    complete_total = int(np.count_nonzero(complete))
     for partition in ("A", "B"):
         pool = np.flatnonzero((arrays["splits"] == partition) & complete)
         available[partition] = len(pool)
@@ -214,8 +243,7 @@ def benchmark(config_path, summary_dir, output, pilot_iterations=None, pilot_per
         for scenario, n_variant in enumerate(b["variant_barcode_counts"]):
             rng = _seed(b["seed"], partition, scenario)
             for iteration in range(iterations):
-                selected = rng.choice(pool, n_variant+b["control_barcodes"], replace=False)
-                variant, control = selected[:n_variant], selected[n_variant:]
+                variant, control = _draw_wt_groups(rng, pool, n_variant, b["control_barcodes"])
                 for (eid, metric), (_, j) in zip(targets, columns):
                     x, y = arrays[metric][variant, j], arrays[metric][control, j]
                     records.extend(_contrast_rows(partition, f"wt_aa_n{n_variant}", iteration,
@@ -262,25 +290,32 @@ def benchmark(config_path, summary_dir, output, pilot_iterations=None, pilot_per
                  median_nonzero_variant=float(np.median([r["nonzero_variant"] for r in rows])),
                  median_nonzero_control=float(np.median([r["nonzero_control"] for r in rows])),
                  **{f"p_q{int(q*100):02d}": float(np.quantile(p, q)) for q in (.01, .05, .5, .95)}))
-    source_paths = [config_path, Path(summary_dir) / "summary.json",
-                    Path(summary_dir) / "barcode_endpoint_matrix.npz", __file__,
-                    Path(__file__).with_name("statistics.py")]
     audit = dict(schema_version="fsmpra.footprint_quality_benchmark.v1",
         sample_id=summary["sample_id"], partial=partial,
         iterations=iterations, permutations=permutations, alpha=b["alpha"],
         fixed_targets=[dict(endpoint_id=eid, metric=metric) for eid, metric in targets],
         complete_barcodes_by_partition=available,
+        complete_barcodes_total=complete_total,
+        sampled_barcodes=10_000,
+        excluded_barcodes_missing_fixed_target=10_000-complete_total,
+        missing_barcodes_by_target=missing_by_target,
         tested_methods=["welch", "studentized_permutation"],
         total_contrasts=len(records)//2, release_withheld=True,
         limitations=["Studentized permutation is not finite-sample exact for mean-null unequal variances.",
                      "Monte Carlo p-value resolution does not assess 13,926-hypothesis tails.",
-                     "No variant p/q values or confidence intervals are produced."],
-        sources=[source_info(p, True) for p in source_paths])
+                     "No variant p/q values or variant-effect confidence intervals are produced."],
+        sources=sources)
+    check_sources(summary["sources"])
+    check_sources(sources)
     with atomic_output(output) as out:
         write_table(out / "iterations.tsv.gz", records, list(records[0]))
         write_table(out / "summary.tsv", summaries, list(summaries[0]))
         write_json(out / "audit.json", audit)
-    return dict(contrasts=len(records)//2, partial=partial, complete_barcodes_by_partition=available)
+        check_sources(summary["sources"])
+        check_sources(sources)
+    return dict(contrasts=len(records)//2, partial=partial,
+                complete_barcodes_by_partition=available,
+                excluded_barcodes_missing_fixed_target=10_000-complete_total)
 
 
 if __name__ == "__main__":

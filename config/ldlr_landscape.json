@@ -1,0 +1,10 @@
+{
+  "schema_version": "fsmpra.landscape_config.v1",
+  "sample_id": "HepG2_rep3",
+  "aggregates": "results/rep3_statistics_20261017/aggregates",
+  "joined_dir": "results/rep3_footprints_20261017",
+  "catalog": "results/rep3_ledger_20261016/catalog/catalog.json",
+  "heterogeneity": "results/rep3_heterogeneity_20261017/summary/variant_heterogeneity.tsv.gz",
+  "output_dir": "results/rep3_landscape_20261018",
+  "processing_python": "/mmfs1/home/bmallo/miniconda3/bin/python"
+}

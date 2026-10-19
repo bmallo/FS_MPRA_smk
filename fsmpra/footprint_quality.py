@@ -32,7 +32,8 @@ GROUPS = ("no_nuc_with_localTF", "no_nuc_without_localTF",
 BARCODE_FIELDS = ["barcode", "variant_id", "eligible_depth", "split", "weight", "selection_hash"]
 CALL_FIELDS = ["read_id", "barcode", "split", "weight", "track", "band",
                "query_start0", "original_length", "ref_intervals0", "quality_spec",
-               "quality", "call_name"]
+               "quality", "call_name", "query_at_count", "query_m6a128_count",
+               "query_m6a204_count"]
 BITMAP_FIELDS = ["element_aligned_offsets0", "element_at_offsets0",
                  "element_m6a_offsets0", "element_m6a_204_offsets0",
                  "element_tf_small_offsets0", "element_msp_offsets0"]
@@ -144,6 +145,17 @@ def positions(spans, start=0):
     return [pos - start for lo, hi in merge_intervals(spans) for pos in range(lo, hi)]
 
 
+def query_call_counts(start, length, at_prefix, pos128, pos204):
+    """Count bases and decoded m6A calls over the original stored-query span."""
+    end = start + length
+    if start < 0 or length <= 0 or end > len(at_prefix) - 1:
+        raise ValueError(f"MA query interval outside stored SEQ: {start}, {length}")
+    at = int(at_prefix[end] - at_prefix[start])
+    m128 = int(np.searchsorted(pos128, end) - np.searchsorted(pos128, start))
+    m204 = int(np.searchsorted(pos204, end) - np.searchsorted(pos204, start))
+    return at, m128, m204
+
+
 def _close(actual, expected, read_id, label):
     if expected == "":
         if actual != "":
@@ -174,6 +186,9 @@ def audit_read(read, feature, barcode_info, spec, representative=False):
         qref[qa:qb] = np.arange(ra, ra + qb - qa, dtype=np.int32)
     base = np.frombuffer(seq.encode("ascii"), dtype=np.uint8)
     at_mask = (base == ord("A")) | (base == ord("T"))
+    at_prefix = np.empty(len(seq) + 1, dtype=np.int32)
+    at_prefix[0] = 0
+    np.cumsum(at_mask, dtype=np.int32, out=at_prefix[1:])
     element_mask = (qref >= element_start) & (qref < element_end)
     aligned_offsets = (qref[element_mask] - element_start).tolist()
     at_offsets = (qref[element_mask & at_mask] - element_start).tolist()
@@ -200,6 +215,8 @@ def audit_read(read, feature, barcode_info, spec, representative=False):
     for track in ("tf", "nuc", "msp"):
         for call in calls[track]:
             length = call["query_length"]
+            query_at, query_m128, query_m204 = query_call_counts(
+                call["query_start0"], length, at_prefix, pos128, pos204)
             band = band_for(track, length)
             spans = call["ref_intervals0"]
             element_spans = clip_intervals(spans, element_start, element_end)
@@ -210,7 +227,10 @@ def audit_read(read, feature, barcode_info, spec, representative=False):
                               "ref_intervals0": json.dumps(spans, separators=(",", ":")),
                               "quality_spec": call["quality_spec"],
                               "quality": json.dumps(call["quality"], separators=(",", ":")),
-                              "call_name": call["name"] or ""})
+                              "call_name": call["name"] or "",
+                              "query_at_count": query_at,
+                              "query_m6a128_count": query_m128,
+                              "query_m6a204_count": query_m204})
             length_hist[(track, band, length)] += 1
             if track in ("tf", "nuc"):
                 counts[("whole", track, band)] += 1
@@ -288,7 +308,10 @@ def audit_read(read, feature, barcode_info, spec, representative=False):
                        "query_start0": row["query_start0"], "original_length": row["original_length"],
                        "ref_intervals0": json.loads(row["ref_intervals0"]),
                        "quality_spec": row["quality_spec"], "quality": json.loads(row["quality"]),
-                       "call_name": row["call_name"]} for row in call_rows],
+                       "call_name": row["call_name"],
+                       "query_at_count": row["query_at_count"],
+                       "query_m6a128_count": row["query_m6a128_count"],
+                       "query_m6a204_count": row["query_m6a204_count"]} for row in call_rows],
         }
     return molecule, call_rows, length_hist, representative_record
 
@@ -327,6 +350,7 @@ def run(config, output, barcode_limit=None, progress_every=1000000):
     import pysam
 
     started = time.monotonic()
+    config_source = source_info(config, True)
     cfg = load_config(config)
     full_n = cfg["sample_barcodes"]
     if barcode_limit is not None and not 1 <= barcode_limit < full_n:
@@ -334,6 +358,16 @@ def run(config, output, barcode_limit=None, progress_every=1000000):
     sample_n = barcode_limit or full_n
     features_path = Path(cfg["features"])
     feature_audit_path = Path(cfg["feature_audit"])
+    # Snapshot all known inputs before reading audits, metadata, or features.
+    sources = [config_source, source_info(cfg["catalog"], True),
+               source_info(cfg["ledger_config"], True), source_info(cfg["footprint_contract"], True),
+               source_info(cfg["barcode_metadata"], True), source_info(cfg["barcode_audit"], True),
+               source_info(features_path), source_info(feature_audit_path, True)]
+    sources += [source_info(Path(__file__).with_name(name), True) for name in
+                ("footprint_quality.py", "heterogeneity.py", "footprint_join.py", "processing.py", "io.py")]
+    contract = read_json(cfg["footprint_contract"])
+    bam_path = _path(contract["bam"])
+    sources += [source_info(bam_path), source_info(str(bam_path) + ".bai")]
     feature_audit = read_json(feature_audit_path)
     if feature_audit.get("schema_version") != "fsmpra.heterogeneity.v1" or not feature_audit.get("complete"):
         raise ValueError("Expected complete heterogeneity features")
@@ -350,16 +384,15 @@ def run(config, output, barcode_limit=None, progress_every=1000000):
     if len(wt_variants) != 1:
         raise ValueError("Expected exactly one catalog WT genotype")
     wt_variant = wt_variants[0]
-    contract = read_json(cfg["footprint_contract"])
-    bam_path = _path(contract["bam"])
     frozen_bam = next((source for source in feature_audit["sources"]
                        if source["path"] == str(bam_path)), None)
-    if frozen_bam is None or source_info(bam_path) != frozen_bam:
+    if frozen_bam is None or sources[-2] != frozen_bam:
         raise ValueError("Annotation BAM differs from frozen feature input")
     for path in (cfg["catalog"], cfg["ledger_config"], cfg["footprint_contract"]):
         frozen = next((source for source in feature_audit["sources"]
                        if source["path"] == str(_path(path))), None)
-        if frozen is None or source_info(path, True) != frozen:
+        captured = next(source for source in sources if source["path"] == str(_path(path)))
+        if frozen is None or captured != frozen:
             raise ValueError("Input differs from frozen feature source: " + path)
     if feature_audit["regions"]["whole"] != [[0, catalog["reference_length"]]]:
         raise ValueError("Feature/reference length disagreement")
@@ -409,13 +442,6 @@ def run(config, output, barcode_limit=None, progress_every=1000000):
     if len(selected) != selection_counts["sampled_expected_molecules"]:
         raise ValueError("Sampled molecule total disagrees with barcode metadata")
     representatives = choose_representatives(selected, cfg["seed"], cfg["representative_n"])
-    sources = [source_info(config, True), source_info(cfg["catalog"], True),
-               source_info(cfg["ledger_config"], True), source_info(cfg["footprint_contract"], True),
-               source_info(cfg["barcode_metadata"], True), source_info(cfg["barcode_audit"], True),
-               source_info(features_path), source_info(feature_audit_path, True), source_info(bam_path),
-               source_info(str(bam_path) + ".bai")]
-    sources += [source_info(Path(__file__).with_name(name), True) for name in
-                ("footprint_quality.py", "heterogeneity.py", "footprint_join.py", "processing.py", "io.py")]
     counts = Counter()
     histogram = defaultdict(lambda: [0, 0.0])
     matched = set()
@@ -487,7 +513,7 @@ def run(config, output, barcode_limit=None, progress_every=1000000):
                       "sampling": "Lowest SHA256(seed|barcode) among supported WT barcodes; every eligible molecule retained.",
                       "split": "SHA256(split|seed|barcode) parity; barcode-disjoint A/B.",
                       "weights": "Each sampled eligible molecule has weight 1 / full eligible barcode depth.",
-                      "calls": "Original MA query lengths; band union coverage projected to aligned reference bases. Circular split MA calls remain separate.",
+                      "calls": "Original MA query lengths and query-coordinate AT/m6A counts, including unaligned query bases; band union coverage projected to aligned reference bases. Circular split MA calls remain separate.",
                       "representatives": "Lowest SHA256(representative|seed|read_id) by frozen-feature group, selected before BAM inspection.",
                       "compartment": "No compartment or naked-plasmid assignment.",
                   }}

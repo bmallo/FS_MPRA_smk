@@ -19,10 +19,12 @@ from scipy.stats import rankdata
 from .io import atomic_output, open_text, read_json, source_info, write_json, write_table
 from .processing import check_sources
 from .statistics import fixed_endpoints
+from .footprint_quality import band_for
 
 SCHEMA = "fsmpra.footprint_quality_summary.v1"
 REGIONS = ("whole", "element")
 TRACKS = ("tf", "nuc", "msp")
+AQ_TRACKS = ("tf", "nuc")
 REP_GROUPS = ("no_nuc_with_localTF", "no_nuc_without_localTF",
               "exactly_one_nuc_longer1000", "other")
 BANDS = {"tf": ("lt10", "10_60", "gt60"),
@@ -106,12 +108,16 @@ class Calls:
         self.handle = open_text(path)
         self.reader = csv.DictReader(self.handle, delimiter="\t")
         required = {"read_id", "barcode", "split", "weight", "track", "band",
-                    "original_length", "ref_intervals0"}
+                    "original_length", "ref_intervals0", "quality_spec", "quality",
+                    "query_at_count", "query_m6a128_count", "query_m6a204_count"}
         if not required <= set(self.reader.fieldnames or []):
             raise ValueError("Sampled call table lacks fields")
         self.next = next(self.reader, None)
         self.total = 0
         self.hist = defaultdict(lambda: [0, 0.0])
+        self.aq_hist = defaultdict(lambda: [0, 0.0, 0, 0.0, 0, 0.0])
+        self.observability = defaultdict(lambda: [0, 0.0])
+        self.observability_bands = defaultdict(lambda: [0, 0, 0, 0])
         self.past = set()
 
     def for_molecule(self, row):
@@ -125,6 +131,22 @@ class Calls:
                 raise ValueError("Sampled call/molecule identity disagreement")
             if call["track"] not in TRACKS or not call["band"] or int(call["original_length"]) < 1:
                 raise ValueError("Invalid sampled call track/length")
+            if call["band"] != band_for(call["track"], int(call["original_length"])):
+                raise ValueError("Sampled call length/band disagreement")
+            quality = json.loads(call["quality"])
+            if (not isinstance(quality, (list, type(None))) or
+                    (quality is not None and (len(quality) != len(call["quality_spec"]) or
+                     any(type(score) is not int or not 0 <= score <= 255 for score in quality)))):
+                raise ValueError("Invalid sampled call AQ values")
+            call["aq100"] = (quality is not None and len(quality) > 0 and
+                             quality[0] >= 100)
+            call["aq_known"] = quality is not None and len(quality) > 0
+            call["aq_applicable"] = call["track"] in AQ_TRACKS and bool(call["quality_spec"])
+            at_count = int(call["query_at_count"])
+            m6a128_count = int(call["query_m6a128_count"])
+            m6a204_count = int(call["query_m6a204_count"])
+            if not 0 <= m6a204_count <= m6a128_count <= at_count <= int(call["original_length"]):
+                raise ValueError("Invalid call query A/T or m6A observability")
             spans = json.loads(call["ref_intervals0"])
             if not isinstance(spans, list) or any(not isinstance(span, list) or len(span) != 2 or
                     not all(isinstance(x, int) for x in span) or span[0] < 0 or span[1] <= span[0]
@@ -134,6 +156,25 @@ class Calls:
             key = (call["track"], call["band"], int(call["original_length"]))
             self.hist[key][0] += 1
             self.hist[key][1] += float(call["weight"])
+            for metric, value in (("query_at_count", at_count),
+                                  ("query_m6a128_count", m6a128_count),
+                                  ("query_m6a204_count", m6a204_count)):
+                self.observability[(call["track"], call["band"], metric, value)][0] += 1
+                self.observability[(call["track"], call["band"], metric, value)][1] += float(call["weight"])
+            band_obs = self.observability_bands[(call["track"], call["band"])]
+            band_obs[0] += at_count
+            band_obs[1] += m6a128_count
+            band_obs[2] += m6a204_count
+            band_obs[3] += int(at_count == 0)
+            if call["aq_applicable"] and call["aq100"]:
+                self.aq_hist[(call["track"], call["band"])][0] += 1
+                self.aq_hist[(call["track"], call["band"])][1] += float(call["weight"])
+            if call["aq_applicable"] and not call["aq_known"]:
+                self.aq_hist[(call["track"], call["band"])][2] += 1
+                self.aq_hist[(call["track"], call["band"])][3] += float(call["weight"])
+            if not call["aq_applicable"]:
+                self.aq_hist[(call["track"], call["band"])][4] += 1
+                self.aq_hist[(call["track"], call["band"])][5] += float(call["weight"])
             self.total += 1
             found.append(call)
             self.next = next(self.reader, None)
@@ -149,23 +190,28 @@ class Calls:
             self.handle.close()
 
 
-def _call_offsets(calls, start, length, track, exclude_band=None):
+def _call_offsets(calls, start, length, track, exclude_band=None, aq100=False):
     covered = set()
     for call in calls:
-        if call["track"] != track or call["band"] == exclude_band:
+        if call["track"] != track or call["band"] == exclude_band or (aq100 and not call["aq100"]):
             continue
         for lo, hi in call["spans"]:
-            covered.update(range(max(lo, start) - start, min(hi, start + length) - start)) if max(lo, start) < min(hi, start + length) else None
+            first, last = max(lo, start), min(hi, start + length)
+            if first < last:
+                covered.update(range(first - start, last - start))
     return np.array(sorted(covered), dtype=np.int16)
 
 
 def _profile_bucket():
     return {name: np.zeros(211, dtype=np.float64) for name in
             ("aligned", "at", "at_observed", "m6a", "unmodified_opportunity", "tf_callable",
-             "tf_covered", "nuc_callable", "nuc_covered", "msp_callable", "msp_covered")}
+             "tf_covered", "nuc_callable", "nuc_covered", "msp_callable", "msp_covered",
+             "tf_aq100_callable", "tf_aq100_covered", "nuc_aq100_callable",
+             "nuc_aq100_covered")}
 
 
-def _profile_add(bucket, aligned, at, m6a, tf, nuc, msp, weight, methylation_valid, tf_valid, nuc_valid, msp_valid):
+def _profile_add(bucket, aligned, at, m6a, tf, nuc, msp, aq100, aq100_valid,
+                 weight, methylation_valid, tf_valid, nuc_valid, msp_valid):
     bucket["aligned"][aligned] += weight
     bucket["at"][at] += weight
     if methylation_valid:
@@ -176,6 +222,9 @@ def _profile_add(bucket, aligned, at, m6a, tf, nuc, msp, weight, methylation_val
         if valid:
             bucket[name + "_callable"][aligned] += weight
             bucket[name + "_covered"][covered] += weight
+        if name in AQ_TRACKS and valid and aq100_valid[name]:
+            bucket[name + "_aq100_callable"][aligned] += weight
+            bucket[name + "_aq100_covered"][aq100[name]] += weight
 
 
 def _ratio(top, bottom):
@@ -236,6 +285,14 @@ def summarize(config, sample, output, allow_pilot=False):
     call_path = sample / "sampled_calls.tsv.gz"
     length_path = sample / "call_length_histograms.tsv"
     rep_path = sample / "representatives.jsonl.gz"
+    source_records = [source_info(path, checksum) for path, checksum in (
+        (config, True), (audit_path, True), (barcode_path, True),
+        (molecule_path, False), (call_path, False), (length_path, True),
+        (rep_path, False), (catalog_path, True), (Path(__file__), True),
+        (Path(__file__).with_name("footprint_quality.py"), True),
+        (Path(__file__).with_name("statistics.py"), True),
+        (Path(__file__).with_name("processing.py"), True),
+        (Path(__file__).with_name("io.py"), True))]
     barcodes = _read_barcodes(barcode_path, audit)
     barcode_ids = sorted(barcodes)
     barcode_index = {barcode: i for i, barcode in enumerate(barcode_ids)}
@@ -247,6 +304,7 @@ def summarize(config, sample, output, allow_pilot=False):
     seen_depth = Counter()
     split_molecules = Counter()
     group_molecules = Counter()
+    aq100_missing_molecules = Counter()
     group_barcodes = defaultdict(set)
     sample_id = library_id = None
     profiles = defaultdict(_profile_bucket)
@@ -291,6 +349,12 @@ def summarize(config, sample, output, allow_pilot=False):
             if not set(at).issubset(aligned) or (m6a is not None and not set(m6a).issubset(at)):
                 raise ValueError("Methylation offsets exceed callable opportunities")
             observed_calls = calls.for_molecule(row)
+            projected_tf = _call_offsets([call for call in observed_calls if call["band"] == "10_60"], start, 211, "tf")
+            projected_msp = _call_offsets(observed_calls, start, 211, "msp")
+            if tf is not None and not np.array_equal(tf, projected_tf):
+                raise ValueError("TF bitmap disagrees with original calls")
+            if msp is not None and not np.array_equal(msp, projected_msp):
+                raise ValueError("MSP bitmap disagrees with original calls")
             nuc = _call_offsets(observed_calls, start, 211, "nuc", exclude_band="lt85")
             if (tf is not None and not set(tf).issubset(aligned)) or not set(nuc).issubset(aligned) or (msp is not None and not set(msp).issubset(aligned)):
                 raise ValueError("Projected call offsets exceed aligned positions")
@@ -298,18 +362,32 @@ def summarize(config, sample, output, allow_pilot=False):
             tf_valid = row["element_tf_small_fraction"] != "" and tf is not None
             nuc_valid = row["element_nucleosome_fraction"] != ""
             msp_valid = row["element_msp_fraction"] != "" and msp is not None
+            aq100 = {}
+            aq100_valid = {}
+            for track, excluded in (("tf", {"lt10", "gt60"}), ("nuc", {"lt85"})):
+                relevant = [call for call in observed_calls if call["track"] == track and
+                            call["band"] not in excluded]
+                aq100_valid[track] = all(call["aq_applicable"] and call["aq_known"] for call in relevant)
+                if not aq100_valid[track]:
+                    aq100_missing_molecules[track] += 1
+                aq100[track] = _call_offsets(relevant, start, 211, track, aq100=True)
             if row["element_m6a_fraction"] != "" and m6a is None:
                 raise ValueError("Missing m6A positions despite valid fraction")
+            feature_values = {feature: _num(row[feature]) for feature in FEATURES}
+            for feature, value in feature_values.items():
+                if feature.endswith("_fraction") and math.isfinite(value) and not 0 <= value <= 1:
+                    raise ValueError("Sampled fraction outside [0,1]: " + feature)
             for split in ("all", info["split"]):
                 for label in groups:
                     for weighting, factor in (("molecule", 1.0), ("equal_barcode", weight)):
                         _profile_add(profiles[(split, label, weighting)], aligned, at,
                                      m6a if m6a is not None else np.empty(0, np.int16),
                                      tf if tf is not None else np.empty(0, np.int16), nuc,
-                                     msp if msp is not None else np.empty(0, np.int16), factor,
+                                     msp if msp is not None else np.empty(0, np.int16),
+                                     aq100, aq100_valid, factor,
                                      methylation_valid, tf_valid, nuc_valid, msp_valid)
                         for feature in FEATURES:
-                            value = _num(row[feature])
+                            value = feature_values[feature]
                             bucket = moments[(split, label, weighting, feature)]
                             bucket[0] += factor
                             if math.isfinite(value):
@@ -333,7 +411,10 @@ def summarize(config, sample, output, allow_pilot=False):
                 presence_sum[i, j] += int(covered > 0)
                 coverage_sum[i, j] += covered / callable_bases
                 valid[i, j] += 1
-    finally:
+    except BaseException:
+        calls.handle.close()
+        raise
+    else:
         calls.close()
     if rows != audit["counts"]["matched_molecules"] or calls.total != audit["counts"]["sampled_calls"]:
         raise ValueError("Sample molecule/call count disagrees with extraction audit")
@@ -346,6 +427,9 @@ def summarize(config, sample, output, allow_pilot=False):
         raise ValueError("Split/group molecule counts do not conserve")
     if len(barcodes) != sum(item["split"] == "A" for item in barcodes.values()) + sum(item["split"] == "B" for item in barcodes.values()):
         raise ValueError("Split barcode counts do not conserve")
+    if not math.isclose(moments[("all", "all", "equal_barcode", "whole_nucleosome_segments")][0], n,
+                        rel_tol=0, abs_tol=1e-7):
+        raise ValueError("Equal-barcode weights do not conserve")
     length_hist = {}
     for row in _rows(length_path, ("track", "band", "original_length", "call_count", "weighted_call_count")):
         key = (row["track"], row["band"], int(row["original_length"]))
@@ -368,22 +452,20 @@ def summarize(config, sample, output, allow_pilot=False):
         raise ValueError("Endpoint matrix invalid")
     return _write_outputs(config, sample, output, cfg, audit, barcodes, barcode_ids, depths, splits,
                           endpoints, presence, coverage, valid, profiles, moments, sequence,
-                          split_molecules, group_molecules, group_barcodes, length_hist, rep_path,
-                          sample_id, library_id, rows)
+                          split_molecules, group_molecules, group_barcodes, length_hist,
+                          calls.aq_hist, calls.observability, calls.observability_bands,
+                          aq100_missing_molecules, rep_path,
+                          sample_id, library_id, rows, source_records)
 
 
 def _write_outputs(config, sample, output, cfg, audit, barcodes, barcode_ids, depths, splits,
                    endpoints, presence, coverage, valid, profiles, moments, sequence,
-                   split_molecules, group_molecules, group_barcodes, length_hist, rep_path,
-                   sample_id, library_id, rows):
+                   split_molecules, group_molecules, group_barcodes, length_hist,
+                   aq_hist, observability, observability_bands,
+                   aq100_missing_molecules, rep_path,
+                   sample_id, library_id, rows, source_records):
     start, end = audit["element"]
     distances = _nearest_at(sequence)
-    source_records = [source_info(path, checksum) for path, checksum in (
-        (config, True), (sample / "audit.json", True), (sample / "sampled_barcodes.tsv", True),
-        (sample / "sampled_molecules.tsv.gz", False), (sample / "sampled_calls.tsv.gz", False),
-        (sample / "call_length_histograms.tsv", True), (rep_path, False),
-        (Path(cfg["catalog"]), True), (Path(__file__), True),
-        (Path(__file__).with_name("statistics.py"), True))]
     with atomic_output(output) as out:
         npz_path = out / "barcode_endpoint_matrix.npz"
         np.savez_compressed(npz_path,
@@ -407,6 +489,10 @@ def _write_outputs(config, sample, output, cfg, audit, barcodes, barcode_ids, de
                     weighted_presence_sum=presence[i, j] * valid[i, j] / depths[i] if valid[i, j] else 0,
                     weighted_coverage_sum=coverage[i, j] * valid[i, j] / depths[i] if valid[i, j] else 0))
         write_table(out / "barcode_endpoints.tsv.gz", endpoint_rows, list(endpoint_rows[0]))
+        for split in ("all", "A", "B"):
+            for group in ("all", "no_nuc", "other_nuc") + REP_GROUPS:
+                for weighting in ("molecule", "equal_barcode"):
+                    profiles[(split, group, weighting)]
         profile_rows = []
         for (split, group, weighting), bucket in sorted(profiles.items()):
             for pos in range(211):
@@ -424,8 +510,24 @@ def _write_outputs(config, sample, output, cfg, audit, barcodes, barcode_ids, de
                     nuc_callable_weight=bucket["nuc_callable"][pos], nuc_covered_weight=bucket["nuc_covered"][pos],
                     nuc_coverage_fraction=_ratio(bucket["nuc_covered"][pos], bucket["nuc_callable"][pos]),
                     msp_callable_weight=bucket["msp_callable"][pos], msp_covered_weight=bucket["msp_covered"][pos],
-                    msp_coverage_fraction=_ratio(bucket["msp_covered"][pos], bucket["msp_callable"][pos])))
+                    msp_coverage_fraction=_ratio(bucket["msp_covered"][pos], bucket["msp_callable"][pos]),
+                    **{f"{track}_aq100_{suffix}": value for track in AQ_TRACKS for suffix, value in (
+                        ("callable_weight", bucket[f"{track}_aq100_callable"][pos]),
+                        ("covered_weight", bucket[f"{track}_aq100_covered"][pos]),
+                        ("coverage_fraction", _ratio(bucket[f"{track}_aq100_covered"][pos],
+                                                     bucket[f"{track}_aq100_callable"][pos]))) }))
         write_table(out / "element_profiles.tsv.gz", profile_rows, list(profile_rows[0]))
+        context_rows = []
+        for row in profile_rows:
+            pos = row["relative_pos0"]
+            context_rows.append(dict(split=row["split"], group=row["group"],
+                weighting=row["weighting"], relative_pos0=pos, reference_pos0=start + pos,
+                trinucleotide=(sequence[pos - 1] if pos else "N") + sequence[pos] +
+                              (sequence[pos + 1] if pos + 1 < len(sequence) else "N"),
+                reference_base=sequence[pos], distance_to_nearest_AT=row["distance_to_nearest_AT"],
+                observed_at_weight=row["at_observed_weight"], m6a_weight=row["m6a_weight"],
+                unmethylated_opportunity_weight=row["unmethylated_opportunity_weight"]))
+        write_table(out / "sequence_context_opportunities.tsv.gz", context_rows, list(context_rows[0]))
         moment_rows = []
         for (split, group, weighting, feature), (total_weight, valid_weight, sum_value) in sorted(moments.items()):
             moment_rows.append(dict(split=split, group=group, weighting=weighting, feature=feature,
@@ -439,14 +541,37 @@ def _write_outputs(config, sample, output, cfg, audit, barcodes, barcode_ids, de
             band_counts[(track, band)][0] += count
             band_counts[(track, band)][1] += weighted
         for (track, band), (count, weighted) in sorted(band_counts.items()):
+            (aq100_calls, aq100_weighted, aq_missing, aq_missing_weighted,
+             aq_unscored, aq_unscored_weighted) = aq_hist[(track, band)]
+            at_sites, m6a128_sites, m6a204_sites, zero_at_calls = observability_bands[(track, band)]
             band_rows.append(dict(track=track, band=band, calls=count,
-                                  equal_barcode_weighted_calls=weighted))
+                                  equal_barcode_weighted_calls=weighted,
+                                  aq100_calls=aq100_calls,
+                                  equal_barcode_weighted_aq100_calls=aq100_weighted,
+                                  missing_aq_calls=aq_missing,
+                                  equal_barcode_weighted_missing_aq_calls=aq_missing_weighted,
+                                  aq_unscored_calls=aq_unscored,
+                                  equal_barcode_weighted_aq_unscored_calls=aq_unscored_weighted,
+                                  query_at_opportunities=at_sites,
+                                  query_m6a128_calls=m6a128_sites,
+                                  query_m6a204_calls=m6a204_sites,
+                                  zero_query_at_calls=zero_at_calls))
         write_table(out / "call_length_bands.tsv", band_rows,
-                    ["track", "band", "calls", "equal_barcode_weighted_calls"])
+                    ["track", "band", "calls", "equal_barcode_weighted_calls",
+                     "aq100_calls", "equal_barcode_weighted_aq100_calls", "missing_aq_calls",
+                     "equal_barcode_weighted_missing_aq_calls", "aq_unscored_calls",
+                     "equal_barcode_weighted_aq_unscored_calls", "query_at_opportunities",
+                     "query_m6a128_calls", "query_m6a204_calls", "zero_query_at_calls"])
+        observability_rows = [dict(track=track, band=band, metric=metric, value=value,
+                                   calls=counts[0], equal_barcode_weighted_calls=counts[1])
+                              for (track, band, metric, value), counts in sorted(observability.items())]
+        write_table(out / "call_observability_histograms.tsv.gz", observability_rows,
+                    ["track", "band", "metric", "value", "calls", "equal_barcode_weighted_calls"])
         _plots(out, profile_rows, band_counts, rep_path, start, end, audit["complete"])
         check_sources(source_records)
         check_sources(audit["sources"])
         matrix_source = source_info(npz_path, True)
+        matrix_source["path"] = str((output / npz_path.name).resolve())
         a = np.array([profiles[("A", "all", "equal_barcode")]["tf_covered"][i] /
                       profiles[("A", "all", "equal_barcode")]["tf_callable"][i]
                       if profiles[("A", "all", "equal_barcode")]["tf_callable"][i] else np.nan
@@ -461,13 +586,14 @@ def _write_outputs(config, sample, output, cfg, audit, barcodes, barcode_ids, de
             "sampled_molecules": rows, "split_barcodes": dict(Counter(splits)),
             "split_molecules": dict(split_molecules), "representative_group_molecules": dict(group_molecules),
             "group_unique_barcodes": {key: len(value) for key, value in group_barcodes.items()},
+            "aq100_missing_quality_molecules": dict(aq100_missing_molecules),
             "element": [start, end], "max_distance_to_nearest_AT": int(distances.max()),
             "tf_A_B_211base_concordance": _correlation(a, b),
             "endpoint_matrix": "barcode_endpoint_matrix.npz", "endpoint_count": len(endpoints),
             "source_audit": str((sample / "audit.json").resolve()),
             "sources": source_records + [matrix_source],
             "interpretation": "Descriptive deterministic WT barcode sample. Same WT sequence underlies A/B profiles; concordance is not independent motif or TF validation. No p-values or compartment assignment.",
-            "missingness": "Blank measurements remain missing; evaluated empty calls are zero. Unmethylated opportunities are observed A/T sites without an ML-thresholded m6A call, not probabilities or true absence of methylation."}
+            "missingness": "Blank measurements remain missing; evaluated empty calls are zero. Unmethylated opportunities are observed A/T sites without an ML-thresholded m6A call, not probabilities or true absence of methylation. TF/nucleosome AQ>=100 sensitivity uses the first raw AQ byte of each scored call; a molecule with any relevant call missing AQ is excluded from that track's AQ>=100 per-base denominator. MSP has no defined first-byte score."}
         write_json(out / "summary.json", report)
     return report
 
@@ -482,7 +608,7 @@ def _plots(out, profile_rows, band_counts, rep_path, start, end, complete):
     profiles = {(row["split"], row["group"], row["weighting"], row["relative_pos0"]): row
                 for row in profile_rows}
     x = np.arange(211)
-    fig, axes = plt.subplots(3, 1, figsize=(12, 9), sharex=True, constrained_layout=True)
+    fig, axes = plt.subplots(4, 1, figsize=(12, 11), sharex=True, constrained_layout=True)
     for split in ("A", "B"):
         values = [profiles[(split, "all", "equal_barcode", i)]["tf_coverage_fraction"] for i in x]
         axes[0].plot(x, [np.nan if v is None else v for v in values], label=f"Split {split}")
@@ -493,13 +619,19 @@ def _plots(out, profile_rows, band_counts, rep_path, start, end, complete):
         axes[1].plot(x, [np.nan if v is None else v for v in values], label=group.replace("_", " "))
     axes[1].set(ylabel="TF-call covered / aligned weight", title="Separate observed nucleosome-call groups")
     axes[1].legend()
-    values = [profiles[("all", "all", "equal_barcode", i)]["observed_m6a_fraction"] for i in x]
-    axes[2].plot(x, [np.nan if v is None else v for v in values], color="tab:blue", label="Observed m6A / A/T")
-    values = [profiles[("all", "all", "equal_barcode", i)]["unmethylated_opportunity_fraction"] for i in x]
-    axes[2].plot(x, [np.nan if v is None else v for v in values], color="tab:orange", label="No called m6A / observed A/T")
-    axes[2].set(xlabel="Position within 211-bp WT element (0-based)", ylabel="Observed A/T opportunity fraction",
-                title="A/T context and ML-thresholded marks")
+    for field, label in (("tf_coverage_fraction", "All original 10–60 bp calls"),
+                         ("tf_aq100_coverage_fraction", "First AQ byte ≥100")):
+        values = [profiles[("all", "all", "equal_barcode", i)][field] for i in x]
+        axes[2].plot(x, [np.nan if v is None else v for v in values], label=label)
+    axes[2].set(ylabel="TF covered / callable weight", title="Raw AQ sensitivity; missing AQ excluded")
     axes[2].legend()
+    values = [profiles[("all", "all", "equal_barcode", i)]["observed_m6a_fraction"] for i in x]
+    axes[3].plot(x, [np.nan if v is None else v for v in values], color="tab:blue", label="Observed m6A / A/T")
+    values = [profiles[("all", "all", "equal_barcode", i)]["unmethylated_opportunity_fraction"] for i in x]
+    axes[3].plot(x, [np.nan if v is None else v for v in values], color="tab:orange", label="No called m6A / observed A/T")
+    axes[3].set(xlabel="Position within 211-bp WT element (0-based)", ylabel="Observed A/T opportunity fraction",
+                title="A/T context and ML-thresholded marks")
+    axes[3].legend()
     fig.suptitle(prefix + " · original call annotations and observable opportunities")
     fig.savefig(out / "element_quality_profiles.png", dpi=170)
     fig.savefig(out / "element_quality_profiles.svg")

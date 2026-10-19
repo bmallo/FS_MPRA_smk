@@ -1,0 +1,20 @@
+{
+  "schema_version": "fsmpra.heldout_calibration_config.v1",
+  "sample_id": "HepG2_rep3",
+  "aggregates": "results/rep3_statistics_20261017/aggregates",
+  "joined_dir": "results/rep3_footprints_20261017",
+  "excluded_sample": "results/rep3_footprint_quality_20261018/sample",
+  "catalog": "results/rep3_ledger_20261016/catalog/catalog.json",
+  "output_dir": "results/rep3_heldout_calibration_20261018",
+  "seed": 2026101802,
+  "n_variant": [50, 100, 400, 1000],
+  "wt_iterations": 1000,
+  "wt_permutations": 9999,
+  "simulation_iterations": 200,
+  "simulation_permutations": 999,
+  "simulation_control_barcodes": 10000,
+  "alpha": [0.05, 0.01],
+  "confidence_level": 0.95,
+  "processing_python": "/mmfs1/home/bmallo/miniconda3/bin/python",
+  "interpretation": "Diagnostic calibration on WT barcodes disjoint from the earlier 10000-barcode audit, not a globally untouched validation population or biological replicate. Fixed calls and eligibility. No variant significance release."
+}

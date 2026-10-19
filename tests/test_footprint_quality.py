@@ -9,8 +9,9 @@ from pathlib import Path
 import pysam
 
 from fsmpra.footprint_quality import (audit_read, band_for, choose_representatives,
-                                      digest, representative_group, select_barcodes)
-from fsmpra.heterogeneity import META_FIELDS, extract_features
+                                      digest, query_call_counts, representative_group,
+                                      select_barcodes)
+from fsmpra.heterogeneity import META_FIELDS, decode_m6a, extract_features
 
 
 class SamplingTests(unittest.TestCase):
@@ -64,23 +65,24 @@ class SamplingTests(unittest.TestCase):
 
 
 class MoleculeAuditTests(unittest.TestCase):
-    def make_read_and_feature(self, reverse=False):
+    def make_read_and_feature(self, reverse=False, seq=None, cigar=None, mm=None, ml=None):
         read = pysam.AlignedSegment()
         read.query_name = "r1"
         read.flag = 16 if reverse else 0
         read.reference_start = 0
-        read.cigarstring = "4647M"
-        read.query_sequence = "A" * 4647
-        read.set_tag("MM", "T-a.,3412;" if reverse else "A+a.;")
-        read.set_tag("ML", array("B", [255] if reverse else []))
-        read.set_tag("MA", "4647;tf+QQQ:1235-20;nuc+QQQ:1001-1100;msp+:1235-50")
+        read.cigarstring = cigar or "4647M"
+        read.query_sequence = seq or "A" * 4647
+        read.set_tag("MM", mm if mm is not None else ("T-a.,3412;" if reverse else "A+a.;"))
+        read.set_tag("ML", array("B", ml if ml is not None else ([255] if reverse else [])))
+        read.set_tag("MA", f"{read.query_length};tf+QQQ:1235-20;nuc+QQQ:1001-1100;msp+:1235-50")
         read.set_tag("AQ", array("B", [10, 20, 30, 40, 50, 60]))
         spec = {"reference_length": 4647, "regions": {"whole": [(0, 4647)],
             "element": [(1234, 1445)], "distal": [(0, 1134), (1545, 3269), (3334, 4647)]},
             "tf_min": 10, "tf_max": 60, "nuc_min": 85, "tile_size": 100, "tile_min_at": 20}
         old = {name: "" for name in META_FIELDS}
+        _, at_count, pos128, _ = decode_m6a(read)
         old.update(read_id="r1", read_length="4647", strand="-" if reverse else "+", m6a_status="ok",
-                   at_count="4647", m6a_count="1" if reverse else "0", footprint_status="evaluated",
+                   at_count=str(at_count), m6a_count=str(len(pos128)), footprint_status="evaluated",
                    corrected_barcode="BARCODE", assigned_variant_id="wt",
                    genotype_class="WT", footprint_analysis_eligible_with_barcode="1")
         feature = extract_features(read, old, spec)
@@ -101,6 +103,8 @@ class MoleculeAuditTests(unittest.TestCase):
         self.assertEqual(json.loads(molecule["element_tf_small_offsets0"]), list(range(20)))
         self.assertEqual(json.loads(molecule["element_msp_offsets0"]), list(range(50)))
         self.assertEqual(len(calls), 3)
+        self.assertEqual([call["query_at_count"] for call in calls], [20, 1100, 50])
+        self.assertEqual([call["query_m6a128_count"] for call in calls], [0, 0, 0])
         self.assertEqual(histogram[("nuc", "gt1000", 1100)], 1)
         self.assertEqual(representative["raw_ml_histogram"][0], 0)
         self.assertEqual(len(representative["calls"]), 3)
@@ -115,6 +119,33 @@ class MoleculeAuditTests(unittest.TestCase):
             read, feature, info, {"reference_length": 4647, "element": [1234, 1445]}, True)
         self.assertEqual(json.loads(molecule["element_m6a_offsets0"]), [0])
         self.assertEqual(representative["whole_m6a_positions0"], [1234])
+        self.assertEqual([call["query_m6a128_count"] for call in representative["calls"]], [1, 1, 1])
+        self.assertEqual([call["query_m6a204_count"] for call in representative["calls"]], [1, 1, 1])
+
+    def test_call_counts_include_unaligned_insertion_and_separate_thresholds(self):
+        seq = "A" * 1234 + "CC" + "A" * 3411
+        read, feature = self.make_read_and_feature(
+            seq=seq, cigar="1234M2I3411M", mm="A+a.,1234,0;", ml=[180, 220])
+        info = {"barcode": "BARCODE", "split": "A", "weight": 0.25}
+        _, calls, _, representative = audit_read(
+            read, feature, info, {"reference_length": 4647, "element": [1234, 1445]}, True)
+        by_track = {call["track"]: call for call in calls}
+        self.assertEqual(by_track["tf"]["original_length"], 20)
+        self.assertEqual(by_track["tf"]["query_at_count"], 18)
+        self.assertEqual(by_track["tf"]["query_m6a128_count"], 2)
+        self.assertEqual(by_track["tf"]["query_m6a204_count"], 1)
+        self.assertEqual(by_track["tf"]["ref_intervals0"], "[[1234,1252]]")
+        self.assertEqual(by_track["msp"]["query_at_count"], 48)
+        self.assertEqual(representative["calls"][0]["query_m6a204_count"], 1)
+
+    def test_invalid_query_call_ranges_are_explicit(self):
+        import numpy as np
+        prefix = np.array([0, 1, 2], dtype=np.int32)
+        empty = np.array([], dtype=np.int32)
+        for start, length in ((-1, 1), (0, 0), (1, 2)):
+            with self.subTest(start=start, length=length):
+                with self.assertRaisesRegex(ValueError, "MA query interval outside stored SEQ"):
+                    query_call_counts(start, length, prefix, empty, empty)
 
 
 if __name__ == "__main__":
