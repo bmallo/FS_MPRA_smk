@@ -1,0 +1,2152 @@
+{
+  "schema_version": "fsmpra.heterogeneity_summary.v1",
+  "complete": true,
+  "partial": false,
+  "extraction_limit_primary": null,
+  "extraction_primary_rows": 8715827,
+  "sources": [
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/config/ldlr_heterogeneity.json",
+      "bytes": 865,
+      "mtime_ns": 1792271218514295000,
+      "sha256": "52016bc2d7a2b968e95fa462635ba3c59ce40d08119606a826b5ff44f349e1cc"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_heterogeneity_20261017/features/audit.json",
+      "bytes": 5108,
+      "mtime_ns": 1792274784832926000,
+      "sha256": "ca8eaa8b7acee89123c9029c068b7edafc8fbaa49c6823e76009cc372a527ea4"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_heterogeneity_20261017/features/molecule_heterogeneity.tsv.gz",
+      "bytes": 561060407,
+      "mtime_ns": 1792274784834077851
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/fsmpra/heterogeneity_summary.py",
+      "bytes": 41450,
+      "mtime_ns": 1792301752252181000,
+      "sha256": "50d5fee41202a68ad8edbdd62f02ce65cb9fdba0f0a11be0f71abf00aa2da70c"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_ledger_20261016/catalog/catalog.json",
+      "bytes": 1195650,
+      "mtime_ns": 1792211632252249234,
+      "sha256": "9e190886cacedb0a13755e76913b959d8c4f71b03b8c50052c2002451b79c1b6"
+    }
+  ],
+  "cohort_molecules": {
+    "sequence_qualified": 2660013,
+    "footprint_analysis_eligible": 2594368,
+    "footprint_analysis_eligible_with_barcode": 2102906
+  },
+  "primary_barcodes": 568354,
+  "primary_molecules_from_barcode_depths": 2102906,
+  "primary_equal_barcode_weight": 568353.9999989102,
+  "histogram_bins": 40,
+  "state_edges": [
+    0.0,
+    0.1,
+    0.25,
+    0.5,
+    0.75,
+    1.0
+  ],
+  "state_binned_molecules": 2102906,
+  "state_missing_joint_molecules": 0,
+  "state_binned_weight": 568353.9999999228,
+  "state_missing_joint_weight": 0.0,
+  "SNV_variants_at_plot_threshold": 630,
+  "WT_means": {
+    "whole_m6a_fraction": {
+      "molecule": 0.3428264724848451,
+      "equal_barcode": 0.3426924222718012,
+      "valid_molecules": 985264,
+      "valid_barcodes": 268283
+    },
+    "whole_m6a_fraction_204": {
+      "molecule": 0.3428264724848451,
+      "equal_barcode": 0.3426924222718012,
+      "valid_molecules": 985264,
+      "valid_barcodes": 268283
+    },
+    "whole_tf_small_fraction": {
+      "molecule": 0.022596796637419803,
+      "equal_barcode": 0.022610086387164597,
+      "valid_molecules": 985264,
+      "valid_barcodes": 268283
+    },
+    "whole_nucleosome_fraction": {
+      "molecule": 0.4706253652130264,
+      "equal_barcode": 0.4708147359960633,
+      "valid_molecules": 985264,
+      "valid_barcodes": 268283
+    },
+    "whole_msp_fraction": {
+      "molecule": 0.5259030169084455,
+      "equal_barcode": 0.5257185923352214,
+      "valid_molecules": 985264,
+      "valid_barcodes": 268283
+    },
+    "element_m6a_fraction": {
+      "molecule": 0.34323350275799025,
+      "equal_barcode": 0.3430306580778002,
+      "valid_molecules": 985264,
+      "valid_barcodes": 268283
+    },
+    "element_m6a_fraction_204": {
+      "molecule": 0.34323350275799025,
+      "equal_barcode": 0.3430306580778002,
+      "valid_molecules": 985264,
+      "valid_barcodes": 268283
+    },
+    "element_tf_small_fraction": {
+      "molecule": 0.02597691910265872,
+      "equal_barcode": 0.02597997002128827,
+      "valid_molecules": 985264,
+      "valid_barcodes": 268283
+    },
+    "element_nucleosome_fraction": {
+      "molecule": 0.47264187916718403,
+      "equal_barcode": 0.47294877077031283,
+      "valid_molecules": 985264,
+      "valid_barcodes": 268283
+    },
+    "element_msp_fraction": {
+      "molecule": 0.5262168913529607,
+      "equal_barcode": 0.5259113442145577,
+      "valid_molecules": 985264,
+      "valid_barcodes": 268283
+    },
+    "distal_m6a_fraction": {
+      "molecule": 0.34115267141211725,
+      "equal_barcode": 0.3410159842933066,
+      "valid_molecules": 985264,
+      "valid_barcodes": 268283
+    },
+    "distal_m6a_fraction_204": {
+      "molecule": 0.34115267141211725,
+      "equal_barcode": 0.3410159842933066,
+      "valid_molecules": 985264,
+      "valid_barcodes": 268283
+    },
+    "distal_tf_small_fraction": {
+      "molecule": 0.02284506024386957,
+      "equal_barcode": 0.022860695300020217,
+      "valid_molecules": 985264,
+      "valid_barcodes": 268283
+    },
+    "distal_nucleosome_fraction": {
+      "molecule": 0.4708726601728051,
+      "equal_barcode": 0.4710589447950146,
+      "valid_molecules": 985264,
+      "valid_barcodes": 268283
+    },
+    "distal_msp_fraction": {
+      "molecule": 0.5253940264320514,
+      "equal_barcode": 0.5252125997016845,
+      "valid_molecules": 985264,
+      "valid_barcodes": 268283
+    },
+    "distal_tile_methylation_q10": {
+      "molecule": 0.12990578901079866,
+      "equal_barcode": 0.12979139828501177,
+      "valid_molecules": 985264,
+      "valid_barcodes": 268283
+    },
+    "distal_tile_methylation_median": {
+      "molecule": 0.36575725324673813,
+      "equal_barcode": 0.36558475488909714,
+      "valid_molecules": 985264,
+      "valid_barcodes": 268283
+    },
+    "distal_tile_methylation_q90": {
+      "molecule": 0.5737998774514506,
+      "equal_barcode": 0.5736502941202093,
+      "valid_molecules": 985264,
+      "valid_barcodes": 268283
+    },
+    "distal_tile_methylation_range": {
+      "molecule": 0.44389408844065353,
+      "equal_barcode": 0.44385889583518373,
+      "valid_molecules": 985264,
+      "valid_barcodes": 268283
+    },
+    "whole_nucleosome_segments": {
+      "molecule": 8.186551015768362,
+      "equal_barcode": 8.191531286802554,
+      "valid_molecules": 985264,
+      "valid_barcodes": 268283
+    },
+    "whole_nucleosome_length_median": {
+      "molecule": 553.6977584182606,
+      "equal_barcode": 553.1313354020142,
+      "valid_molecules": 841504,
+      "valid_barcodes": 265664
+    },
+    "whole_nucleosome_spacing_median": {
+      "molecule": 512.4791209786673,
+      "equal_barcode": 512.4426559544692,
+      "valid_molecules": 739618,
+      "valid_barcodes": 260595
+    },
+    "whole_tf_calls_all": {
+      "molecule": 10.408621445622696,
+      "equal_barcode": 10.41204434167546,
+      "valid_molecules": 985264,
+      "valid_barcodes": 268283
+    },
+    "whole_tf_calls_small": {
+      "molecule": 5.402101365725328,
+      "equal_barcode": 5.406610107247317,
+      "valid_molecules": 985264,
+      "valid_barcodes": 268283
+    },
+    "distal_tiles": {
+      "molecule": 38.99785539713214,
+      "equal_barcode": 38.99761341570523,
+      "valid_molecules": 985264,
+      "valid_barcodes": 268283
+    }
+  },
+  "WT_approximate_histogram_quantiles": {
+    "molecule": {
+      "whole_m6a_fraction": {
+        "q10": 0.0125,
+        "median": 0.3375,
+        "q90": 0.6875,
+        "method": "histogram_bin_midpoint"
+      },
+      "whole_m6a_fraction_204": {
+        "q10": 0.0125,
+        "median": 0.3375,
+        "q90": 0.6875,
+        "method": "histogram_bin_midpoint"
+      },
+      "whole_tf_small_fraction": {
+        "q10": 0.0125,
+        "median": 0.0125,
+        "q90": 0.0625,
+        "method": "histogram_bin_midpoint"
+      },
+      "whole_nucleosome_fraction": {
+        "q10": 0.0125,
+        "median": 0.4375,
+        "q90": 0.9875,
+        "method": "histogram_bin_midpoint"
+      },
+      "whole_msp_fraction": {
+        "q10": 0.0125,
+        "median": 0.5625,
+        "q90": 0.9875,
+        "method": "histogram_bin_midpoint"
+      },
+      "element_m6a_fraction": {
+        "q10": 0.0125,
+        "median": 0.2875,
+        "q90": 0.7375,
+        "method": "histogram_bin_midpoint"
+      },
+      "element_m6a_fraction_204": {
+        "q10": 0.0125,
+        "median": 0.2875,
+        "q90": 0.7375,
+        "method": "histogram_bin_midpoint"
+      },
+      "element_tf_small_fraction": {
+        "q10": 0.0125,
+        "median": 0.0125,
+        "q90": 0.1125,
+        "method": "histogram_bin_midpoint"
+      },
+      "element_nucleosome_fraction": {
+        "q10": 0.0125,
+        "median": 0.5375,
+        "q90": 0.9875,
+        "method": "histogram_bin_midpoint"
+      },
+      "element_msp_fraction": {
+        "q10": 0.0125,
+        "median": 0.4625,
+        "q90": 0.9875,
+        "method": "histogram_bin_midpoint"
+      },
+      "distal_m6a_fraction": {
+        "q10": 0.0125,
+        "median": 0.3375,
+        "q90": 0.6875,
+        "method": "histogram_bin_midpoint"
+      },
+      "distal_m6a_fraction_204": {
+        "q10": 0.0125,
+        "median": 0.3375,
+        "q90": 0.6875,
+        "method": "histogram_bin_midpoint"
+      },
+      "distal_tf_small_fraction": {
+        "q10": 0.0125,
+        "median": 0.0125,
+        "q90": 0.0625,
+        "method": "histogram_bin_midpoint"
+      },
+      "distal_nucleosome_fraction": {
+        "q10": 0.0125,
+        "median": 0.4375,
+        "q90": 0.9875,
+        "method": "histogram_bin_midpoint"
+      },
+      "distal_msp_fraction": {
+        "q10": 0.0125,
+        "median": 0.5625,
+        "q90": 0.9875,
+        "method": "histogram_bin_midpoint"
+      },
+      "distal_tile_methylation_q10": {
+        "q10": 0.0125,
+        "median": 0.0125,
+        "q90": 0.4875,
+        "method": "histogram_bin_midpoint"
+      },
+      "distal_tile_methylation_median": {
+        "q10": 0.0125,
+        "median": 0.3375,
+        "q90": 0.7625,
+        "method": "histogram_bin_midpoint"
+      },
+      "distal_tile_methylation_q90": {
+        "q10": 0.0625,
+        "median": 0.7375,
+        "q90": 0.8625,
+        "method": "histogram_bin_midpoint"
+      },
+      "distal_tile_methylation_range": {
+        "q10": 0.0625,
+        "median": 0.4125,
+        "q90": 0.7875,
+        "method": "histogram_bin_midpoint"
+      }
+    },
+    "equal_barcode": {
+      "whole_m6a_fraction": {
+        "q10": 0.0125,
+        "median": 0.3375,
+        "q90": 0.6875,
+        "method": "histogram_bin_midpoint"
+      },
+      "whole_m6a_fraction_204": {
+        "q10": 0.0125,
+        "median": 0.3375,
+        "q90": 0.6875,
+        "method": "histogram_bin_midpoint"
+      },
+      "whole_tf_small_fraction": {
+        "q10": 0.0125,
+        "median": 0.0125,
+        "q90": 0.0625,
+        "method": "histogram_bin_midpoint"
+      },
+      "whole_nucleosome_fraction": {
+        "q10": 0.0125,
+        "median": 0.4375,
+        "q90": 0.9875,
+        "method": "histogram_bin_midpoint"
+      },
+      "whole_msp_fraction": {
+        "q10": 0.0125,
+        "median": 0.5625,
+        "q90": 0.9875,
+        "method": "histogram_bin_midpoint"
+      },
+      "element_m6a_fraction": {
+        "q10": 0.0125,
+        "median": 0.2875,
+        "q90": 0.7375,
+        "method": "histogram_bin_midpoint"
+      },
+      "element_m6a_fraction_204": {
+        "q10": 0.0125,
+        "median": 0.2875,
+        "q90": 0.7375,
+        "method": "histogram_bin_midpoint"
+      },
+      "element_tf_small_fraction": {
+        "q10": 0.0125,
+        "median": 0.0125,
+        "q90": 0.1125,
+        "method": "histogram_bin_midpoint"
+      },
+      "element_nucleosome_fraction": {
+        "q10": 0.0125,
+        "median": 0.5375,
+        "q90": 0.9875,
+        "method": "histogram_bin_midpoint"
+      },
+      "element_msp_fraction": {
+        "q10": 0.0125,
+        "median": 0.4625,
+        "q90": 0.9875,
+        "method": "histogram_bin_midpoint"
+      },
+      "distal_m6a_fraction": {
+        "q10": 0.0125,
+        "median": 0.3375,
+        "q90": 0.6875,
+        "method": "histogram_bin_midpoint"
+      },
+      "distal_m6a_fraction_204": {
+        "q10": 0.0125,
+        "median": 0.3375,
+        "q90": 0.6875,
+        "method": "histogram_bin_midpoint"
+      },
+      "distal_tf_small_fraction": {
+        "q10": 0.0125,
+        "median": 0.0125,
+        "q90": 0.0625,
+        "method": "histogram_bin_midpoint"
+      },
+      "distal_nucleosome_fraction": {
+        "q10": 0.0125,
+        "median": 0.4375,
+        "q90": 0.9875,
+        "method": "histogram_bin_midpoint"
+      },
+      "distal_msp_fraction": {
+        "q10": 0.0125,
+        "median": 0.5625,
+        "q90": 0.9875,
+        "method": "histogram_bin_midpoint"
+      },
+      "distal_tile_methylation_q10": {
+        "q10": 0.0125,
+        "median": 0.0125,
+        "q90": 0.4875,
+        "method": "histogram_bin_midpoint"
+      },
+      "distal_tile_methylation_median": {
+        "q10": 0.0125,
+        "median": 0.3375,
+        "q90": 0.7625,
+        "method": "histogram_bin_midpoint"
+      },
+      "distal_tile_methylation_q90": {
+        "q10": 0.0625,
+        "median": 0.7375,
+        "q90": 0.8625,
+        "method": "histogram_bin_midpoint"
+      },
+      "distal_tile_methylation_range": {
+        "q10": 0.0625,
+        "median": 0.4125,
+        "q90": 0.7875,
+        "method": "histogram_bin_midpoint"
+      }
+    }
+  },
+  "WT_exact_boundary_proportions": {
+    "molecule": {
+      "whole_m6a_fraction": {
+        "zero": 0.030951095340944153,
+        "one": 0.0
+      },
+      "whole_m6a_fraction_204": {
+        "zero": 0.030951095340944153,
+        "one": 0.0
+      },
+      "whole_tf_small_fraction": {
+        "zero": 0.1362558664479774,
+        "one": 0.0
+      },
+      "whole_nucleosome_fraction": {
+        "zero": 0.14591013170074213,
+        "one": 0.058845142012699136
+      },
+      "whole_msp_fraction": {
+        "zero": 0.058836007405121876,
+        "one": 0.14402637262703194
+      },
+      "element_m6a_fraction": {
+        "zero": 0.1253897432566297,
+        "one": 0.0
+      },
+      "element_m6a_fraction_204": {
+        "zero": 0.1253897432566297,
+        "one": 0.0
+      },
+      "element_tf_small_fraction": {
+        "zero": 0.7814626333652707,
+        "one": 0.0
+      },
+      "element_nucleosome_fraction": {
+        "zero": 0.3742286331379204,
+        "one": 0.20953571834553988
+      },
+      "element_msp_fraction": {
+        "zero": 0.20953571834553988,
+        "one": 0.3721489874794979
+      },
+      "distal_m6a_fraction": {
+        "zero": 0.03194169278487796,
+        "one": 0.0
+      },
+      "distal_m6a_fraction_204": {
+        "zero": 0.03194169278487796,
+        "one": 0.0
+      },
+      "distal_tf_small_fraction": {
+        "zero": 0.14579747154062261,
+        "one": 0.0
+      },
+      "distal_nucleosome_fraction": {
+        "zero": 0.1475604508030335,
+        "one": 0.059835739456632946
+      },
+      "distal_msp_fraction": {
+        "zero": 0.059826604849055685,
+        "one": 0.14569699085727278
+      },
+      "distal_tile_methylation_q10": {
+        "zero": 0.5093467334643303,
+        "one": 0.0
+      },
+      "distal_tile_methylation_median": {
+        "zero": 0.17530428392796246,
+        "one": 0.0
+      },
+      "distal_tile_methylation_q90": {
+        "zero": 0.05282848048847821,
+        "one": 0.0
+      },
+      "distal_tile_methylation_range": {
+        "zero": 0.05282848048847821,
+        "one": 0.0
+      }
+    },
+    "equal_barcode": {
+      "whole_m6a_fraction": {
+        "zero": 0.030860157773513835,
+        "one": 0.0
+      },
+      "whole_m6a_fraction_204": {
+        "zero": 0.030860157773513835,
+        "one": 0.0
+      },
+      "whole_tf_small_fraction": {
+        "zero": 0.13609516736704563,
+        "one": 0.0
+      },
+      "whole_nucleosome_fraction": {
+        "zero": 0.14572116517985273,
+        "one": 0.058766452296720194
+      },
+      "whole_msp_fraction": {
+        "zero": 0.05875887323530609,
+        "one": 0.1438411569412204
+      },
+      "element_m6a_fraction": {
+        "zero": 0.12545638670158946,
+        "one": 0.0
+      },
+      "element_m6a_fraction_204": {
+        "zero": 0.12545638670158946,
+        "one": 0.0
+      },
+      "element_tf_small_fraction": {
+        "zero": 0.7815744858289632,
+        "one": 0.0
+      },
+      "element_nucleosome_fraction": {
+        "zero": 0.3740636484366495,
+        "one": 0.2097044492697327
+      },
+      "element_msp_fraction": {
+        "zero": 0.2097044492697317,
+        "one": 0.3719769876351527
+      },
+      "distal_m6a_fraction": {
+        "zero": 0.031833948161990915,
+        "one": 0.0
+      },
+      "distal_m6a_fraction_204": {
+        "zero": 0.031833948161990915,
+        "one": 0.0
+      },
+      "distal_tf_small_fraction": {
+        "zero": 0.14556214099028747,
+        "one": 0.0
+      },
+      "distal_nucleosome_fraction": {
+        "zero": 0.14740623524813962,
+        "one": 0.05975707447116516
+      },
+      "distal_msp_fraction": {
+        "zero": 0.059749495409751094,
+        "one": 0.14554918418085985
+      },
+      "distal_tile_methylation_q10": {
+        "zero": 0.5095250746456339,
+        "one": 0.0
+      },
+      "distal_tile_methylation_median": {
+        "zero": 0.1753157688847512,
+        "one": 0.0
+      },
+      "distal_tile_methylation_q90": {
+        "zero": 0.052709165062205306,
+        "one": 0.0
+      },
+      "distal_tile_methylation_range": {
+        "zero": 0.052709165062204744,
+        "one": 0.0
+      }
+    }
+  },
+  "WT_discrete_call_count_distribution": {
+    "molecule": {
+      "whole_nucleosome_segments": {
+        "valid_weight": 985264.0,
+        "missing_weight": 0.0,
+        "exact_zero_weight": 143760.0,
+        "exact_zero_proportion": 0.14591013170074213,
+        "quantile_method": "exact_weighted_discrete_cdf",
+        "q10": 0,
+        "median": 8,
+        "q90": 17
+      },
+      "whole_tf_calls_small": {
+        "valid_weight": 985264.0,
+        "missing_weight": 0.0,
+        "exact_zero_weight": 134248.0,
+        "exact_zero_proportion": 0.1362558664479774,
+        "quantile_method": "exact_weighted_discrete_cdf",
+        "q10": 0,
+        "median": 4,
+        "q90": 12
+      }
+    },
+    "equal_barcode": {
+      "whole_nucleosome_segments": {
+        "valid_weight": 268283.0000000092,
+        "missing_weight": 0.0,
+        "exact_zero_weight": 39094.51135794419,
+        "exact_zero_proportion": 0.14572116517983938,
+        "quantile_method": "exact_weighted_discrete_cdf",
+        "q10": 0,
+        "median": 8,
+        "q90": 17
+      },
+      "whole_tf_calls_small": {
+        "valid_weight": 268283.00000000844,
+        "missing_weight": 0.0,
+        "exact_zero_weight": 36512.019786820376,
+        "exact_zero_proportion": 0.13609516736736665,
+        "quantile_method": "exact_weighted_discrete_cdf",
+        "q10": 0,
+        "median": 4,
+        "q90": 12
+      }
+    }
+  },
+  "cohort_region_coverage": {
+    "sequence_qualified": {
+      "all": {
+        "whole": {
+          "rows": 2660013,
+          "valid": 2660013,
+          "missing": 0,
+          "complete": 47
+        },
+        "element": {
+          "rows": 2660013,
+          "valid": 2660013,
+          "missing": 0,
+          "complete": 2660013
+        },
+        "distal": {
+          "rows": 2660013,
+          "valid": 2660013,
+          "missing": 0,
+          "complete": 50
+        }
+      },
+      "WT": {
+        "whole": {
+          "rows": 1275475,
+          "valid": 1275475,
+          "missing": 0,
+          "complete": 22
+        },
+        "element": {
+          "rows": 1275475,
+          "valid": 1275475,
+          "missing": 0,
+          "complete": 1275475
+        },
+        "distal": {
+          "rows": 1275475,
+          "valid": 1275475,
+          "missing": 0,
+          "complete": 23
+        }
+      },
+      "pooled_SNV": {
+        "whole": {
+          "rows": 1384538,
+          "valid": 1384538,
+          "missing": 0,
+          "complete": 25
+        },
+        "element": {
+          "rows": 1384538,
+          "valid": 1384538,
+          "missing": 0,
+          "complete": 1384538
+        },
+        "distal": {
+          "rows": 1384538,
+          "valid": 1384538,
+          "missing": 0,
+          "complete": 27
+        }
+      }
+    },
+    "footprint_analysis_eligible": {
+      "all": {
+        "whole": {
+          "rows": 2594368,
+          "valid": 2594368,
+          "missing": 0,
+          "complete": 42
+        },
+        "element": {
+          "rows": 2594368,
+          "valid": 2594368,
+          "missing": 0,
+          "complete": 2594368
+        },
+        "distal": {
+          "rows": 2594368,
+          "valid": 2594368,
+          "missing": 0,
+          "complete": 45
+        }
+      },
+      "WT": {
+        "whole": {
+          "rows": 1243891,
+          "valid": 1243891,
+          "missing": 0,
+          "complete": 20
+        },
+        "element": {
+          "rows": 1243891,
+          "valid": 1243891,
+          "missing": 0,
+          "complete": 1243891
+        },
+        "distal": {
+          "rows": 1243891,
+          "valid": 1243891,
+          "missing": 0,
+          "complete": 21
+        }
+      },
+      "pooled_SNV": {
+        "whole": {
+          "rows": 1350477,
+          "valid": 1350477,
+          "missing": 0,
+          "complete": 22
+        },
+        "element": {
+          "rows": 1350477,
+          "valid": 1350477,
+          "missing": 0,
+          "complete": 1350477
+        },
+        "distal": {
+          "rows": 1350477,
+          "valid": 1350477,
+          "missing": 0,
+          "complete": 24
+        }
+      }
+    },
+    "footprint_analysis_eligible_with_barcode": {
+      "all": {
+        "whole": {
+          "rows": 2102906,
+          "valid": 2102906,
+          "missing": 0,
+          "complete": 31
+        },
+        "element": {
+          "rows": 2102906,
+          "valid": 2102906,
+          "missing": 0,
+          "complete": 2102906
+        },
+        "distal": {
+          "rows": 2102906,
+          "valid": 2102906,
+          "missing": 0,
+          "complete": 32
+        }
+      },
+      "WT": {
+        "whole": {
+          "rows": 985264,
+          "valid": 985264,
+          "missing": 0,
+          "complete": 13
+        },
+        "element": {
+          "rows": 985264,
+          "valid": 985264,
+          "missing": 0,
+          "complete": 985264
+        },
+        "distal": {
+          "rows": 985264,
+          "valid": 985264,
+          "missing": 0,
+          "complete": 14
+        }
+      },
+      "pooled_SNV": {
+        "whole": {
+          "rows": 1117642,
+          "valid": 1117642,
+          "missing": 0,
+          "complete": 18
+        },
+        "element": {
+          "rows": 1117642,
+          "valid": 1117642,
+          "missing": 0,
+          "complete": 1117642
+        },
+        "distal": {
+          "rows": 1117642,
+          "valid": 1117642,
+          "missing": 0,
+          "complete": 18
+        }
+      }
+    }
+  },
+  "cohort_feature_missingness": {
+    "sequence_qualified": {
+      "WT": {
+        "whole_m6a_fraction": {
+          "rows": 1275475,
+          "valid": 1275326,
+          "missing": 149
+        },
+        "whole_m6a_fraction_204": {
+          "rows": 1275475,
+          "valid": 1275326,
+          "missing": 149
+        },
+        "whole_tf_small_fraction": {
+          "rows": 1275475,
+          "valid": 1275320,
+          "missing": 155
+        },
+        "whole_nucleosome_fraction": {
+          "rows": 1275475,
+          "valid": 1275320,
+          "missing": 155
+        },
+        "whole_msp_fraction": {
+          "rows": 1275475,
+          "valid": 1275320,
+          "missing": 155
+        },
+        "element_m6a_fraction": {
+          "rows": 1275475,
+          "valid": 1275326,
+          "missing": 149
+        },
+        "element_m6a_fraction_204": {
+          "rows": 1275475,
+          "valid": 1275326,
+          "missing": 149
+        },
+        "element_tf_small_fraction": {
+          "rows": 1275475,
+          "valid": 1275320,
+          "missing": 155
+        },
+        "element_nucleosome_fraction": {
+          "rows": 1275475,
+          "valid": 1275320,
+          "missing": 155
+        },
+        "element_msp_fraction": {
+          "rows": 1275475,
+          "valid": 1275320,
+          "missing": 155
+        },
+        "distal_m6a_fraction": {
+          "rows": 1275475,
+          "valid": 1275326,
+          "missing": 149
+        },
+        "distal_m6a_fraction_204": {
+          "rows": 1275475,
+          "valid": 1275326,
+          "missing": 149
+        },
+        "distal_tf_small_fraction": {
+          "rows": 1275475,
+          "valid": 1275320,
+          "missing": 155
+        },
+        "distal_nucleosome_fraction": {
+          "rows": 1275475,
+          "valid": 1275320,
+          "missing": 155
+        },
+        "distal_msp_fraction": {
+          "rows": 1275475,
+          "valid": 1275320,
+          "missing": 155
+        },
+        "distal_tile_methylation_q10": {
+          "rows": 1275475,
+          "valid": 1275326,
+          "missing": 149
+        },
+        "distal_tile_methylation_median": {
+          "rows": 1275475,
+          "valid": 1275326,
+          "missing": 149
+        },
+        "distal_tile_methylation_q90": {
+          "rows": 1275475,
+          "valid": 1275326,
+          "missing": 149
+        },
+        "distal_tile_methylation_range": {
+          "rows": 1275475,
+          "valid": 1275326,
+          "missing": 149
+        },
+        "whole_nucleosome_segments": {
+          "rows": 1275475,
+          "valid": 1275320,
+          "missing": 155
+        },
+        "whole_nucleosome_length_median": {
+          "rows": 1275475,
+          "valid": 1086037,
+          "missing": 189438
+        },
+        "whole_nucleosome_spacing_median": {
+          "rows": 1275475,
+          "valid": 952731,
+          "missing": 322744
+        },
+        "whole_tf_calls_all": {
+          "rows": 1275475,
+          "valid": 1275320,
+          "missing": 155
+        },
+        "whole_tf_calls_small": {
+          "rows": 1275475,
+          "valid": 1275320,
+          "missing": 155
+        },
+        "distal_tiles": {
+          "rows": 1275475,
+          "valid": 1275326,
+          "missing": 149
+        }
+      },
+      "pooled_SNV": {
+        "whole_m6a_fraction": {
+          "rows": 1384538,
+          "valid": 1384364,
+          "missing": 174
+        },
+        "whole_m6a_fraction_204": {
+          "rows": 1384538,
+          "valid": 1384364,
+          "missing": 174
+        },
+        "whole_tf_small_fraction": {
+          "rows": 1384538,
+          "valid": 1384356,
+          "missing": 182
+        },
+        "whole_nucleosome_fraction": {
+          "rows": 1384538,
+          "valid": 1384356,
+          "missing": 182
+        },
+        "whole_msp_fraction": {
+          "rows": 1384538,
+          "valid": 1384356,
+          "missing": 182
+        },
+        "element_m6a_fraction": {
+          "rows": 1384538,
+          "valid": 1384364,
+          "missing": 174
+        },
+        "element_m6a_fraction_204": {
+          "rows": 1384538,
+          "valid": 1384364,
+          "missing": 174
+        },
+        "element_tf_small_fraction": {
+          "rows": 1384538,
+          "valid": 1384356,
+          "missing": 182
+        },
+        "element_nucleosome_fraction": {
+          "rows": 1384538,
+          "valid": 1384356,
+          "missing": 182
+        },
+        "element_msp_fraction": {
+          "rows": 1384538,
+          "valid": 1384356,
+          "missing": 182
+        },
+        "distal_m6a_fraction": {
+          "rows": 1384538,
+          "valid": 1384364,
+          "missing": 174
+        },
+        "distal_m6a_fraction_204": {
+          "rows": 1384538,
+          "valid": 1384364,
+          "missing": 174
+        },
+        "distal_tf_small_fraction": {
+          "rows": 1384538,
+          "valid": 1384356,
+          "missing": 182
+        },
+        "distal_nucleosome_fraction": {
+          "rows": 1384538,
+          "valid": 1384356,
+          "missing": 182
+        },
+        "distal_msp_fraction": {
+          "rows": 1384538,
+          "valid": 1384356,
+          "missing": 182
+        },
+        "distal_tile_methylation_q10": {
+          "rows": 1384538,
+          "valid": 1384364,
+          "missing": 174
+        },
+        "distal_tile_methylation_median": {
+          "rows": 1384538,
+          "valid": 1384364,
+          "missing": 174
+        },
+        "distal_tile_methylation_q90": {
+          "rows": 1384538,
+          "valid": 1384364,
+          "missing": 174
+        },
+        "distal_tile_methylation_range": {
+          "rows": 1384538,
+          "valid": 1384364,
+          "missing": 174
+        },
+        "whole_nucleosome_segments": {
+          "rows": 1384538,
+          "valid": 1384356,
+          "missing": 182
+        },
+        "whole_nucleosome_length_median": {
+          "rows": 1384538,
+          "valid": 1179155,
+          "missing": 205383
+        },
+        "whole_nucleosome_spacing_median": {
+          "rows": 1384538,
+          "valid": 1034179,
+          "missing": 350359
+        },
+        "whole_tf_calls_all": {
+          "rows": 1384538,
+          "valid": 1384356,
+          "missing": 182
+        },
+        "whole_tf_calls_small": {
+          "rows": 1384538,
+          "valid": 1384356,
+          "missing": 182
+        },
+        "distal_tiles": {
+          "rows": 1384538,
+          "valid": 1384364,
+          "missing": 174
+        }
+      }
+    },
+    "footprint_analysis_eligible": {
+      "WT": {
+        "whole_m6a_fraction": {
+          "rows": 1243891,
+          "valid": 1243891,
+          "missing": 0
+        },
+        "whole_m6a_fraction_204": {
+          "rows": 1243891,
+          "valid": 1243891,
+          "missing": 0
+        },
+        "whole_tf_small_fraction": {
+          "rows": 1243891,
+          "valid": 1243891,
+          "missing": 0
+        },
+        "whole_nucleosome_fraction": {
+          "rows": 1243891,
+          "valid": 1243891,
+          "missing": 0
+        },
+        "whole_msp_fraction": {
+          "rows": 1243891,
+          "valid": 1243891,
+          "missing": 0
+        },
+        "element_m6a_fraction": {
+          "rows": 1243891,
+          "valid": 1243891,
+          "missing": 0
+        },
+        "element_m6a_fraction_204": {
+          "rows": 1243891,
+          "valid": 1243891,
+          "missing": 0
+        },
+        "element_tf_small_fraction": {
+          "rows": 1243891,
+          "valid": 1243891,
+          "missing": 0
+        },
+        "element_nucleosome_fraction": {
+          "rows": 1243891,
+          "valid": 1243891,
+          "missing": 0
+        },
+        "element_msp_fraction": {
+          "rows": 1243891,
+          "valid": 1243891,
+          "missing": 0
+        },
+        "distal_m6a_fraction": {
+          "rows": 1243891,
+          "valid": 1243891,
+          "missing": 0
+        },
+        "distal_m6a_fraction_204": {
+          "rows": 1243891,
+          "valid": 1243891,
+          "missing": 0
+        },
+        "distal_tf_small_fraction": {
+          "rows": 1243891,
+          "valid": 1243891,
+          "missing": 0
+        },
+        "distal_nucleosome_fraction": {
+          "rows": 1243891,
+          "valid": 1243891,
+          "missing": 0
+        },
+        "distal_msp_fraction": {
+          "rows": 1243891,
+          "valid": 1243891,
+          "missing": 0
+        },
+        "distal_tile_methylation_q10": {
+          "rows": 1243891,
+          "valid": 1243891,
+          "missing": 0
+        },
+        "distal_tile_methylation_median": {
+          "rows": 1243891,
+          "valid": 1243891,
+          "missing": 0
+        },
+        "distal_tile_methylation_q90": {
+          "rows": 1243891,
+          "valid": 1243891,
+          "missing": 0
+        },
+        "distal_tile_methylation_range": {
+          "rows": 1243891,
+          "valid": 1243891,
+          "missing": 0
+        },
+        "whole_nucleosome_segments": {
+          "rows": 1243891,
+          "valid": 1243891,
+          "missing": 0
+        },
+        "whole_nucleosome_length_median": {
+          "rows": 1243891,
+          "valid": 1062560,
+          "missing": 181331
+        },
+        "whole_nucleosome_spacing_median": {
+          "rows": 1243891,
+          "valid": 933953,
+          "missing": 309938
+        },
+        "whole_tf_calls_all": {
+          "rows": 1243891,
+          "valid": 1243891,
+          "missing": 0
+        },
+        "whole_tf_calls_small": {
+          "rows": 1243891,
+          "valid": 1243891,
+          "missing": 0
+        },
+        "distal_tiles": {
+          "rows": 1243891,
+          "valid": 1243891,
+          "missing": 0
+        }
+      },
+      "pooled_SNV": {
+        "whole_m6a_fraction": {
+          "rows": 1350477,
+          "valid": 1350477,
+          "missing": 0
+        },
+        "whole_m6a_fraction_204": {
+          "rows": 1350477,
+          "valid": 1350477,
+          "missing": 0
+        },
+        "whole_tf_small_fraction": {
+          "rows": 1350477,
+          "valid": 1350477,
+          "missing": 0
+        },
+        "whole_nucleosome_fraction": {
+          "rows": 1350477,
+          "valid": 1350477,
+          "missing": 0
+        },
+        "whole_msp_fraction": {
+          "rows": 1350477,
+          "valid": 1350477,
+          "missing": 0
+        },
+        "element_m6a_fraction": {
+          "rows": 1350477,
+          "valid": 1350477,
+          "missing": 0
+        },
+        "element_m6a_fraction_204": {
+          "rows": 1350477,
+          "valid": 1350477,
+          "missing": 0
+        },
+        "element_tf_small_fraction": {
+          "rows": 1350477,
+          "valid": 1350477,
+          "missing": 0
+        },
+        "element_nucleosome_fraction": {
+          "rows": 1350477,
+          "valid": 1350477,
+          "missing": 0
+        },
+        "element_msp_fraction": {
+          "rows": 1350477,
+          "valid": 1350477,
+          "missing": 0
+        },
+        "distal_m6a_fraction": {
+          "rows": 1350477,
+          "valid": 1350477,
+          "missing": 0
+        },
+        "distal_m6a_fraction_204": {
+          "rows": 1350477,
+          "valid": 1350477,
+          "missing": 0
+        },
+        "distal_tf_small_fraction": {
+          "rows": 1350477,
+          "valid": 1350477,
+          "missing": 0
+        },
+        "distal_nucleosome_fraction": {
+          "rows": 1350477,
+          "valid": 1350477,
+          "missing": 0
+        },
+        "distal_msp_fraction": {
+          "rows": 1350477,
+          "valid": 1350477,
+          "missing": 0
+        },
+        "distal_tile_methylation_q10": {
+          "rows": 1350477,
+          "valid": 1350477,
+          "missing": 0
+        },
+        "distal_tile_methylation_median": {
+          "rows": 1350477,
+          "valid": 1350477,
+          "missing": 0
+        },
+        "distal_tile_methylation_q90": {
+          "rows": 1350477,
+          "valid": 1350477,
+          "missing": 0
+        },
+        "distal_tile_methylation_range": {
+          "rows": 1350477,
+          "valid": 1350477,
+          "missing": 0
+        },
+        "whole_nucleosome_segments": {
+          "rows": 1350477,
+          "valid": 1350477,
+          "missing": 0
+        },
+        "whole_nucleosome_length_median": {
+          "rows": 1350477,
+          "valid": 1153785,
+          "missing": 196692
+        },
+        "whole_nucleosome_spacing_median": {
+          "rows": 1350477,
+          "valid": 1013843,
+          "missing": 336634
+        },
+        "whole_tf_calls_all": {
+          "rows": 1350477,
+          "valid": 1350477,
+          "missing": 0
+        },
+        "whole_tf_calls_small": {
+          "rows": 1350477,
+          "valid": 1350477,
+          "missing": 0
+        },
+        "distal_tiles": {
+          "rows": 1350477,
+          "valid": 1350477,
+          "missing": 0
+        }
+      }
+    },
+    "footprint_analysis_eligible_with_barcode": {
+      "WT": {
+        "whole_m6a_fraction": {
+          "rows": 985264,
+          "valid": 985264,
+          "missing": 0
+        },
+        "whole_m6a_fraction_204": {
+          "rows": 985264,
+          "valid": 985264,
+          "missing": 0
+        },
+        "whole_tf_small_fraction": {
+          "rows": 985264,
+          "valid": 985264,
+          "missing": 0
+        },
+        "whole_nucleosome_fraction": {
+          "rows": 985264,
+          "valid": 985264,
+          "missing": 0
+        },
+        "whole_msp_fraction": {
+          "rows": 985264,
+          "valid": 985264,
+          "missing": 0
+        },
+        "element_m6a_fraction": {
+          "rows": 985264,
+          "valid": 985264,
+          "missing": 0
+        },
+        "element_m6a_fraction_204": {
+          "rows": 985264,
+          "valid": 985264,
+          "missing": 0
+        },
+        "element_tf_small_fraction": {
+          "rows": 985264,
+          "valid": 985264,
+          "missing": 0
+        },
+        "element_nucleosome_fraction": {
+          "rows": 985264,
+          "valid": 985264,
+          "missing": 0
+        },
+        "element_msp_fraction": {
+          "rows": 985264,
+          "valid": 985264,
+          "missing": 0
+        },
+        "distal_m6a_fraction": {
+          "rows": 985264,
+          "valid": 985264,
+          "missing": 0
+        },
+        "distal_m6a_fraction_204": {
+          "rows": 985264,
+          "valid": 985264,
+          "missing": 0
+        },
+        "distal_tf_small_fraction": {
+          "rows": 985264,
+          "valid": 985264,
+          "missing": 0
+        },
+        "distal_nucleosome_fraction": {
+          "rows": 985264,
+          "valid": 985264,
+          "missing": 0
+        },
+        "distal_msp_fraction": {
+          "rows": 985264,
+          "valid": 985264,
+          "missing": 0
+        },
+        "distal_tile_methylation_q10": {
+          "rows": 985264,
+          "valid": 985264,
+          "missing": 0
+        },
+        "distal_tile_methylation_median": {
+          "rows": 985264,
+          "valid": 985264,
+          "missing": 0
+        },
+        "distal_tile_methylation_q90": {
+          "rows": 985264,
+          "valid": 985264,
+          "missing": 0
+        },
+        "distal_tile_methylation_range": {
+          "rows": 985264,
+          "valid": 985264,
+          "missing": 0
+        },
+        "whole_nucleosome_segments": {
+          "rows": 985264,
+          "valid": 985264,
+          "missing": 0
+        },
+        "whole_nucleosome_length_median": {
+          "rows": 985264,
+          "valid": 841504,
+          "missing": 143760
+        },
+        "whole_nucleosome_spacing_median": {
+          "rows": 985264,
+          "valid": 739618,
+          "missing": 245646
+        },
+        "whole_tf_calls_all": {
+          "rows": 985264,
+          "valid": 985264,
+          "missing": 0
+        },
+        "whole_tf_calls_small": {
+          "rows": 985264,
+          "valid": 985264,
+          "missing": 0
+        },
+        "distal_tiles": {
+          "rows": 985264,
+          "valid": 985264,
+          "missing": 0
+        }
+      },
+      "pooled_SNV": {
+        "whole_m6a_fraction": {
+          "rows": 1117642,
+          "valid": 1117642,
+          "missing": 0
+        },
+        "whole_m6a_fraction_204": {
+          "rows": 1117642,
+          "valid": 1117642,
+          "missing": 0
+        },
+        "whole_tf_small_fraction": {
+          "rows": 1117642,
+          "valid": 1117642,
+          "missing": 0
+        },
+        "whole_nucleosome_fraction": {
+          "rows": 1117642,
+          "valid": 1117642,
+          "missing": 0
+        },
+        "whole_msp_fraction": {
+          "rows": 1117642,
+          "valid": 1117642,
+          "missing": 0
+        },
+        "element_m6a_fraction": {
+          "rows": 1117642,
+          "valid": 1117642,
+          "missing": 0
+        },
+        "element_m6a_fraction_204": {
+          "rows": 1117642,
+          "valid": 1117642,
+          "missing": 0
+        },
+        "element_tf_small_fraction": {
+          "rows": 1117642,
+          "valid": 1117642,
+          "missing": 0
+        },
+        "element_nucleosome_fraction": {
+          "rows": 1117642,
+          "valid": 1117642,
+          "missing": 0
+        },
+        "element_msp_fraction": {
+          "rows": 1117642,
+          "valid": 1117642,
+          "missing": 0
+        },
+        "distal_m6a_fraction": {
+          "rows": 1117642,
+          "valid": 1117642,
+          "missing": 0
+        },
+        "distal_m6a_fraction_204": {
+          "rows": 1117642,
+          "valid": 1117642,
+          "missing": 0
+        },
+        "distal_tf_small_fraction": {
+          "rows": 1117642,
+          "valid": 1117642,
+          "missing": 0
+        },
+        "distal_nucleosome_fraction": {
+          "rows": 1117642,
+          "valid": 1117642,
+          "missing": 0
+        },
+        "distal_msp_fraction": {
+          "rows": 1117642,
+          "valid": 1117642,
+          "missing": 0
+        },
+        "distal_tile_methylation_q10": {
+          "rows": 1117642,
+          "valid": 1117642,
+          "missing": 0
+        },
+        "distal_tile_methylation_median": {
+          "rows": 1117642,
+          "valid": 1117642,
+          "missing": 0
+        },
+        "distal_tile_methylation_q90": {
+          "rows": 1117642,
+          "valid": 1117642,
+          "missing": 0
+        },
+        "distal_tile_methylation_range": {
+          "rows": 1117642,
+          "valid": 1117642,
+          "missing": 0
+        },
+        "whole_nucleosome_segments": {
+          "rows": 1117642,
+          "valid": 1117642,
+          "missing": 0
+        },
+        "whole_nucleosome_length_median": {
+          "rows": 1117642,
+          "valid": 954851,
+          "missing": 162791
+        },
+        "whole_nucleosome_spacing_median": {
+          "rows": 1117642,
+          "valid": 838730,
+          "missing": 278912
+        },
+        "whole_tf_calls_all": {
+          "rows": 1117642,
+          "valid": 1117642,
+          "missing": 0
+        },
+        "whole_tf_calls_small": {
+          "rows": 1117642,
+          "valid": 1117642,
+          "missing": 0
+        },
+        "distal_tiles": {
+          "rows": 1117642,
+          "valid": 1117642,
+          "missing": 0
+        }
+      }
+    }
+  },
+  "within_barcode_sd": {
+    "WT": {
+      "whole_m6a_fraction": {
+        "mean": 0.1791595245326382,
+        "barcodes_with_at_least_two_valid_molecules": 266752
+      },
+      "whole_m6a_fraction_204": {
+        "mean": 0.1791595245326382,
+        "barcodes_with_at_least_two_valid_molecules": 266752
+      },
+      "whole_tf_small_fraction": {
+        "mean": 0.01631511054178137,
+        "barcodes_with_at_least_two_valid_molecules": 266752
+      },
+      "whole_nucleosome_fraction": {
+        "mean": 0.26202766585211396,
+        "barcodes_with_at_least_two_valid_molecules": 266752
+      },
+      "whole_msp_fraction": {
+        "mean": 0.262423664907304,
+        "barcodes_with_at_least_two_valid_molecules": 266752
+      },
+      "element_m6a_fraction": {
+        "mean": 0.2056980091545392,
+        "barcodes_with_at_least_two_valid_molecules": 266752
+      },
+      "element_m6a_fraction_204": {
+        "mean": 0.2056980091545392,
+        "barcodes_with_at_least_two_valid_molecules": 266752
+      },
+      "element_tf_small_fraction": {
+        "mean": 0.031182598371839242,
+        "barcodes_with_at_least_two_valid_molecules": 266752
+      },
+      "element_nucleosome_fraction": {
+        "mean": 0.3042216666734322,
+        "barcodes_with_at_least_two_valid_molecules": 266752
+      },
+      "element_msp_fraction": {
+        "mean": 0.30394435573301154,
+        "barcodes_with_at_least_two_valid_molecules": 266752
+      },
+      "distal_m6a_fraction": {
+        "mean": 0.17829175092741298,
+        "barcodes_with_at_least_two_valid_molecules": 266752
+      },
+      "distal_m6a_fraction_204": {
+        "mean": 0.17829175092741298,
+        "barcodes_with_at_least_two_valid_molecules": 266752
+      },
+      "distal_tf_small_fraction": {
+        "mean": 0.01658784553997915,
+        "barcodes_with_at_least_two_valid_molecules": 266752
+      },
+      "distal_nucleosome_fraction": {
+        "mean": 0.26191567732012355,
+        "barcodes_with_at_least_two_valid_molecules": 266752
+      },
+      "distal_msp_fraction": {
+        "mean": 0.26236144388972366,
+        "barcodes_with_at_least_two_valid_molecules": 266752
+      },
+      "distal_tile_methylation_q10": {
+        "mean": 0.1263506233094463,
+        "barcodes_with_at_least_two_valid_molecules": 266752
+      },
+      "distal_tile_methylation_median": {
+        "mean": 0.219953301213925,
+        "barcodes_with_at_least_two_valid_molecules": 266752
+      },
+      "distal_tile_methylation_q90": {
+        "mean": 0.216769411257447,
+        "barcodes_with_at_least_two_valid_molecules": 266752
+      },
+      "distal_tile_methylation_range": {
+        "mean": 0.18380404831139582,
+        "barcodes_with_at_least_two_valid_molecules": 266752
+      },
+      "whole_nucleosome_segments": {
+        "mean": 4.697982066637936,
+        "barcodes_with_at_least_two_valid_molecules": 266752
+      },
+      "whole_nucleosome_length_median": {
+        "mean": 513.8382973037874,
+        "barcodes_with_at_least_two_valid_molecules": 235685
+      },
+      "whole_nucleosome_spacing_median": {
+        "mean": 263.5199033042622,
+        "barcodes_with_at_least_two_valid_molecules": 210799
+      },
+      "whole_tf_calls_all": {
+        "mean": 6.578540560043713,
+        "barcodes_with_at_least_two_valid_molecules": 266752
+      },
+      "whole_tf_calls_small": {
+        "mean": 3.7228576532707733,
+        "barcodes_with_at_least_two_valid_molecules": 266752
+      },
+      "distal_tiles": {
+        "mean": 0.001438124577338373,
+        "barcodes_with_at_least_two_valid_molecules": 266752
+      }
+    },
+    "pooled_SNV": {
+      "whole_m6a_fraction": {
+        "mean": 0.17961678567517128,
+        "barcodes_with_at_least_two_valid_molecules": 298398
+      },
+      "whole_m6a_fraction_204": {
+        "mean": 0.17961678567517128,
+        "barcodes_with_at_least_two_valid_molecules": 298398
+      },
+      "whole_tf_small_fraction": {
+        "mean": 0.016394134929107056,
+        "barcodes_with_at_least_two_valid_molecules": 298398
+      },
+      "whole_nucleosome_fraction": {
+        "mean": 0.2629979364766912,
+        "barcodes_with_at_least_two_valid_molecules": 298398
+      },
+      "whole_msp_fraction": {
+        "mean": 0.2633974645726628,
+        "barcodes_with_at_least_two_valid_molecules": 298398
+      },
+      "element_m6a_fraction": {
+        "mean": 0.20570940979004623,
+        "barcodes_with_at_least_two_valid_molecules": 298398
+      },
+      "element_m6a_fraction_204": {
+        "mean": 0.20570940979004623,
+        "barcodes_with_at_least_two_valid_molecules": 298398
+      },
+      "element_tf_small_fraction": {
+        "mean": 0.03111485389946367,
+        "barcodes_with_at_least_two_valid_molecules": 298398
+      },
+      "element_nucleosome_fraction": {
+        "mean": 0.30474287525287985,
+        "barcodes_with_at_least_two_valid_molecules": 298398
+      },
+      "element_msp_fraction": {
+        "mean": 0.3044719625249967,
+        "barcodes_with_at_least_two_valid_molecules": 298398
+      },
+      "distal_m6a_fraction": {
+        "mean": 0.17879178336774593,
+        "barcodes_with_at_least_two_valid_molecules": 298398
+      },
+      "distal_m6a_fraction_204": {
+        "mean": 0.17879178336774593,
+        "barcodes_with_at_least_two_valid_molecules": 298398
+      },
+      "distal_tf_small_fraction": {
+        "mean": 0.016667563672014322,
+        "barcodes_with_at_least_two_valid_molecules": 298398
+      },
+      "distal_nucleosome_fraction": {
+        "mean": 0.26292377255580895,
+        "barcodes_with_at_least_two_valid_molecules": 298398
+      },
+      "distal_msp_fraction": {
+        "mean": 0.2633695709656445,
+        "barcodes_with_at_least_two_valid_molecules": 298398
+      },
+      "distal_tile_methylation_q10": {
+        "mean": 0.12668565041629878,
+        "barcodes_with_at_least_two_valid_molecules": 298398
+      },
+      "distal_tile_methylation_median": {
+        "mean": 0.22062622591990147,
+        "barcodes_with_at_least_two_valid_molecules": 298398
+      },
+      "distal_tile_methylation_q90": {
+        "mean": 0.2176371136685601,
+        "barcodes_with_at_least_two_valid_molecules": 298398
+      },
+      "distal_tile_methylation_range": {
+        "mean": 0.18438750419552838,
+        "barcodes_with_at_least_two_valid_molecules": 298398
+      },
+      "whole_nucleosome_segments": {
+        "mean": 4.722561391826901,
+        "barcodes_with_at_least_two_valid_molecules": 298398
+      },
+      "whole_nucleosome_length_median": {
+        "mean": 518.2392168024047,
+        "barcodes_with_at_least_two_valid_molecules": 263755
+      },
+      "whole_nucleosome_spacing_median": {
+        "mean": 265.83510023234555,
+        "barcodes_with_at_least_two_valid_molecules": 236239
+      },
+      "whole_tf_calls_all": {
+        "mean": 6.616147146221602,
+        "barcodes_with_at_least_two_valid_molecules": 298398
+      },
+      "whole_tf_calls_small": {
+        "mean": 3.7427969096307425,
+        "barcodes_with_at_least_two_valid_molecules": 298398
+      },
+      "distal_tiles": {
+        "mean": 0.0013318829177008614,
+        "barcodes_with_at_least_two_valid_molecules": 298398
+      }
+    }
+  },
+  "barcode_depth": {
+    "WT": {
+      "barcodes": 268283,
+      "n1": 1531,
+      "n_at_least_2": 266752,
+      "n_at_least_5": 64439,
+      "min": 1,
+      "q10": 2.0,
+      "median": 3.0,
+      "q90": 6.0,
+      "max": 56,
+      "mean": 3.6724801795119335
+    },
+    "pooled_SNV": {
+      "barcodes": 300071,
+      "n1": 1673,
+      "n_at_least_2": 298398,
+      "n_at_least_5": 74618,
+      "min": 1,
+      "q10": 2.0,
+      "median": 3.0,
+      "q90": 7.0,
+      "max": 208,
+      "mean": 3.7245918465963057
+    }
+  },
+  "per_variant_equal_barcode_mean_range": {
+    "whole_m6a_fraction": [
+      0.2750669186878731,
+      0.3678502473758581
+    ],
+    "whole_m6a_fraction_204": [
+      0.2750669186878731,
+      0.3678502473758581
+    ],
+    "whole_tf_small_fraction": [
+      0.006461339651087659,
+      0.025730674742556504
+    ],
+    "whole_nucleosome_fraction": [
+      0.4384868292349105,
+      0.5785052767607151
+    ],
+    "whole_msp_fraction": [
+      0.419879388326513,
+      0.557984503073216
+    ],
+    "element_m6a_fraction": [
+      0.2732843137254902,
+      0.3849675290109656
+    ],
+    "element_m6a_fraction_204": [
+      0.2732843137254902,
+      0.3849675290109656
+    ],
+    "element_tf_small_fraction": [
+      0.0,
+      0.04917061611374407
+    ],
+    "element_nucleosome_fraction": [
+      0.4071321796822481,
+      0.6042654028436019
+    ],
+    "element_msp_fraction": [
+      0.3957345971563981,
+      0.5895044202260223
+    ],
+    "distal_m6a_fraction": [
+      0.27630903490759756,
+      0.36451958663936407
+    ],
+    "distal_m6a_fraction_204": [
+      0.27630903490759756,
+      0.36451958663936407
+    ],
+    "distal_tf_small_fraction": [
+      0.007199424046076314,
+      0.025978764812578648
+    ],
+    "distal_nucleosome_fraction": [
+      0.4410199701808988,
+      0.5669546436285098
+    ],
+    "distal_msp_fraction": [
+      0.4312455003599712,
+      0.5552187200380163
+    ],
+    "distal_tile_methylation_q10": [
+      0.0761986301369863,
+      0.15270147234392267
+    ],
+    "distal_tile_methylation_median": [
+      0.30021350931677027,
+      0.39420711861717944
+    ],
+    "distal_tile_methylation_q90": [
+      0.43111111111111117,
+      0.607960819696797
+    ],
+    "distal_tile_methylation_range": [
+      0.35491248097412487,
+      0.47031178013442093
+    ],
+    "whole_nucleosome_segments": [
+      3.5,
+      9.047427360774819
+    ],
+    "whole_nucleosome_length_median": [
+      443.985,
+      2384.5
+    ],
+    "whole_nucleosome_spacing_median": [
+      426.67560861423226,
+      851.0
+    ],
+    "whole_tf_calls_all": [
+      2.0,
+      11.748558386058384
+    ],
+    "whole_tf_calls_small": [
+      1.5,
+      6.044242424242427
+    ],
+    "distal_tiles": [
+      38.975,
+      39.0
+    ]
+  },
+  "SNV_equal_barcode_delta_range": {
+    "all_SNV": {
+      "whole_m6a_fraction": [
+        -0.0676255035839281,
+        0.025157825104056897
+      ],
+      "whole_m6a_fraction_204": [
+        -0.0676255035839281,
+        0.025157825104056897
+      ],
+      "whole_tf_small_fraction": [
+        -0.016148746736076938,
+        0.0031205883553919074
+      ],
+      "whole_nucleosome_fraction": [
+        -0.032327906761152825,
+        0.10769054076465173
+      ],
+      "whole_msp_fraction": [
+        -0.10583920400870844,
+        0.03226591073799456
+      ],
+      "element_m6a_fraction": [
+        -0.06974634435230997,
+        0.04193687093316539
+      ],
+      "element_m6a_fraction_204": [
+        -0.06974634435230997,
+        0.04193687093316539
+      ],
+      "element_tf_small_fraction": [
+        -0.02597997002128827,
+        0.0231906460924558
+      ],
+      "element_nucleosome_fraction": [
+        -0.06581659108806476,
+        0.13131663207328903
+      ],
+      "element_msp_fraction": [
+        -0.13017674705815957,
+        0.06359307601146469
+      ],
+      "distal_m6a_fraction": [
+        -0.06470694938570903,
+        0.023503602346057473
+      ],
+      "distal_m6a_fraction_204": [
+        -0.06470694938570903,
+        0.023503602346057473
+      ],
+      "distal_tf_small_fraction": [
+        -0.015661271253943905,
+        0.003118069512558431
+      ],
+      "distal_nucleosome_fraction": [
+        -0.03003897461411581,
+        0.09589569883349519
+      ],
+      "distal_msp_fraction": [
+        -0.09396709934171332,
+        0.030006120336331765
+      ],
+      "distal_tile_methylation_q10": [
+        -0.053592768148025466,
+        0.022910074058910906
+      ],
+      "distal_tile_methylation_median": [
+        -0.06537124557232687,
+        0.0286223637280823
+      ],
+      "distal_tile_methylation_q90": [
+        -0.14253918300909812,
+        0.03431052557658776
+      ],
+      "distal_tile_methylation_range": [
+        -0.08894641486105886,
+        0.0264528842992372
+      ],
+      "whole_nucleosome_segments": [
+        -4.6915312868025545,
+        0.8558960739722643
+      ],
+      "whole_nucleosome_length_median": [
+        -109.14633540201419,
+        1831.3686645979858
+      ],
+      "whole_nucleosome_spacing_median": [
+        -85.7670473402369,
+        338.55734404553084
+      ],
+      "whole_tf_calls_all": [
+        -8.41204434167546,
+        1.336514044382925
+      ],
+      "whole_tf_calls_small": [
+        -3.9066101072473174,
+        0.6376323169951092
+      ],
+      "distal_tiles": [
+        -0.02261341570523001,
+        0.002386584294768568
+      ]
+    },
+    "plotted_SNV": {
+      "whole_m6a_fraction": [
+        -0.02739197703593277,
+        0.025157825104056897
+      ],
+      "whole_m6a_fraction_204": [
+        -0.02739197703593277,
+        0.025157825104056897
+      ],
+      "whole_tf_small_fraction": [
+        -0.002558922684220203,
+        0.0031205883553919074
+      ],
+      "whole_nucleosome_fraction": [
+        -0.032327906761152825,
+        0.04257001121555132
+      ],
+      "whole_msp_fraction": [
+        -0.04281731375151293,
+        0.03226591073799456
+      ],
+      "element_m6a_fraction": [
+        -0.0375888317504548,
+        0.04193687093316539
+      ],
+      "element_m6a_fraction_204": [
+        -0.0375888317504548,
+        0.04193687093316539
+      ],
+      "element_tf_small_fraction": [
+        -0.007153034347549804,
+        0.009461866952449365
+      ],
+      "element_nucleosome_fraction": [
+        -0.06581659108806476,
+        0.05458892962363193
+      ],
+      "element_msp_fraction": [
+        -0.05508381334853424,
+        0.06359307601146469
+      ],
+      "distal_m6a_fraction": [
+        -0.027449715936223917,
+        0.023503602346057473
+      ],
+      "distal_m6a_fraction_204": [
+        -0.027449715936223917,
+        0.023503602346057473
+      ],
+      "distal_tf_small_fraction": [
+        -0.0026888159279568127,
+        0.003118069512558431
+      ],
+      "distal_nucleosome_fraction": [
+        -0.03003897461411581,
+        0.043346950417179786
+      ],
+      "distal_msp_fraction": [
+        -0.04376757544861554,
+        0.030006120336331765
+      ],
+      "distal_tile_methylation_q10": [
+        -0.019224581604934357,
+        0.022910074058910906
+      ],
+      "distal_tile_methylation_median": [
+        -0.03672382831653137,
+        0.0286223637280823
+      ],
+      "distal_tile_methylation_q90": [
+        -0.03279065916000823,
+        0.03431052557658776
+      ],
+      "distal_tile_methylation_range": [
+        -0.022407389132517053,
+        0.0264528842992372
+      ],
+      "whole_nucleosome_segments": [
+        -0.5744798083313221,
+        0.8558960739722643
+      ],
+      "whole_nucleosome_length_median": [
+        -109.14633540201419,
+        145.7415792362117
+      ],
+      "whole_nucleosome_spacing_median": [
+        -85.7670473402369,
+        78.59596268264113
+      ],
+      "whole_tf_calls_all": [
+        -1.1605242986299942,
+        1.336514044382925
+      ],
+      "whole_tf_calls_small": [
+        -0.6201425258644822,
+        0.6376323169951092
+      ],
+      "distal_tiles": [
+        -0.02261341570523001,
+        0.002386584294768568
+      ]
+    }
+  },
+  "interpretation": "Descriptive observed heterogeneity. No new filters, significance tests, efficiency correction, compartment assignment, or causal within-state claims.",
+  "weighting": "Each primary molecule receives 1 / all eligible molecules in its supported barcode. Endpoint missingness does not change barcode depth.",
+  "within_barcode_sd_definition": "Population SD of observed molecules within each barcode (divisor n), reported only when at least two molecules have a valid feature; not a variance component.",
+  "state_interpretation": "Fixed observed numerical bins; conditional comparisons are descriptive, not causal or compartment assignments."
+}

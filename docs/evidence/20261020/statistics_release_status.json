@@ -1,0 +1,15 @@
+{
+  "schema_version": "fsmpra.statistics_release.v1",
+  "statistical_calibration": "fail",
+  "validated_endpoint_ids": [
+    "tf_190_210",
+    "tf_191_211"
+  ],
+  "statistically_supported": false,
+  "supported_effects": 0,
+  "candidate_inference_withheld": true,
+  "biological_detectability_resolved": false,
+  "candidate_hypotheses": 13926,
+  "testable_hypotheses": 13745,
+  "interpretation": "Exploratory within-sample caller associations. Statistical calibration does not establish sequence-independent detectability or biological replication."
+}

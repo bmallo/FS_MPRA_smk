@@ -1,0 +1,4075 @@
+{
+  "schema_version": "fsmpra.statistics_calibration.v1",
+  "status": "fail",
+  "validated_endpoint_ids": [
+    "tf_190_210",
+    "tf_191_211"
+  ],
+  "failed_strata": [
+    "wt_aa_50_tf_020_040",
+    "wt_aa_50_tf_040_060",
+    "wt_aa_50_tf_080_100",
+    "wt_aa_100_tf_040_060",
+    "wt_aa_100_tf_050_070",
+    "wt_aa_100_tf_060_080",
+    "wt_aa_100_tf_070_090",
+    "wt_aa_100_tf_080_100",
+    "wt_aa_100_tf_090_110",
+    "wt_aa_100_tf_100_120",
+    "wt_aa_100_tf_120_140",
+    "wt_aa_100_tf_130_150",
+    "wt_aa_100_tf_140_160",
+    "wt_aa_400_tf_000_020",
+    "wt_aa_400_tf_010_030",
+    "wt_aa_400_tf_030_050",
+    "wt_aa_400_tf_090_110",
+    "wt_aa_400_tf_110_130",
+    "wt_aa_400_tf_120_140",
+    "wt_aa_400_tf_130_150",
+    "wt_aa_400_tf_140_160",
+    "wt_aa_400_tf_150_170",
+    "wt_aa_400_tf_160_180",
+    "wt_aa_400_tf_180_200",
+    "wt_aa_400_msp_promoter",
+    "wt_aa_1000_tf_000_020",
+    "wt_aa_1000_tf_010_030",
+    "wt_aa_1000_tf_040_060",
+    "wt_aa_1000_tf_060_080",
+    "wt_aa_1000_tf_070_090",
+    "wt_aa_1000_tf_080_100",
+    "wt_aa_1000_tf_110_130",
+    "wt_aa_1000_tf_120_140",
+    "wt_aa_1000_tf_130_150",
+    "wt_aa_1000_tf_140_160",
+    "wt_aa_1000_tf_150_170",
+    "wt_aa_1000_tf_160_180",
+    "wt_aa_1000_tf_170_190",
+    "wt_aa_1000_tf_180_200",
+    "wt_aa_1000_msp_promoter",
+    "simulation_19",
+    "simulation_20",
+    "simulation_23",
+    "simulation_26"
+  ],
+  "unresolved_null_simulations": [
+    "simulation_00",
+    "simulation_02",
+    "simulation_04",
+    "simulation_06"
+  ],
+  "assessed_strata": 92,
+  "unresolved_strata": 23,
+  "sample_id": "HepG2_rep3",
+  "seed": 17012026,
+  "iterations": 200,
+  "wt_barcodes": 268283,
+  "wt_molecules": 985264,
+  "strata": [
+    {
+      "stratum": "wt_aa_50_tf_000_020",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_000_020",
+      "n_variant": 50,
+      "n_wt": 268233,
+      "attempts": 200,
+      "testable": 0,
+      "rejected": 0,
+      "unconditional_rejection_rate": 0.0,
+      "rejection_interval95": [
+        0.0,
+        0.0182753403551488
+      ],
+      "ci_covered": 0,
+      "conditional_ci_coverage": null,
+      "conditional_ci_interval95": [
+        null,
+        null
+      ],
+      "p_quantiles": {},
+      "statuses": {
+        "sparse_endpoint": 200
+      },
+      "status": "unresolved",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_50_tf_010_030",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_010_030",
+      "n_variant": 50,
+      "n_wt": 268233,
+      "attempts": 200,
+      "testable": 6,
+      "rejected": 0,
+      "unconditional_rejection_rate": 0.0,
+      "rejection_interval95": [
+        0.0,
+        0.0182753403551488
+      ],
+      "ci_covered": 6,
+      "conditional_ci_coverage": 1.0,
+      "conditional_ci_interval95": [
+        0.5407418735600996,
+        1.0
+      ],
+      "p_quantiles": {
+        "0.01": 0.062208968637415825,
+        "0.05": 0.06608793357742657,
+        "0.5": 0.20168897469746322,
+        "0.95": 0.3086130893584832
+      },
+      "statuses": {
+        "sparse_endpoint": 194,
+        "ok": 6
+      },
+      "status": "unresolved",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_50_tf_020_040",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_020_040",
+      "n_variant": 50,
+      "n_wt": 268233,
+      "attempts": 200,
+      "testable": 187,
+      "rejected": 19,
+      "unconditional_rejection_rate": 0.095,
+      "rejection_interval95": [
+        0.058169609725119205,
+        0.14437663997685266
+      ],
+      "ci_covered": 168,
+      "conditional_ci_coverage": 0.8983957219251337,
+      "conditional_ci_interval95": [
+        0.8458840135525783,
+        0.9377111737822428
+      ],
+      "p_quantiles": {
+        "0.01": 0.000931576741610959,
+        "0.05": 0.013858601645537334,
+        "0.5": 0.4736153740375345,
+        "0.95": 0.9559423282559298
+      },
+      "statuses": {
+        "ok": 187,
+        "sparse_endpoint": 13
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_50_tf_030_050",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_030_050",
+      "n_variant": 50,
+      "n_wt": 268233,
+      "attempts": 200,
+      "testable": 186,
+      "rejected": 8,
+      "unconditional_rejection_rate": 0.04,
+      "rejection_interval95": [
+        0.01742480899482101,
+        0.07729196822601603
+      ],
+      "ci_covered": 178,
+      "conditional_ci_coverage": 0.956989247311828,
+      "conditional_ci_interval95": [
+        0.9170132166588381,
+        0.9812508219562344
+      ],
+      "p_quantiles": {
+        "0.01": 0.008604882624426411,
+        "0.05": 0.06567258680560957,
+        "0.5": 0.4794108095382962,
+        "0.95": 0.9527798502431162
+      },
+      "statuses": {
+        "ok": 186,
+        "sparse_endpoint": 14
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_50_tf_040_060",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_040_060",
+      "n_variant": 50,
+      "n_wt": 268233,
+      "attempts": 200,
+      "testable": 196,
+      "rejected": 13,
+      "unconditional_rejection_rate": 0.065,
+      "rejection_interval95": [
+        0.03506070865698193,
+        0.10858723650381787
+      ],
+      "ci_covered": 183,
+      "conditional_ci_coverage": 0.9336734693877551,
+      "conditional_ci_interval95": [
+        0.889250116415473,
+        0.9642141210250137
+      ],
+      "p_quantiles": {
+        "0.01": 5.679385392893801e-05,
+        "0.05": 0.019555573168055406,
+        "0.5": 0.5109434571509599,
+        "0.95": 0.9651471183686429
+      },
+      "statuses": {
+        "ok": 196,
+        "sparse_endpoint": 4
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_50_tf_050_070",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_050_070",
+      "n_variant": 50,
+      "n_wt": 268233,
+      "attempts": 200,
+      "testable": 159,
+      "rejected": 4,
+      "unconditional_rejection_rate": 0.02,
+      "rejection_interval95": [
+        0.005475565879556445,
+        0.050413609089896255
+      ],
+      "ci_covered": 155,
+      "conditional_ci_coverage": 0.9748427672955975,
+      "conditional_ci_interval95": [
+        0.9368423937931272,
+        0.9931038955037199
+      ],
+      "p_quantiles": {
+        "0.01": 0.020703978365279804,
+        "0.05": 0.12780556053215955,
+        "0.5": 0.5286097124716114,
+        "0.95": 0.9491973143503367
+      },
+      "statuses": {
+        "ok": 159,
+        "sparse_endpoint": 41
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_50_tf_060_080",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_060_080",
+      "n_variant": 50,
+      "n_wt": 268233,
+      "attempts": 200,
+      "testable": 139,
+      "rejected": 2,
+      "unconditional_rejection_rate": 0.01,
+      "rejection_interval95": [
+        0.0012133490137476008,
+        0.035654668397239866
+      ],
+      "ci_covered": 137,
+      "conditional_ci_coverage": 0.9856115107913669,
+      "conditional_ci_interval95": [
+        0.9489915535585435,
+        0.9982527125159112
+      ],
+      "p_quantiles": {
+        "0.01": 0.046552405753675946,
+        "0.05": 0.11581642996695567,
+        "0.5": 0.5174468901930153,
+        "0.95": 0.963988790533522
+      },
+      "statuses": {
+        "sparse_endpoint": 61,
+        "ok": 139
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_50_tf_070_090",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_070_090",
+      "n_variant": 50,
+      "n_wt": 268233,
+      "attempts": 200,
+      "testable": 42,
+      "rejected": 2,
+      "unconditional_rejection_rate": 0.01,
+      "rejection_interval95": [
+        0.0012133490137476008,
+        0.035654668397239866
+      ],
+      "ci_covered": 40,
+      "conditional_ci_coverage": 0.9523809523809523,
+      "conditional_ci_interval95": [
+        0.838358040308346,
+        0.994180175164497
+      ],
+      "p_quantiles": {
+        "0.01": 0.015015639038437733,
+        "0.05": 0.06688396878619476,
+        "0.5": 0.35207452329500005,
+        "0.95": 0.8159305231311391
+      },
+      "statuses": {
+        "sparse_endpoint": 158,
+        "ok": 42
+      },
+      "status": "unresolved",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_50_tf_080_100",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_080_100",
+      "n_variant": 50,
+      "n_wt": 268233,
+      "attempts": 200,
+      "testable": 178,
+      "rejected": 14,
+      "unconditional_rejection_rate": 0.07,
+      "rejection_interval95": [
+        0.03879557042956298,
+        0.11465973353712218
+      ],
+      "ci_covered": 164,
+      "conditional_ci_coverage": 0.9213483146067416,
+      "conditional_ci_interval95": [
+        0.8715565197886204,
+        0.9563340851686468
+      ],
+      "p_quantiles": {
+        "0.01": 0.0006835871741273777,
+        "0.05": 0.01139944093758794,
+        "0.5": 0.47930726778512805,
+        "0.95": 0.9656781509227432
+      },
+      "statuses": {
+        "ok": 178,
+        "sparse_endpoint": 22
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_50_tf_090_110",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_090_110",
+      "n_variant": 50,
+      "n_wt": 268233,
+      "attempts": 200,
+      "testable": 180,
+      "rejected": 6,
+      "unconditional_rejection_rate": 0.03,
+      "rejection_interval95": [
+        0.011087455672203695,
+        0.06415062670502639
+      ],
+      "ci_covered": 174,
+      "conditional_ci_coverage": 0.9666666666666667,
+      "conditional_ci_interval95": [
+        0.9288623311063119,
+        0.9876708416699441
+      ],
+      "p_quantiles": {
+        "0.01": 0.0066547520442000645,
+        "0.05": 0.07033347965284378,
+        "0.5": 0.5494821183491833,
+        "0.95": 0.9530015044707778
+      },
+      "statuses": {
+        "ok": 180,
+        "sparse_endpoint": 20
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_50_tf_100_120",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_100_120",
+      "n_variant": 50,
+      "n_wt": 268233,
+      "attempts": 200,
+      "testable": 181,
+      "rejected": 10,
+      "unconditional_rejection_rate": 0.05,
+      "rejection_interval95": [
+        0.02423416547210829,
+        0.09002753770155869
+      ],
+      "ci_covered": 171,
+      "conditional_ci_coverage": 0.9447513812154696,
+      "conditional_ci_interval95": [
+        0.9007447097583443,
+        0.9731913961178472
+      ],
+      "p_quantiles": {
+        "0.01": 0.0029590647235711786,
+        "0.05": 0.04672088369340819,
+        "0.5": 0.539779957012942,
+        "0.95": 0.9392340334024648
+      },
+      "statuses": {
+        "ok": 181,
+        "sparse_endpoint": 19
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_50_tf_110_130",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_110_130",
+      "n_variant": 50,
+      "n_wt": 268233,
+      "attempts": 200,
+      "testable": 5,
+      "rejected": 1,
+      "unconditional_rejection_rate": 0.005,
+      "rejection_interval95": [
+        0.0001265810280094039,
+        0.027541898457558386
+      ],
+      "ci_covered": 4,
+      "conditional_ci_coverage": 0.8,
+      "conditional_ci_interval95": [
+        0.28358206388191054,
+        0.9949492366205319
+      ],
+      "p_quantiles": {
+        "0.01": 0.049258737376593746,
+        "0.05": 0.0515283343783094,
+        "0.5": 0.07332962333274226,
+        "0.95": 0.12952575431821653
+      },
+      "statuses": {
+        "ok": 5,
+        "sparse_endpoint": 195
+      },
+      "status": "unresolved",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_50_tf_120_140",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_120_140",
+      "n_variant": 50,
+      "n_wt": 268233,
+      "attempts": 200,
+      "testable": 70,
+      "rejected": 3,
+      "unconditional_rejection_rate": 0.015,
+      "rejection_interval95": [
+        0.0031041076215550857,
+        0.043208281917709784
+      ],
+      "ci_covered": 67,
+      "conditional_ci_coverage": 0.9571428571428572,
+      "conditional_ci_interval95": [
+        0.8798213946734135,
+        0.9910730959223393
+      ],
+      "p_quantiles": {
+        "0.01": 0.013218551638262788,
+        "0.05": 0.05406669674013627,
+        "0.5": 0.411315084932625,
+        "0.95": 0.9018334931516016
+      },
+      "statuses": {
+        "ok": 70,
+        "sparse_endpoint": 130
+      },
+      "status": "unresolved",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_50_tf_130_150",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_130_150",
+      "n_variant": 50,
+      "n_wt": 268233,
+      "attempts": 200,
+      "testable": 50,
+      "rejected": 0,
+      "unconditional_rejection_rate": 0.0,
+      "rejection_interval95": [
+        0.0,
+        0.0182753403551488
+      ],
+      "ci_covered": 50,
+      "conditional_ci_coverage": 1.0,
+      "conditional_ci_interval95": [
+        0.9288782635357954,
+        1.0
+      ],
+      "p_quantiles": {
+        "0.01": 0.07305565754568356,
+        "0.05": 0.10436463408495852,
+        "0.5": 0.415029065372337,
+        "0.95": 0.9255000298653611
+      },
+      "statuses": {
+        "sparse_endpoint": 150,
+        "ok": 50
+      },
+      "status": "unresolved",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_50_tf_140_160",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_140_160",
+      "n_variant": 50,
+      "n_wt": 268233,
+      "attempts": 200,
+      "testable": 47,
+      "rejected": 0,
+      "unconditional_rejection_rate": 0.0,
+      "rejection_interval95": [
+        0.0,
+        0.0182753403551488
+      ],
+      "ci_covered": 47,
+      "conditional_ci_coverage": 1.0,
+      "conditional_ci_interval95": [
+        0.9245142663089414,
+        1.0
+      ],
+      "p_quantiles": {
+        "0.01": 0.09604689134994647,
+        "0.05": 0.1668964467987253,
+        "0.5": 0.3907892974709827,
+        "0.95": 0.9326325606849811
+      },
+      "statuses": {
+        "sparse_endpoint": 153,
+        "ok": 47
+      },
+      "status": "unresolved",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_50_tf_150_170",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_150_170",
+      "n_variant": 50,
+      "n_wt": 268233,
+      "attempts": 200,
+      "testable": 19,
+      "rejected": 0,
+      "unconditional_rejection_rate": 0.0,
+      "rejection_interval95": [
+        0.0,
+        0.0182753403551488
+      ],
+      "ci_covered": 19,
+      "conditional_ci_coverage": 1.0,
+      "conditional_ci_interval95": [
+        0.823533088192828,
+        1.0
+      ],
+      "p_quantiles": {
+        "0.01": 0.0960126907606716,
+        "0.05": 0.11371873074406331,
+        "0.5": 0.2082916374811842,
+        "0.95": 0.5699789584975856
+      },
+      "statuses": {
+        "sparse_endpoint": 181,
+        "ok": 19
+      },
+      "status": "unresolved",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_50_tf_160_180",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_160_180",
+      "n_variant": 50,
+      "n_wt": 268233,
+      "attempts": 200,
+      "testable": 10,
+      "rejected": 0,
+      "unconditional_rejection_rate": 0.0,
+      "rejection_interval95": [
+        0.0,
+        0.0182753403551488
+      ],
+      "ci_covered": 10,
+      "conditional_ci_coverage": 1.0,
+      "conditional_ci_interval95": [
+        0.6915028921812371,
+        1.0
+      ],
+      "p_quantiles": {
+        "0.01": 0.136999294476488,
+        "0.05": 0.1463354035977259,
+        "0.5": 0.34465571110509297,
+        "0.95": 0.6511863602717274
+      },
+      "statuses": {
+        "sparse_endpoint": 190,
+        "ok": 10
+      },
+      "status": "unresolved",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_50_tf_170_190",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_170_190",
+      "n_variant": 50,
+      "n_wt": 268233,
+      "attempts": 200,
+      "testable": 0,
+      "rejected": 0,
+      "unconditional_rejection_rate": 0.0,
+      "rejection_interval95": [
+        0.0,
+        0.0182753403551488
+      ],
+      "ci_covered": 0,
+      "conditional_ci_coverage": null,
+      "conditional_ci_interval95": [
+        null,
+        null
+      ],
+      "p_quantiles": {},
+      "statuses": {
+        "sparse_endpoint": 200
+      },
+      "status": "unresolved",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_50_tf_180_200",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_180_200",
+      "n_variant": 50,
+      "n_wt": 268233,
+      "attempts": 200,
+      "testable": 0,
+      "rejected": 0,
+      "unconditional_rejection_rate": 0.0,
+      "rejection_interval95": [
+        0.0,
+        0.0182753403551488
+      ],
+      "ci_covered": 0,
+      "conditional_ci_coverage": null,
+      "conditional_ci_interval95": [
+        null,
+        null
+      ],
+      "p_quantiles": {},
+      "statuses": {
+        "sparse_endpoint": 200
+      },
+      "status": "unresolved",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_50_tf_190_210",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_190_210",
+      "n_variant": 50,
+      "n_wt": 268233,
+      "attempts": 200,
+      "testable": 0,
+      "rejected": 0,
+      "unconditional_rejection_rate": 0.0,
+      "rejection_interval95": [
+        0.0,
+        0.0182753403551488
+      ],
+      "ci_covered": 0,
+      "conditional_ci_coverage": null,
+      "conditional_ci_interval95": [
+        null,
+        null
+      ],
+      "p_quantiles": {},
+      "statuses": {
+        "sparse_endpoint": 200
+      },
+      "status": "unresolved",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_50_tf_191_211",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_191_211",
+      "n_variant": 50,
+      "n_wt": 268233,
+      "attempts": 200,
+      "testable": 0,
+      "rejected": 0,
+      "unconditional_rejection_rate": 0.0,
+      "rejection_interval95": [
+        0.0,
+        0.0182753403551488
+      ],
+      "ci_covered": 0,
+      "conditional_ci_coverage": null,
+      "conditional_ci_interval95": [
+        null,
+        null
+      ],
+      "p_quantiles": {},
+      "statuses": {
+        "sparse_endpoint": 200
+      },
+      "status": "unresolved",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_50_msp_promoter",
+      "kind": "wt_aa",
+      "endpoint_id": "msp_promoter",
+      "n_variant": 50,
+      "n_wt": 268233,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 9,
+      "unconditional_rejection_rate": 0.045,
+      "rejection_interval95": [
+        0.020780422227004356,
+        0.08370268807585404
+      ],
+      "ci_covered": 191,
+      "conditional_ci_coverage": 0.955,
+      "conditional_ci_interval95": [
+        0.916297311924146,
+        0.9792195777729956
+      ],
+      "p_quantiles": {
+        "0.01": 0.011780317506658972,
+        "0.05": 0.060337559227189565,
+        "0.5": 0.5240778450990988,
+        "0.95": 0.9322841582757816
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_100_tf_000_020",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_000_020",
+      "n_variant": 100,
+      "n_wt": 268183,
+      "attempts": 200,
+      "testable": 18,
+      "rejected": 0,
+      "unconditional_rejection_rate": 0.0,
+      "rejection_interval95": [
+        0.0,
+        0.0182753403551488
+      ],
+      "ci_covered": 18,
+      "conditional_ci_coverage": 1.0,
+      "conditional_ci_interval95": [
+        0.8146980318621477,
+        1.0
+      ],
+      "p_quantiles": {
+        "0.01": 0.058391432958150254,
+        "0.05": 0.07236845378848017,
+        "0.5": 0.2151082298840355,
+        "0.95": 0.7684853073769468
+      },
+      "statuses": {
+        "sparse_endpoint": 182,
+        "ok": 18
+      },
+      "status": "unresolved",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_100_tf_010_030",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_010_030",
+      "n_variant": 100,
+      "n_wt": 268183,
+      "attempts": 200,
+      "testable": 103,
+      "rejected": 1,
+      "unconditional_rejection_rate": 0.005,
+      "rejection_interval95": [
+        0.0001265810280094039,
+        0.027541898457558386
+      ],
+      "ci_covered": 102,
+      "conditional_ci_coverage": 0.9902912621359223,
+      "conditional_ci_interval95": [
+        0.9470917132597956,
+        0.9997542262466155
+      ],
+      "p_quantiles": {
+        "0.01": 0.07186958600707244,
+        "0.05": 0.10678975816979944,
+        "0.5": 0.47404025465469657,
+        "0.95": 0.9216554390385967
+      },
+      "statuses": {
+        "ok": 103,
+        "sparse_endpoint": 97
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_100_tf_020_040",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_020_040",
+      "n_variant": 100,
+      "n_wt": 268183,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 7,
+      "unconditional_rejection_rate": 0.035,
+      "rejection_interval95": [
+        0.01418552589838592,
+        0.0707809983509546
+      ],
+      "ci_covered": 193,
+      "conditional_ci_coverage": 0.965,
+      "conditional_ci_interval95": [
+        0.9292190016490455,
+        0.985814474101614
+      ],
+      "p_quantiles": {
+        "0.01": 0.006131575139484331,
+        "0.05": 0.07006034903664485,
+        "0.5": 0.5060275037136461,
+        "0.95": 0.9509502106797254
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_100_tf_030_050",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_030_050",
+      "n_variant": 100,
+      "n_wt": 268183,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 9,
+      "unconditional_rejection_rate": 0.045,
+      "rejection_interval95": [
+        0.020780422227004356,
+        0.08370268807585404
+      ],
+      "ci_covered": 191,
+      "conditional_ci_coverage": 0.955,
+      "conditional_ci_interval95": [
+        0.916297311924146,
+        0.9792195777729956
+      ],
+      "p_quantiles": {
+        "0.01": 0.015100798047251644,
+        "0.05": 0.06913778677921706,
+        "0.5": 0.5040810494630196,
+        "0.95": 0.9488901975498172
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_100_tf_040_060",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_040_060",
+      "n_variant": 100,
+      "n_wt": 268183,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 12,
+      "unconditional_rejection_rate": 0.06,
+      "rejection_interval95": [
+        0.03138395389348213,
+        0.10246183130833159
+      ],
+      "ci_covered": 188,
+      "conditional_ci_coverage": 0.94,
+      "conditional_ci_interval95": [
+        0.8975381686916685,
+        0.9686160461065179
+      ],
+      "p_quantiles": {
+        "0.01": 0.0028418859331973034,
+        "0.05": 0.035781652719696855,
+        "0.5": 0.540973660322967,
+        "0.95": 0.9615853358708621
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_100_tf_050_070",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_050_070",
+      "n_variant": 100,
+      "n_wt": 268183,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 19,
+      "unconditional_rejection_rate": 0.095,
+      "rejection_interval95": [
+        0.058169609725119205,
+        0.14437663997685266
+      ],
+      "ci_covered": 181,
+      "conditional_ci_coverage": 0.905,
+      "conditional_ci_interval95": [
+        0.8556233600231474,
+        0.9418303902748808
+      ],
+      "p_quantiles": {
+        "0.01": 0.0015260878692642467,
+        "0.05": 0.01314840722701894,
+        "0.5": 0.5568059153764351,
+        "0.95": 0.954742226654839
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_100_tf_060_080",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_060_080",
+      "n_variant": 100,
+      "n_wt": 268183,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 17,
+      "unconditional_rejection_rate": 0.085,
+      "rejection_interval95": [
+        0.05029591863024178,
+        0.1326051658295526
+      ],
+      "ci_covered": 183,
+      "conditional_ci_coverage": 0.915,
+      "conditional_ci_interval95": [
+        0.8673948341704475,
+        0.9497040813697583
+      ],
+      "p_quantiles": {
+        "0.01": 0.00021153341388591469,
+        "0.05": 0.016010227345623722,
+        "0.5": 0.48487515118390345,
+        "0.95": 0.9309168909374352
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_100_tf_070_090",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_070_090",
+      "n_variant": 100,
+      "n_wt": 268183,
+      "attempts": 200,
+      "testable": 183,
+      "rejected": 12,
+      "unconditional_rejection_rate": 0.06,
+      "rejection_interval95": [
+        0.03138395389348213,
+        0.10246183130833159
+      ],
+      "ci_covered": 171,
+      "conditional_ci_coverage": 0.9344262295081968,
+      "conditional_ci_interval95": [
+        0.8882578784599892,
+        0.9656608627665486
+      ],
+      "p_quantiles": {
+        "0.01": 3.239943854431815e-05,
+        "0.05": 0.009530761155278079,
+        "0.5": 0.5055482470380145,
+        "0.95": 0.9506900979095773
+      },
+      "statuses": {
+        "ok": 183,
+        "sparse_endpoint": 17
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_100_tf_080_100",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_080_100",
+      "n_variant": 100,
+      "n_wt": 268183,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 18,
+      "unconditional_rejection_rate": 0.09,
+      "rejection_interval95": [
+        0.05421425445606032,
+        0.13850820847379608
+      ],
+      "ci_covered": 182,
+      "conditional_ci_coverage": 0.91,
+      "conditional_ci_interval95": [
+        0.861491791526204,
+        0.9457857455439397
+      ],
+      "p_quantiles": {
+        "0.01": 0.0009818719450576012,
+        "0.05": 0.021522363453114857,
+        "0.5": 0.4715920261351911,
+        "0.95": 0.9526372143170563
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_100_tf_090_110",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_090_110",
+      "n_variant": 100,
+      "n_wt": 268183,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 12,
+      "unconditional_rejection_rate": 0.06,
+      "rejection_interval95": [
+        0.03138395389348213,
+        0.10246183130833159
+      ],
+      "ci_covered": 188,
+      "conditional_ci_coverage": 0.94,
+      "conditional_ci_interval95": [
+        0.8975381686916685,
+        0.9686160461065179
+      ],
+      "p_quantiles": {
+        "0.01": 0.0018001511529819954,
+        "0.05": 0.04425585596263686,
+        "0.5": 0.4657476826069694,
+        "0.95": 0.9324416139251381
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_100_tf_100_120",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_100_120",
+      "n_variant": 100,
+      "n_wt": 268183,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 14,
+      "unconditional_rejection_rate": 0.07,
+      "rejection_interval95": [
+        0.03879557042956298,
+        0.11465973353712218
+      ],
+      "ci_covered": 186,
+      "conditional_ci_coverage": 0.93,
+      "conditional_ci_interval95": [
+        0.8853402664628779,
+        0.9612044295704371
+      ],
+      "p_quantiles": {
+        "0.01": 0.0008668387057302136,
+        "0.05": 0.03504909645009978,
+        "0.5": 0.512394110862755,
+        "0.95": 0.9368824390822478
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_100_tf_110_130",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_110_130",
+      "n_variant": 100,
+      "n_wt": 268183,
+      "attempts": 200,
+      "testable": 86,
+      "rejected": 0,
+      "unconditional_rejection_rate": 0.0,
+      "rejection_interval95": [
+        0.0,
+        0.0182753403551488
+      ],
+      "ci_covered": 86,
+      "conditional_ci_coverage": 1.0,
+      "conditional_ci_interval95": [
+        0.9580129846958555,
+        1.0
+      ],
+      "p_quantiles": {
+        "0.01": 0.11299799957377497,
+        "0.05": 0.17673185033454486,
+        "0.5": 0.5728915955286102,
+        "0.95": 0.9783275591968198
+      },
+      "statuses": {
+        "ok": 86,
+        "sparse_endpoint": 114
+      },
+      "status": "unresolved",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_100_tf_120_140",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_120_140",
+      "n_variant": 100,
+      "n_wt": 268183,
+      "attempts": 200,
+      "testable": 191,
+      "rejected": 23,
+      "unconditional_rejection_rate": 0.115,
+      "rejection_interval95": [
+        0.07431337369227888,
+        0.16754694448225504
+      ],
+      "ci_covered": 168,
+      "conditional_ci_coverage": 0.8795811518324608,
+      "conditional_ci_interval95": [
+        0.8248078610882214,
+        0.922111853735311
+      ],
+      "p_quantiles": {
+        "0.01": 0.00012309548334664508,
+        "0.05": 0.01086368229879019,
+        "0.5": 0.464568619576206,
+        "0.95": 0.9633615412292647
+      },
+      "statuses": {
+        "ok": 191,
+        "sparse_endpoint": 9
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_100_tf_130_150",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_130_150",
+      "n_variant": 100,
+      "n_wt": 268183,
+      "attempts": 200,
+      "testable": 191,
+      "rejected": 15,
+      "unconditional_rejection_rate": 0.075,
+      "rejection_interval95": [
+        0.042582803737036705,
+        0.12068422539966135
+      ],
+      "ci_covered": 176,
+      "conditional_ci_coverage": 0.9214659685863874,
+      "conditional_ci_interval95": [
+        0.8737782345285949,
+        0.9553798275349161
+      ],
+      "p_quantiles": {
+        "0.01": 0.0002082706850585538,
+        "0.05": 0.01658295135592894,
+        "0.5": 0.5098896088219229,
+        "0.95": 0.9442789531625646
+      },
+      "statuses": {
+        "ok": 191,
+        "sparse_endpoint": 9
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_100_tf_140_160",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_140_160",
+      "n_variant": 100,
+      "n_wt": 268183,
+      "attempts": 200,
+      "testable": 194,
+      "rejected": 20,
+      "unconditional_rejection_rate": 0.1,
+      "rejection_interval95": [
+        0.062159366254066165,
+        0.15021278786775585
+      ],
+      "ci_covered": 174,
+      "conditional_ci_coverage": 0.8969072164948454,
+      "conditional_ci_interval95": [
+        0.8452772182152062,
+        0.93588242498961
+      ],
+      "p_quantiles": {
+        "0.01": 2.4980844062854483e-05,
+        "0.05": 0.023968898934336343,
+        "0.5": 0.4930301369111555,
+        "0.95": 0.9538735859096946
+      },
+      "statuses": {
+        "ok": 194,
+        "sparse_endpoint": 6
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_100_tf_150_170",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_150_170",
+      "n_variant": 100,
+      "n_wt": 268183,
+      "attempts": 200,
+      "testable": 159,
+      "rejected": 2,
+      "unconditional_rejection_rate": 0.01,
+      "rejection_interval95": [
+        0.0012133490137476008,
+        0.035654668397239866
+      ],
+      "ci_covered": 157,
+      "conditional_ci_coverage": 0.9874213836477987,
+      "conditional_ci_interval95": [
+        0.9553021656515653,
+        0.9984730245482466
+      ],
+      "p_quantiles": {
+        "0.01": 0.05183134068325733,
+        "0.05": 0.15697138748153008,
+        "0.5": 0.571158295365916,
+        "0.95": 0.9258986489113961
+      },
+      "statuses": {
+        "ok": 159,
+        "sparse_endpoint": 41
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_100_tf_160_180",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_160_180",
+      "n_variant": 100,
+      "n_wt": 268183,
+      "attempts": 200,
+      "testable": 137,
+      "rejected": 6,
+      "unconditional_rejection_rate": 0.03,
+      "rejection_interval95": [
+        0.011087455672203695,
+        0.06415062670502639
+      ],
+      "ci_covered": 131,
+      "conditional_ci_coverage": 0.9562043795620438,
+      "conditional_ci_interval95": [
+        0.9071138162016469,
+        0.9837606078643063
+      ],
+      "p_quantiles": {
+        "0.01": 0.002890943715608698,
+        "0.05": 0.05892673094596188,
+        "0.5": 0.493332717671669,
+        "0.95": 0.951253338375538
+      },
+      "statuses": {
+        "ok": 137,
+        "sparse_endpoint": 63
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_100_tf_170_190",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_170_190",
+      "n_variant": 100,
+      "n_wt": 268183,
+      "attempts": 200,
+      "testable": 2,
+      "rejected": 0,
+      "unconditional_rejection_rate": 0.0,
+      "rejection_interval95": [
+        0.0,
+        0.0182753403551488
+      ],
+      "ci_covered": 2,
+      "conditional_ci_coverage": 1.0,
+      "conditional_ci_interval95": [
+        0.15811388300839305,
+        1.0
+      ],
+      "p_quantiles": {
+        "0.01": 0.13862962519877517,
+        "0.05": 0.14355431186356496,
+        "0.5": 0.1989570368424503,
+        "0.95": 0.2543597618213357
+      },
+      "statuses": {
+        "sparse_endpoint": 198,
+        "ok": 2
+      },
+      "status": "unresolved",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_100_tf_180_200",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_180_200",
+      "n_variant": 100,
+      "n_wt": 268183,
+      "attempts": 200,
+      "testable": 5,
+      "rejected": 0,
+      "unconditional_rejection_rate": 0.0,
+      "rejection_interval95": [
+        0.0,
+        0.0182753403551488
+      ],
+      "ci_covered": 5,
+      "conditional_ci_coverage": 1.0,
+      "conditional_ci_interval95": [
+        0.47817624989501856,
+        1.0
+      ],
+      "p_quantiles": {
+        "0.01": 0.08865370299644301,
+        "0.05": 0.0925149202898398,
+        "0.5": 0.1538903448535293,
+        "0.95": 0.26966328632857434
+      },
+      "statuses": {
+        "sparse_endpoint": 195,
+        "ok": 5
+      },
+      "status": "unresolved",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_100_tf_190_210",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_190_210",
+      "n_variant": 100,
+      "n_wt": 268183,
+      "attempts": 200,
+      "testable": 15,
+      "rejected": 0,
+      "unconditional_rejection_rate": 0.0,
+      "rejection_interval95": [
+        0.0,
+        0.0182753403551488
+      ],
+      "ci_covered": 15,
+      "conditional_ci_coverage": 1.0,
+      "conditional_ci_interval95": [
+        0.7819806390891612,
+        1.0
+      ],
+      "p_quantiles": {
+        "0.01": 0.17199138676760314,
+        "0.05": 0.1736499359766748,
+        "0.5": 0.3759681892637372,
+        "0.95": 0.8246899628803519
+      },
+      "statuses": {
+        "sparse_endpoint": 185,
+        "ok": 15
+      },
+      "status": "unresolved",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_100_tf_191_211",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_191_211",
+      "n_variant": 100,
+      "n_wt": 268183,
+      "attempts": 200,
+      "testable": 15,
+      "rejected": 0,
+      "unconditional_rejection_rate": 0.0,
+      "rejection_interval95": [
+        0.0,
+        0.0182753403551488
+      ],
+      "ci_covered": 15,
+      "conditional_ci_coverage": 1.0,
+      "conditional_ci_interval95": [
+        0.7819806390891612,
+        1.0
+      ],
+      "p_quantiles": {
+        "0.01": 0.1650474393041026,
+        "0.05": 0.18293873589046686,
+        "0.5": 0.36322437542833674,
+        "0.95": 0.8666216330758277
+      },
+      "statuses": {
+        "sparse_endpoint": 185,
+        "ok": 15
+      },
+      "status": "unresolved",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_100_msp_promoter",
+      "kind": "wt_aa",
+      "endpoint_id": "msp_promoter",
+      "n_variant": 100,
+      "n_wt": 268183,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 10,
+      "unconditional_rejection_rate": 0.05,
+      "rejection_interval95": [
+        0.02423416547210829,
+        0.09002753770155869
+      ],
+      "ci_covered": 190,
+      "conditional_ci_coverage": 0.95,
+      "conditional_ci_interval95": [
+        0.9099724622984412,
+        0.9757658345278917
+      ],
+      "p_quantiles": {
+        "0.01": 0.007656874733444277,
+        "0.05": 0.054531969034082514,
+        "0.5": 0.47358892646720013,
+        "0.95": 0.9648167773309878
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_400_tf_000_020",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_000_020",
+      "n_variant": 400,
+      "n_wt": 267883,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 12,
+      "unconditional_rejection_rate": 0.06,
+      "rejection_interval95": [
+        0.03138395389348213,
+        0.10246183130833159
+      ],
+      "ci_covered": 188,
+      "conditional_ci_coverage": 0.94,
+      "conditional_ci_interval95": [
+        0.8975381686916685,
+        0.9686160461065179
+      ],
+      "p_quantiles": {
+        "0.01": 0.003983586672795602,
+        "0.05": 0.02698049013423915,
+        "0.5": 0.4992062636896063,
+        "0.95": 0.9312390662181865
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_400_tf_010_030",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_010_030",
+      "n_variant": 400,
+      "n_wt": 267883,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 19,
+      "unconditional_rejection_rate": 0.095,
+      "rejection_interval95": [
+        0.058169609725119205,
+        0.14437663997685266
+      ],
+      "ci_covered": 181,
+      "conditional_ci_coverage": 0.905,
+      "conditional_ci_interval95": [
+        0.8556233600231474,
+        0.9418303902748808
+      ],
+      "p_quantiles": {
+        "0.01": 0.0028333638288625305,
+        "0.05": 0.02209376270936029,
+        "0.5": 0.4798014048349594,
+        "0.95": 0.9349183413395291
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_400_tf_020_040",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_020_040",
+      "n_variant": 400,
+      "n_wt": 267883,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 7,
+      "unconditional_rejection_rate": 0.035,
+      "rejection_interval95": [
+        0.01418552589838592,
+        0.0707809983509546
+      ],
+      "ci_covered": 193,
+      "conditional_ci_coverage": 0.965,
+      "conditional_ci_interval95": [
+        0.9292190016490455,
+        0.985814474101614
+      ],
+      "p_quantiles": {
+        "0.01": 0.0009998026922361301,
+        "0.05": 0.056682782434060004,
+        "0.5": 0.49317935001175234,
+        "0.95": 0.9693343597724855
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_400_tf_030_050",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_030_050",
+      "n_variant": 400,
+      "n_wt": 267883,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 12,
+      "unconditional_rejection_rate": 0.06,
+      "rejection_interval95": [
+        0.03138395389348213,
+        0.10246183130833159
+      ],
+      "ci_covered": 188,
+      "conditional_ci_coverage": 0.94,
+      "conditional_ci_interval95": [
+        0.8975381686916685,
+        0.9686160461065179
+      ],
+      "p_quantiles": {
+        "0.01": 0.015477556322888279,
+        "0.05": 0.03918536633771799,
+        "0.5": 0.5371935517356545,
+        "0.95": 0.9351262148810259
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_400_tf_040_060",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_040_060",
+      "n_variant": 400,
+      "n_wt": 267883,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 11,
+      "unconditional_rejection_rate": 0.055,
+      "rejection_interval95": [
+        0.02777225455217507,
+        0.09627764443388101
+      ],
+      "ci_covered": 189,
+      "conditional_ci_coverage": 0.945,
+      "conditional_ci_interval95": [
+        0.9037223555661189,
+        0.9722277454478245
+      ],
+      "p_quantiles": {
+        "0.01": 0.011082002587414493,
+        "0.05": 0.04328299671333549,
+        "0.5": 0.5355601291084772,
+        "0.95": 0.9650747167030239
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_400_tf_050_070",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_050_070",
+      "n_variant": 400,
+      "n_wt": 267883,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 8,
+      "unconditional_rejection_rate": 0.04,
+      "rejection_interval95": [
+        0.01742480899482101,
+        0.07729196822601603
+      ],
+      "ci_covered": 192,
+      "conditional_ci_coverage": 0.96,
+      "conditional_ci_interval95": [
+        0.922708031773984,
+        0.982575191005179
+      ],
+      "p_quantiles": {
+        "0.01": 0.020446255961169304,
+        "0.05": 0.056161046148247275,
+        "0.5": 0.5185024498427699,
+        "0.95": 0.9377294206084396
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_400_tf_060_080",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_060_080",
+      "n_variant": 400,
+      "n_wt": 267883,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 7,
+      "unconditional_rejection_rate": 0.035,
+      "rejection_interval95": [
+        0.01418552589838592,
+        0.0707809983509546
+      ],
+      "ci_covered": 193,
+      "conditional_ci_coverage": 0.965,
+      "conditional_ci_interval95": [
+        0.9292190016490455,
+        0.985814474101614
+      ],
+      "p_quantiles": {
+        "0.01": 0.021652255686607603,
+        "0.05": 0.06382572949581213,
+        "0.5": 0.48304512201180094,
+        "0.95": 0.9586050203094693
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_400_tf_070_090",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_070_090",
+      "n_variant": 400,
+      "n_wt": 267883,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 9,
+      "unconditional_rejection_rate": 0.045,
+      "rejection_interval95": [
+        0.020780422227004356,
+        0.08370268807585404
+      ],
+      "ci_covered": 191,
+      "conditional_ci_coverage": 0.955,
+      "conditional_ci_interval95": [
+        0.916297311924146,
+        0.9792195777729956
+      ],
+      "p_quantiles": {
+        "0.01": 0.0017175817072376223,
+        "0.05": 0.06035469431640648,
+        "0.5": 0.5275577474248523,
+        "0.95": 0.9652374349282968
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_400_tf_080_100",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_080_100",
+      "n_variant": 400,
+      "n_wt": 267883,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 11,
+      "unconditional_rejection_rate": 0.055,
+      "rejection_interval95": [
+        0.02777225455217507,
+        0.09627764443388101
+      ],
+      "ci_covered": 189,
+      "conditional_ci_coverage": 0.945,
+      "conditional_ci_interval95": [
+        0.9037223555661189,
+        0.9722277454478245
+      ],
+      "p_quantiles": {
+        "0.01": 0.016137549483948854,
+        "0.05": 0.049612846270007956,
+        "0.5": 0.5625131483727687,
+        "0.95": 0.968267463446202
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_400_tf_090_110",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_090_110",
+      "n_variant": 400,
+      "n_wt": 267883,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 12,
+      "unconditional_rejection_rate": 0.06,
+      "rejection_interval95": [
+        0.03138395389348213,
+        0.10246183130833159
+      ],
+      "ci_covered": 188,
+      "conditional_ci_coverage": 0.94,
+      "conditional_ci_interval95": [
+        0.8975381686916685,
+        0.9686160461065179
+      ],
+      "p_quantiles": {
+        "0.01": 0.003518802091378159,
+        "0.05": 0.04182619332540219,
+        "0.5": 0.5309397032772932,
+        "0.95": 0.9480681142824505
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_400_tf_100_120",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_100_120",
+      "n_variant": 400,
+      "n_wt": 267883,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 10,
+      "unconditional_rejection_rate": 0.05,
+      "rejection_interval95": [
+        0.02423416547210829,
+        0.09002753770155869
+      ],
+      "ci_covered": 190,
+      "conditional_ci_coverage": 0.95,
+      "conditional_ci_interval95": [
+        0.9099724622984412,
+        0.9757658345278917
+      ],
+      "p_quantiles": {
+        "0.01": 0.0038691465446008652,
+        "0.05": 0.05017859041790238,
+        "0.5": 0.5287990084435336,
+        "0.95": 0.9625522397952876
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_400_tf_110_130",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_110_130",
+      "n_variant": 400,
+      "n_wt": 267883,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 14,
+      "unconditional_rejection_rate": 0.07,
+      "rejection_interval95": [
+        0.03879557042956298,
+        0.11465973353712218
+      ],
+      "ci_covered": 186,
+      "conditional_ci_coverage": 0.93,
+      "conditional_ci_interval95": [
+        0.8853402664628779,
+        0.9612044295704371
+      ],
+      "p_quantiles": {
+        "0.01": 0.001592158571811156,
+        "0.05": 0.03764529758015565,
+        "0.5": 0.4934831704499651,
+        "0.95": 0.9312484743002086
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_400_tf_120_140",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_120_140",
+      "n_variant": 400,
+      "n_wt": 267883,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 17,
+      "unconditional_rejection_rate": 0.085,
+      "rejection_interval95": [
+        0.05029591863024178,
+        0.1326051658295526
+      ],
+      "ci_covered": 183,
+      "conditional_ci_coverage": 0.915,
+      "conditional_ci_interval95": [
+        0.8673948341704475,
+        0.9497040813697583
+      ],
+      "p_quantiles": {
+        "0.01": 0.001576118120062989,
+        "0.05": 0.03130229628242904,
+        "0.5": 0.4428310389118339,
+        "0.95": 0.9680976071545061
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_400_tf_130_150",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_130_150",
+      "n_variant": 400,
+      "n_wt": 267883,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 15,
+      "unconditional_rejection_rate": 0.075,
+      "rejection_interval95": [
+        0.042582803737036705,
+        0.12068422539966135
+      ],
+      "ci_covered": 185,
+      "conditional_ci_coverage": 0.925,
+      "conditional_ci_interval95": [
+        0.8793157746003387,
+        0.9574171962629633
+      ],
+      "p_quantiles": {
+        "0.01": 0.004858535475603494,
+        "0.05": 0.02824346152121294,
+        "0.5": 0.4758695111427991,
+        "0.95": 0.940302418382491
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_400_tf_140_160",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_140_160",
+      "n_variant": 400,
+      "n_wt": 267883,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 26,
+      "unconditional_rejection_rate": 0.13,
+      "rejection_interval95": [
+        0.08670835276857529,
+        0.18465233052341248
+      ],
+      "ci_covered": 174,
+      "conditional_ci_coverage": 0.87,
+      "conditional_ci_interval95": [
+        0.8153476694765874,
+        0.9132916472314246
+      ],
+      "p_quantiles": {
+        "0.01": 0.005131602095452956,
+        "0.05": 0.022327477226380964,
+        "0.5": 0.45577704490177806,
+        "0.95": 0.947591337180543
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_400_tf_150_170",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_150_170",
+      "n_variant": 400,
+      "n_wt": 267883,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 20,
+      "unconditional_rejection_rate": 0.1,
+      "rejection_interval95": [
+        0.062159366254066165,
+        0.15021278786775585
+      ],
+      "ci_covered": 180,
+      "conditional_ci_coverage": 0.9,
+      "conditional_ci_interval95": [
+        0.8497872121322442,
+        0.937840633745934
+      ],
+      "p_quantiles": {
+        "0.01": 0.0022049072260433575,
+        "0.05": 0.01699754041344821,
+        "0.5": 0.45957616731787865,
+        "0.95": 0.9197266452813353
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_400_tf_160_180",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_160_180",
+      "n_variant": 400,
+      "n_wt": 267883,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 12,
+      "unconditional_rejection_rate": 0.06,
+      "rejection_interval95": [
+        0.03138395389348213,
+        0.10246183130833159
+      ],
+      "ci_covered": 188,
+      "conditional_ci_coverage": 0.94,
+      "conditional_ci_interval95": [
+        0.8975381686916685,
+        0.9686160461065179
+      ],
+      "p_quantiles": {
+        "0.01": 5.991719552483501e-05,
+        "0.05": 0.01730690787658933,
+        "0.5": 0.49901017761797406,
+        "0.95": 0.9602072438449428
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_400_tf_170_190",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_170_190",
+      "n_variant": 400,
+      "n_wt": 267883,
+      "attempts": 200,
+      "testable": 198,
+      "rejected": 10,
+      "unconditional_rejection_rate": 0.05,
+      "rejection_interval95": [
+        0.02423416547210829,
+        0.09002753770155869
+      ],
+      "ci_covered": 188,
+      "conditional_ci_coverage": 0.9494949494949495,
+      "conditional_ci_interval95": [
+        0.909082682357849,
+        0.9755183655999312
+      ],
+      "p_quantiles": {
+        "0.01": 0.0015737648659755923,
+        "0.05": 0.05881677515991575,
+        "0.5": 0.5354452093766092,
+        "0.95": 0.9447339117766249
+      },
+      "statuses": {
+        "ok": 198,
+        "sparse_endpoint": 2
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_400_tf_180_200",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_180_200",
+      "n_variant": 400,
+      "n_wt": 267883,
+      "attempts": 200,
+      "testable": 198,
+      "rejected": 14,
+      "unconditional_rejection_rate": 0.07,
+      "rejection_interval95": [
+        0.03879557042956298,
+        0.11465973353712218
+      ],
+      "ci_covered": 184,
+      "conditional_ci_coverage": 0.9292929292929293,
+      "conditional_ci_interval95": [
+        0.8842105663588075,
+        0.9608070345397545
+      ],
+      "p_quantiles": {
+        "0.01": 0.0008663442315698026,
+        "0.05": 0.03313663166494262,
+        "0.5": 0.5290118402768282,
+        "0.95": 0.9311294428621438
+      },
+      "statuses": {
+        "ok": 198,
+        "sparse_endpoint": 2
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_400_tf_190_210",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_190_210",
+      "n_variant": 400,
+      "n_wt": 267883,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 10,
+      "unconditional_rejection_rate": 0.05,
+      "rejection_interval95": [
+        0.02423416547210829,
+        0.09002753770155869
+      ],
+      "ci_covered": 190,
+      "conditional_ci_coverage": 0.95,
+      "conditional_ci_interval95": [
+        0.9099724622984412,
+        0.9757658345278917
+      ],
+      "p_quantiles": {
+        "0.01": 0.004352706235502975,
+        "0.05": 0.0579827969887591,
+        "0.5": 0.5709461894569516,
+        "0.95": 0.9424985775337066
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_400_tf_191_211",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_191_211",
+      "n_variant": 400,
+      "n_wt": 267883,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 10,
+      "unconditional_rejection_rate": 0.05,
+      "rejection_interval95": [
+        0.02423416547210829,
+        0.09002753770155869
+      ],
+      "ci_covered": 190,
+      "conditional_ci_coverage": 0.95,
+      "conditional_ci_interval95": [
+        0.9099724622984412,
+        0.9757658345278917
+      ],
+      "p_quantiles": {
+        "0.01": 0.0035074588577817247,
+        "0.05": 0.05138002616645565,
+        "0.5": 0.590668443453302,
+        "0.95": 0.9525462820363733
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_400_msp_promoter",
+      "kind": "wt_aa",
+      "endpoint_id": "msp_promoter",
+      "n_variant": 400,
+      "n_wt": 267883,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 13,
+      "unconditional_rejection_rate": 0.065,
+      "rejection_interval95": [
+        0.03506070865698193,
+        0.10858723650381787
+      ],
+      "ci_covered": 187,
+      "conditional_ci_coverage": 0.935,
+      "conditional_ci_interval95": [
+        0.8914127634961821,
+        0.964939291343018
+      ],
+      "p_quantiles": {
+        "0.01": 0.011023254851450094,
+        "0.05": 0.043072174085323316,
+        "0.5": 0.5153888587619693,
+        "0.95": 0.9711521477702773
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_1000_tf_000_020",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_000_020",
+      "n_variant": 1000,
+      "n_wt": 267283,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 12,
+      "unconditional_rejection_rate": 0.06,
+      "rejection_interval95": [
+        0.03138395389348213,
+        0.10246183130833159
+      ],
+      "ci_covered": 188,
+      "conditional_ci_coverage": 0.94,
+      "conditional_ci_interval95": [
+        0.8975381686916685,
+        0.9686160461065179
+      ],
+      "p_quantiles": {
+        "0.01": 0.00014673771626915852,
+        "0.05": 0.04477361403860387,
+        "0.5": 0.5290341769661111,
+        "0.95": 0.9627408751679771
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_1000_tf_010_030",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_010_030",
+      "n_variant": 1000,
+      "n_wt": 267283,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 13,
+      "unconditional_rejection_rate": 0.065,
+      "rejection_interval95": [
+        0.03506070865698193,
+        0.10858723650381787
+      ],
+      "ci_covered": 187,
+      "conditional_ci_coverage": 0.935,
+      "conditional_ci_interval95": [
+        0.8914127634961821,
+        0.964939291343018
+      ],
+      "p_quantiles": {
+        "0.01": 0.0033308405203938164,
+        "0.05": 0.03345980238950917,
+        "0.5": 0.4807401988504863,
+        "0.95": 0.9541684733150797
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_1000_tf_020_040",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_020_040",
+      "n_variant": 1000,
+      "n_wt": 267283,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 11,
+      "unconditional_rejection_rate": 0.055,
+      "rejection_interval95": [
+        0.02777225455217507,
+        0.09627764443388101
+      ],
+      "ci_covered": 189,
+      "conditional_ci_coverage": 0.945,
+      "conditional_ci_interval95": [
+        0.9037223555661189,
+        0.9722277454478245
+      ],
+      "p_quantiles": {
+        "0.01": 0.014824256169483145,
+        "0.05": 0.045949548008455306,
+        "0.5": 0.5020826837795361,
+        "0.95": 0.9598306670412956
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_1000_tf_030_050",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_030_050",
+      "n_variant": 1000,
+      "n_wt": 267283,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 9,
+      "unconditional_rejection_rate": 0.045,
+      "rejection_interval95": [
+        0.020780422227004356,
+        0.08370268807585404
+      ],
+      "ci_covered": 191,
+      "conditional_ci_coverage": 0.955,
+      "conditional_ci_interval95": [
+        0.916297311924146,
+        0.9792195777729956
+      ],
+      "p_quantiles": {
+        "0.01": 0.023544167703042237,
+        "0.05": 0.060956129656828395,
+        "0.5": 0.5471450401066029,
+        "0.95": 0.9517233853061339
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_1000_tf_040_060",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_040_060",
+      "n_variant": 1000,
+      "n_wt": 267283,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 12,
+      "unconditional_rejection_rate": 0.06,
+      "rejection_interval95": [
+        0.03138395389348213,
+        0.10246183130833159
+      ],
+      "ci_covered": 188,
+      "conditional_ci_coverage": 0.94,
+      "conditional_ci_interval95": [
+        0.8975381686916685,
+        0.9686160461065179
+      ],
+      "p_quantiles": {
+        "0.01": 0.006938291541492359,
+        "0.05": 0.04411587078861487,
+        "0.5": 0.48222108328765356,
+        "0.95": 0.9627527776080159
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_1000_tf_050_070",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_050_070",
+      "n_variant": 1000,
+      "n_wt": 267283,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 11,
+      "unconditional_rejection_rate": 0.055,
+      "rejection_interval95": [
+        0.02777225455217507,
+        0.09627764443388101
+      ],
+      "ci_covered": 189,
+      "conditional_ci_coverage": 0.945,
+      "conditional_ci_interval95": [
+        0.9037223555661189,
+        0.9722277454478245
+      ],
+      "p_quantiles": {
+        "0.01": 0.00789604817832905,
+        "0.05": 0.04188762474229272,
+        "0.5": 0.4734634652095477,
+        "0.95": 0.9559393586834483
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_1000_tf_060_080",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_060_080",
+      "n_variant": 1000,
+      "n_wt": 267283,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 14,
+      "unconditional_rejection_rate": 0.07,
+      "rejection_interval95": [
+        0.03879557042956298,
+        0.11465973353712218
+      ],
+      "ci_covered": 186,
+      "conditional_ci_coverage": 0.93,
+      "conditional_ci_interval95": [
+        0.8853402664628779,
+        0.9612044295704371
+      ],
+      "p_quantiles": {
+        "0.01": 0.016369411053788235,
+        "0.05": 0.0434203763153809,
+        "0.5": 0.471632991682043,
+        "0.95": 0.9242861177349359
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_1000_tf_070_090",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_070_090",
+      "n_variant": 1000,
+      "n_wt": 267283,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 12,
+      "unconditional_rejection_rate": 0.06,
+      "rejection_interval95": [
+        0.03138395389348213,
+        0.10246183130833159
+      ],
+      "ci_covered": 188,
+      "conditional_ci_coverage": 0.94,
+      "conditional_ci_interval95": [
+        0.8975381686916685,
+        0.9686160461065179
+      ],
+      "p_quantiles": {
+        "0.01": 0.0026954724357313785,
+        "0.05": 0.046277216939804064,
+        "0.5": 0.4680172187898551,
+        "0.95": 0.9568524032030064
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_1000_tf_080_100",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_080_100",
+      "n_variant": 1000,
+      "n_wt": 267283,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 12,
+      "unconditional_rejection_rate": 0.06,
+      "rejection_interval95": [
+        0.03138395389348213,
+        0.10246183130833159
+      ],
+      "ci_covered": 188,
+      "conditional_ci_coverage": 0.94,
+      "conditional_ci_interval95": [
+        0.8975381686916685,
+        0.9686160461065179
+      ],
+      "p_quantiles": {
+        "0.01": 0.012570768526914487,
+        "0.05": 0.045575744074774126,
+        "0.5": 0.4617971051966348,
+        "0.95": 0.9372861047644003
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_1000_tf_090_110",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_090_110",
+      "n_variant": 1000,
+      "n_wt": 267283,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 6,
+      "unconditional_rejection_rate": 0.03,
+      "rejection_interval95": [
+        0.011087455672203695,
+        0.06415062670502639
+      ],
+      "ci_covered": 194,
+      "conditional_ci_coverage": 0.97,
+      "conditional_ci_interval95": [
+        0.9358493732949736,
+        0.9889125443277963
+      ],
+      "p_quantiles": {
+        "0.01": 0.01010800614597264,
+        "0.05": 0.07969356807879582,
+        "0.5": 0.5237411091939257,
+        "0.95": 0.9583057025684623
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_1000_tf_100_120",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_100_120",
+      "n_variant": 1000,
+      "n_wt": 267283,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 11,
+      "unconditional_rejection_rate": 0.055,
+      "rejection_interval95": [
+        0.02777225455217507,
+        0.09627764443388101
+      ],
+      "ci_covered": 189,
+      "conditional_ci_coverage": 0.945,
+      "conditional_ci_interval95": [
+        0.9037223555661189,
+        0.9722277454478245
+      ],
+      "p_quantiles": {
+        "0.01": 0.014731769130647531,
+        "0.05": 0.04568408348096331,
+        "0.5": 0.5287454032366237,
+        "0.95": 0.9404380238975537
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_1000_tf_110_130",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_110_130",
+      "n_variant": 1000,
+      "n_wt": 267283,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 12,
+      "unconditional_rejection_rate": 0.06,
+      "rejection_interval95": [
+        0.03138395389348213,
+        0.10246183130833159
+      ],
+      "ci_covered": 188,
+      "conditional_ci_coverage": 0.94,
+      "conditional_ci_interval95": [
+        0.8975381686916685,
+        0.9686160461065179
+      ],
+      "p_quantiles": {
+        "0.01": 0.009654469246259382,
+        "0.05": 0.04827578297764528,
+        "0.5": 0.49248842109353747,
+        "0.95": 0.962197144103817
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_1000_tf_120_140",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_120_140",
+      "n_variant": 1000,
+      "n_wt": 267283,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 14,
+      "unconditional_rejection_rate": 0.07,
+      "rejection_interval95": [
+        0.03879557042956298,
+        0.11465973353712218
+      ],
+      "ci_covered": 186,
+      "conditional_ci_coverage": 0.93,
+      "conditional_ci_interval95": [
+        0.8853402664628779,
+        0.9612044295704371
+      ],
+      "p_quantiles": {
+        "0.01": 0.008495830644133916,
+        "0.05": 0.04484467385973752,
+        "0.5": 0.49337482519912534,
+        "0.95": 0.9428850413843392
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_1000_tf_130_150",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_130_150",
+      "n_variant": 1000,
+      "n_wt": 267283,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 14,
+      "unconditional_rejection_rate": 0.07,
+      "rejection_interval95": [
+        0.03879557042956298,
+        0.11465973353712218
+      ],
+      "ci_covered": 186,
+      "conditional_ci_coverage": 0.93,
+      "conditional_ci_interval95": [
+        0.8853402664628779,
+        0.9612044295704371
+      ],
+      "p_quantiles": {
+        "0.01": 0.007778284290510141,
+        "0.05": 0.026614157788834854,
+        "0.5": 0.5035957529877022,
+        "0.95": 0.9517637185866475
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_1000_tf_140_160",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_140_160",
+      "n_variant": 1000,
+      "n_wt": 267283,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 13,
+      "unconditional_rejection_rate": 0.065,
+      "rejection_interval95": [
+        0.03506070865698193,
+        0.10858723650381787
+      ],
+      "ci_covered": 187,
+      "conditional_ci_coverage": 0.935,
+      "conditional_ci_interval95": [
+        0.8914127634961821,
+        0.964939291343018
+      ],
+      "p_quantiles": {
+        "0.01": 0.006480129700147194,
+        "0.05": 0.04267409845471508,
+        "0.5": 0.46857141003346386,
+        "0.95": 0.9646338299748247
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_1000_tf_150_170",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_150_170",
+      "n_variant": 1000,
+      "n_wt": 267283,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 14,
+      "unconditional_rejection_rate": 0.07,
+      "rejection_interval95": [
+        0.03879557042956298,
+        0.11465973353712218
+      ],
+      "ci_covered": 186,
+      "conditional_ci_coverage": 0.93,
+      "conditional_ci_interval95": [
+        0.8853402664628779,
+        0.9612044295704371
+      ],
+      "p_quantiles": {
+        "0.01": 0.006814866495799606,
+        "0.05": 0.031068441993611116,
+        "0.5": 0.491929262737881,
+        "0.95": 0.9701712819869454
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_1000_tf_160_180",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_160_180",
+      "n_variant": 1000,
+      "n_wt": 267283,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 16,
+      "unconditional_rejection_rate": 0.08,
+      "rejection_interval95": [
+        0.046417608399578085,
+        0.1266648560220818
+      ],
+      "ci_covered": 184,
+      "conditional_ci_coverage": 0.92,
+      "conditional_ci_interval95": [
+        0.8733351439779183,
+        0.9535823916004219
+      ],
+      "p_quantiles": {
+        "0.01": 0.004949120321308726,
+        "0.05": 0.030179837315073604,
+        "0.5": 0.47815587280111804,
+        "0.95": 0.9418086924400927
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_1000_tf_170_190",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_170_190",
+      "n_variant": 1000,
+      "n_wt": 267283,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 18,
+      "unconditional_rejection_rate": 0.09,
+      "rejection_interval95": [
+        0.05421425445606032,
+        0.13850820847379608
+      ],
+      "ci_covered": 182,
+      "conditional_ci_coverage": 0.91,
+      "conditional_ci_interval95": [
+        0.861491791526204,
+        0.9457857455439397
+      ],
+      "p_quantiles": {
+        "0.01": 0.005116411502778565,
+        "0.05": 0.026490824917594184,
+        "0.5": 0.4872370795907693,
+        "0.95": 0.9465713989264415
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_1000_tf_180_200",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_180_200",
+      "n_variant": 1000,
+      "n_wt": 267283,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 19,
+      "unconditional_rejection_rate": 0.095,
+      "rejection_interval95": [
+        0.058169609725119205,
+        0.14437663997685266
+      ],
+      "ci_covered": 181,
+      "conditional_ci_coverage": 0.905,
+      "conditional_ci_interval95": [
+        0.8556233600231474,
+        0.9418303902748808
+      ],
+      "p_quantiles": {
+        "0.01": 0.0016822610778222111,
+        "0.05": 0.019667632928659532,
+        "0.5": 0.45300753656513204,
+        "0.95": 0.9430571811107636
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_1000_tf_190_210",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_190_210",
+      "n_variant": 1000,
+      "n_wt": 267283,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 11,
+      "unconditional_rejection_rate": 0.055,
+      "rejection_interval95": [
+        0.02777225455217507,
+        0.09627764443388101
+      ],
+      "ci_covered": 189,
+      "conditional_ci_coverage": 0.945,
+      "conditional_ci_interval95": [
+        0.9037223555661189,
+        0.9722277454478245
+      ],
+      "p_quantiles": {
+        "0.01": 0.01922670261153527,
+        "0.05": 0.04892919645030201,
+        "0.5": 0.48819179936732143,
+        "0.95": 0.911064019798269
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_1000_tf_191_211",
+      "kind": "wt_aa",
+      "endpoint_id": "tf_191_211",
+      "n_variant": 1000,
+      "n_wt": 267283,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 11,
+      "unconditional_rejection_rate": 0.055,
+      "rejection_interval95": [
+        0.02777225455217507,
+        0.09627764443388101
+      ],
+      "ci_covered": 189,
+      "conditional_ci_coverage": 0.945,
+      "conditional_ci_interval95": [
+        0.9037223555661189,
+        0.9722277454478245
+      ],
+      "p_quantiles": {
+        "0.01": 0.019656534443452164,
+        "0.05": 0.047499677878966966,
+        "0.5": 0.4878624369743989,
+        "0.95": 0.9394840902406814
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "wt_aa_1000_msp_promoter",
+      "kind": "wt_aa",
+      "endpoint_id": "msp_promoter",
+      "n_variant": 1000,
+      "n_wt": 267283,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 12,
+      "unconditional_rejection_rate": 0.06,
+      "rejection_interval95": [
+        0.03138395389348213,
+        0.10246183130833159
+      ],
+      "ci_covered": 188,
+      "conditional_ci_coverage": 0.94,
+      "conditional_ci_interval95": [
+        0.8975381686916685,
+        0.9686160461065179
+      ],
+      "p_quantiles": {
+        "0.01": 0.013007683700370962,
+        "0.05": 0.034718853279488066,
+        "0.5": 0.5563850663196659,
+        "0.95": 0.9377485676880124
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "simulation_00",
+      "kind": "simulation",
+      "baseline": 0.02,
+      "barcode_correlation": 0.0,
+      "informative_depth": false,
+      "n_variant": 50,
+      "n_wt": 2000,
+      "true_delta": 0.0,
+      "attempts": 200,
+      "testable": 0,
+      "rejected": 0,
+      "unconditional_rejection_rate": 0.0,
+      "rejection_interval95": [
+        0.0,
+        0.0182753403551488
+      ],
+      "ci_covered": 0,
+      "conditional_ci_coverage": null,
+      "conditional_ci_interval95": [
+        null,
+        null
+      ],
+      "p_quantiles": {},
+      "statuses": {
+        "sparse_endpoint": 200
+      },
+      "status": "unresolved",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "simulation_01",
+      "kind": "simulation",
+      "baseline": 0.02,
+      "barcode_correlation": 0.0,
+      "informative_depth": false,
+      "n_variant": 400,
+      "n_wt": 2000,
+      "true_delta": 0.0,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 9,
+      "unconditional_rejection_rate": 0.045,
+      "rejection_interval95": [
+        0.020780422227004356,
+        0.08370268807585404
+      ],
+      "ci_covered": 191,
+      "conditional_ci_coverage": 0.955,
+      "conditional_ci_interval95": [
+        0.916297311924146,
+        0.9792195777729956
+      ],
+      "p_quantiles": {
+        "0.01": 0.020063638678201115,
+        "0.05": 0.057218542795878076,
+        "0.5": 0.5157768168348259,
+        "0.95": 0.9161628917596696
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "simulation_02",
+      "kind": "simulation",
+      "baseline": 0.02,
+      "barcode_correlation": 0.0,
+      "informative_depth": true,
+      "n_variant": 50,
+      "n_wt": 2000,
+      "true_delta": 0.0,
+      "attempts": 200,
+      "testable": 0,
+      "rejected": 0,
+      "unconditional_rejection_rate": 0.0,
+      "rejection_interval95": [
+        0.0,
+        0.0182753403551488
+      ],
+      "ci_covered": 0,
+      "conditional_ci_coverage": null,
+      "conditional_ci_interval95": [
+        null,
+        null
+      ],
+      "p_quantiles": {},
+      "statuses": {
+        "insufficient_molecules": 28,
+        "sparse_endpoint": 172
+      },
+      "status": "unresolved",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "simulation_03",
+      "kind": "simulation",
+      "baseline": 0.02,
+      "barcode_correlation": 0.0,
+      "informative_depth": true,
+      "n_variant": 400,
+      "n_wt": 2000,
+      "true_delta": 0.0,
+      "attempts": 200,
+      "testable": 194,
+      "rejected": 6,
+      "unconditional_rejection_rate": 0.03,
+      "rejection_interval95": [
+        0.011087455672203695,
+        0.06415062670502639
+      ],
+      "ci_covered": 188,
+      "conditional_ci_coverage": 0.9690721649484536,
+      "conditional_ci_interval95": [
+        0.9339017122709012,
+        0.9885671144319347
+      ],
+      "p_quantiles": {
+        "0.01": 0.020410410243943106,
+        "0.05": 0.09206039205477524,
+        "0.5": 0.5856173295373147,
+        "0.95": 0.9720113674129541
+      },
+      "statuses": {
+        "ok": 194,
+        "sparse_endpoint": 6
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "simulation_04",
+      "kind": "simulation",
+      "baseline": 0.02,
+      "barcode_correlation": 0.2,
+      "informative_depth": false,
+      "n_variant": 50,
+      "n_wt": 2000,
+      "true_delta": 0.0,
+      "attempts": 200,
+      "testable": 0,
+      "rejected": 0,
+      "unconditional_rejection_rate": 0.0,
+      "rejection_interval95": [
+        0.0,
+        0.0182753403551488
+      ],
+      "ci_covered": 0,
+      "conditional_ci_coverage": null,
+      "conditional_ci_interval95": [
+        null,
+        null
+      ],
+      "p_quantiles": {},
+      "statuses": {
+        "sparse_endpoint": 200
+      },
+      "status": "unresolved",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "simulation_05",
+      "kind": "simulation",
+      "baseline": 0.02,
+      "barcode_correlation": 0.2,
+      "informative_depth": false,
+      "n_variant": 400,
+      "n_wt": 2000,
+      "true_delta": 0.0,
+      "attempts": 200,
+      "testable": 199,
+      "rejected": 9,
+      "unconditional_rejection_rate": 0.045,
+      "rejection_interval95": [
+        0.020780422227004356,
+        0.08370268807585404
+      ],
+      "ci_covered": 190,
+      "conditional_ci_coverage": 0.9547738693467337,
+      "conditional_ci_interval95": [
+        0.915885362998265,
+        0.979114106142456
+      ],
+      "p_quantiles": {
+        "0.01": 0.003491109282844662,
+        "0.05": 0.05602107391072551,
+        "0.5": 0.5382551467036717,
+        "0.95": 0.9360973889648168
+      },
+      "statuses": {
+        "ok": 199,
+        "sparse_endpoint": 1
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "simulation_06",
+      "kind": "simulation",
+      "baseline": 0.02,
+      "barcode_correlation": 0.2,
+      "informative_depth": true,
+      "n_variant": 50,
+      "n_wt": 2000,
+      "true_delta": 0.0,
+      "attempts": 200,
+      "testable": 0,
+      "rejected": 0,
+      "unconditional_rejection_rate": 0.0,
+      "rejection_interval95": [
+        0.0,
+        0.0182753403551488
+      ],
+      "ci_covered": 0,
+      "conditional_ci_coverage": null,
+      "conditional_ci_interval95": [
+        null,
+        null
+      ],
+      "p_quantiles": {},
+      "statuses": {
+        "sparse_endpoint": 168,
+        "insufficient_molecules": 32
+      },
+      "status": "unresolved",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "simulation_07",
+      "kind": "simulation",
+      "baseline": 0.02,
+      "barcode_correlation": 0.2,
+      "informative_depth": true,
+      "n_variant": 400,
+      "n_wt": 2000,
+      "true_delta": 0.0,
+      "attempts": 200,
+      "testable": 199,
+      "rejected": 9,
+      "unconditional_rejection_rate": 0.045,
+      "rejection_interval95": [
+        0.020780422227004356,
+        0.08370268807585404
+      ],
+      "ci_covered": 190,
+      "conditional_ci_coverage": 0.9547738693467337,
+      "conditional_ci_interval95": [
+        0.915885362998265,
+        0.979114106142456
+      ],
+      "p_quantiles": {
+        "0.01": 0.0037848639595787176,
+        "0.05": 0.08314103246983016,
+        "0.5": 0.5005968845367125,
+        "0.95": 0.9491365999449305
+      },
+      "statuses": {
+        "ok": 199,
+        "sparse_endpoint": 1
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "simulation_08",
+      "kind": "simulation",
+      "baseline": 0.1,
+      "barcode_correlation": 0.0,
+      "informative_depth": false,
+      "n_variant": 50,
+      "n_wt": 2000,
+      "true_delta": 0.0,
+      "attempts": 200,
+      "testable": 181,
+      "rejected": 6,
+      "unconditional_rejection_rate": 0.03,
+      "rejection_interval95": [
+        0.011087455672203695,
+        0.06415062670502639
+      ],
+      "ci_covered": 175,
+      "conditional_ci_coverage": 0.9668508287292817,
+      "conditional_ci_interval95": [
+        0.9292476245233102,
+        0.9877394957021244
+      ],
+      "p_quantiles": {
+        "0.01": 0.012279350325771278,
+        "0.05": 0.0733622314308338,
+        "0.5": 0.5426253970123766,
+        "0.95": 0.9449059865373505
+      },
+      "statuses": {
+        "ok": 181,
+        "sparse_endpoint": 19
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "simulation_09",
+      "kind": "simulation",
+      "baseline": 0.1,
+      "barcode_correlation": 0.0,
+      "informative_depth": false,
+      "n_variant": 400,
+      "n_wt": 2000,
+      "true_delta": 0.0,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 9,
+      "unconditional_rejection_rate": 0.045,
+      "rejection_interval95": [
+        0.020780422227004356,
+        0.08370268807585404
+      ],
+      "ci_covered": 191,
+      "conditional_ci_coverage": 0.955,
+      "conditional_ci_interval95": [
+        0.916297311924146,
+        0.9792195777729956
+      ],
+      "p_quantiles": {
+        "0.01": 0.019274163906367974,
+        "0.05": 0.05612758853647274,
+        "0.5": 0.4823725799407252,
+        "0.95": 0.9705376898923707
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "simulation_10",
+      "kind": "simulation",
+      "baseline": 0.1,
+      "barcode_correlation": 0.0,
+      "informative_depth": true,
+      "n_variant": 50,
+      "n_wt": 2000,
+      "true_delta": 0.0,
+      "attempts": 200,
+      "testable": 170,
+      "rejected": 6,
+      "unconditional_rejection_rate": 0.03,
+      "rejection_interval95": [
+        0.011087455672203695,
+        0.06415062670502639
+      ],
+      "ci_covered": 164,
+      "conditional_ci_coverage": 0.9647058823529412,
+      "conditional_ci_interval95": [
+        0.9247653861454467,
+        0.986939502566518
+      ],
+      "p_quantiles": {
+        "0.01": 0.023571017355031837,
+        "0.05": 0.11255516783234482,
+        "0.5": 0.5594981095142633,
+        "0.95": 0.9561391336596468
+      },
+      "statuses": {
+        "ok": 170,
+        "sparse_endpoint": 30
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "simulation_11",
+      "kind": "simulation",
+      "baseline": 0.1,
+      "barcode_correlation": 0.0,
+      "informative_depth": true,
+      "n_variant": 400,
+      "n_wt": 2000,
+      "true_delta": 0.0,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 11,
+      "unconditional_rejection_rate": 0.055,
+      "rejection_interval95": [
+        0.02777225455217507,
+        0.09627764443388101
+      ],
+      "ci_covered": 189,
+      "conditional_ci_coverage": 0.945,
+      "conditional_ci_interval95": [
+        0.9037223555661189,
+        0.9722277454478245
+      ],
+      "p_quantiles": {
+        "0.01": 0.002131385261944676,
+        "0.05": 0.04967571668178041,
+        "0.5": 0.46946760614660266,
+        "0.95": 0.9058953170857037
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "simulation_12",
+      "kind": "simulation",
+      "baseline": 0.1,
+      "barcode_correlation": 0.2,
+      "informative_depth": false,
+      "n_variant": 50,
+      "n_wt": 2000,
+      "true_delta": 0.0,
+      "attempts": 200,
+      "testable": 134,
+      "rejected": 2,
+      "unconditional_rejection_rate": 0.01,
+      "rejection_interval95": [
+        0.0012133490137476008,
+        0.035654668397239866
+      ],
+      "ci_covered": 132,
+      "conditional_ci_coverage": 0.9850746268656716,
+      "conditional_ci_interval95": [
+        0.9471253467954586,
+        0.9981873294109401
+      ],
+      "p_quantiles": {
+        "0.01": 0.03923497509283966,
+        "0.05": 0.13097573496982273,
+        "0.5": 0.50929602151676,
+        "0.95": 0.938827251624872
+      },
+      "statuses": {
+        "sparse_endpoint": 66,
+        "ok": 134
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "simulation_13",
+      "kind": "simulation",
+      "baseline": 0.1,
+      "barcode_correlation": 0.2,
+      "informative_depth": false,
+      "n_variant": 400,
+      "n_wt": 2000,
+      "true_delta": 0.0,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 9,
+      "unconditional_rejection_rate": 0.045,
+      "rejection_interval95": [
+        0.020780422227004356,
+        0.08370268807585404
+      ],
+      "ci_covered": 191,
+      "conditional_ci_coverage": 0.955,
+      "conditional_ci_interval95": [
+        0.916297311924146,
+        0.9792195777729956
+      ],
+      "p_quantiles": {
+        "0.01": 0.014610302972015246,
+        "0.05": 0.054299794985158016,
+        "0.5": 0.4860514524788601,
+        "0.95": 0.9224377400954975
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "simulation_14",
+      "kind": "simulation",
+      "baseline": 0.1,
+      "barcode_correlation": 0.2,
+      "informative_depth": true,
+      "n_variant": 50,
+      "n_wt": 2000,
+      "true_delta": 0.0,
+      "attempts": 200,
+      "testable": 149,
+      "rejected": 1,
+      "unconditional_rejection_rate": 0.005,
+      "rejection_interval95": [
+        0.0001265810280094039,
+        0.027541898457558386
+      ],
+      "ci_covered": 148,
+      "conditional_ci_coverage": 0.9932885906040269,
+      "conditional_ci_interval95": [
+        0.9631750656291156,
+        0.9998300962604326
+      ],
+      "p_quantiles": {
+        "0.01": 0.05592178928741764,
+        "0.05": 0.09220985034846434,
+        "0.5": 0.606209259927163,
+        "0.95": 0.9504813627842704
+      },
+      "statuses": {
+        "ok": 149,
+        "sparse_endpoint": 51
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "simulation_15",
+      "kind": "simulation",
+      "baseline": 0.1,
+      "barcode_correlation": 0.2,
+      "informative_depth": true,
+      "n_variant": 400,
+      "n_wt": 2000,
+      "true_delta": 0.0,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 6,
+      "unconditional_rejection_rate": 0.03,
+      "rejection_interval95": [
+        0.011087455672203695,
+        0.06415062670502639
+      ],
+      "ci_covered": 194,
+      "conditional_ci_coverage": 0.97,
+      "conditional_ci_interval95": [
+        0.9358493732949736,
+        0.9889125443277963
+      ],
+      "p_quantiles": {
+        "0.01": 0.011332159914569288,
+        "0.05": 0.08236809838029889,
+        "0.5": 0.48867906876536016,
+        "0.95": 0.9352496466814151
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "simulation_16",
+      "kind": "simulation",
+      "baseline": 0.5,
+      "barcode_correlation": 0.0,
+      "informative_depth": false,
+      "n_variant": 50,
+      "n_wt": 2000,
+      "true_delta": 0.0,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 7,
+      "unconditional_rejection_rate": 0.035,
+      "rejection_interval95": [
+        0.01418552589838592,
+        0.0707809983509546
+      ],
+      "ci_covered": 193,
+      "conditional_ci_coverage": 0.965,
+      "conditional_ci_interval95": [
+        0.9292190016490455,
+        0.985814474101614
+      ],
+      "p_quantiles": {
+        "0.01": 0.012482719477897605,
+        "0.05": 0.06485094683638992,
+        "0.5": 0.449968648807597,
+        "0.95": 0.9704643651523778
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "simulation_17",
+      "kind": "simulation",
+      "baseline": 0.5,
+      "barcode_correlation": 0.0,
+      "informative_depth": false,
+      "n_variant": 400,
+      "n_wt": 2000,
+      "true_delta": 0.0,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 3,
+      "unconditional_rejection_rate": 0.015,
+      "rejection_interval95": [
+        0.0031041076215550857,
+        0.043208281917709784
+      ],
+      "ci_covered": 197,
+      "conditional_ci_coverage": 0.985,
+      "conditional_ci_interval95": [
+        0.9567917180822902,
+        0.9968958923784449
+      ],
+      "p_quantiles": {
+        "0.01": 0.046923238717486875,
+        "0.05": 0.09479669711165431,
+        "0.5": 0.5460097359729513,
+        "0.95": 0.937130098440719
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "simulation_18",
+      "kind": "simulation",
+      "baseline": 0.5,
+      "barcode_correlation": 0.0,
+      "informative_depth": true,
+      "n_variant": 50,
+      "n_wt": 2000,
+      "true_delta": 0.0,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 6,
+      "unconditional_rejection_rate": 0.03,
+      "rejection_interval95": [
+        0.011087455672203695,
+        0.06415062670502639
+      ],
+      "ci_covered": 194,
+      "conditional_ci_coverage": 0.97,
+      "conditional_ci_interval95": [
+        0.9358493732949736,
+        0.9889125443277963
+      ],
+      "p_quantiles": {
+        "0.01": 0.014410907410160703,
+        "0.05": 0.07165500035280625,
+        "0.5": 0.444365556833533,
+        "0.95": 0.9608598959578933
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "simulation_19",
+      "kind": "simulation",
+      "baseline": 0.5,
+      "barcode_correlation": 0.0,
+      "informative_depth": true,
+      "n_variant": 400,
+      "n_wt": 2000,
+      "true_delta": 0.0,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 12,
+      "unconditional_rejection_rate": 0.06,
+      "rejection_interval95": [
+        0.03138395389348213,
+        0.10246183130833159
+      ],
+      "ci_covered": 188,
+      "conditional_ci_coverage": 0.94,
+      "conditional_ci_interval95": [
+        0.8975381686916685,
+        0.9686160461065179
+      ],
+      "p_quantiles": {
+        "0.01": 0.00815180909960301,
+        "0.05": 0.0421107955786519,
+        "0.5": 0.4653326432565227,
+        "0.95": 0.9516154838862706
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound",
+        "ci_coverage_lower_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "simulation_20",
+      "kind": "simulation",
+      "baseline": 0.5,
+      "barcode_correlation": 0.2,
+      "informative_depth": false,
+      "n_variant": 50,
+      "n_wt": 2000,
+      "true_delta": 0.0,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 12,
+      "unconditional_rejection_rate": 0.06,
+      "rejection_interval95": [
+        0.03138395389348213,
+        0.10246183130833159
+      ],
+      "ci_covered": 188,
+      "conditional_ci_coverage": 0.94,
+      "conditional_ci_interval95": [
+        0.8975381686916685,
+        0.9686160461065179
+      ],
+      "p_quantiles": {
+        "0.01": 0.0107918842726244,
+        "0.05": 0.04832299325907381,
+        "0.5": 0.5461075016331156,
+        "0.95": 0.9700016154893407
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound",
+        "ci_coverage_lower_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "simulation_21",
+      "kind": "simulation",
+      "baseline": 0.5,
+      "barcode_correlation": 0.2,
+      "informative_depth": false,
+      "n_variant": 400,
+      "n_wt": 2000,
+      "true_delta": 0.0,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 8,
+      "unconditional_rejection_rate": 0.04,
+      "rejection_interval95": [
+        0.01742480899482101,
+        0.07729196822601603
+      ],
+      "ci_covered": 192,
+      "conditional_ci_coverage": 0.96,
+      "conditional_ci_interval95": [
+        0.922708031773984,
+        0.982575191005179
+      ],
+      "p_quantiles": {
+        "0.01": 0.016906163246803226,
+        "0.05": 0.07366030212940605,
+        "0.5": 0.5125336186773106,
+        "0.95": 0.9291633962645275
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "simulation_22",
+      "kind": "simulation",
+      "baseline": 0.5,
+      "barcode_correlation": 0.2,
+      "informative_depth": true,
+      "n_variant": 50,
+      "n_wt": 2000,
+      "true_delta": 0.0,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 7,
+      "unconditional_rejection_rate": 0.035,
+      "rejection_interval95": [
+        0.01418552589838592,
+        0.0707809983509546
+      ],
+      "ci_covered": 193,
+      "conditional_ci_coverage": 0.965,
+      "conditional_ci_interval95": [
+        0.9292190016490455,
+        0.985814474101614
+      ],
+      "p_quantiles": {
+        "0.01": 0.017652346421667967,
+        "0.05": 0.05922825917810075,
+        "0.5": 0.4932057919875718,
+        "0.95": 0.942760376111572
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": true
+    },
+    {
+      "stratum": "simulation_23",
+      "kind": "simulation",
+      "baseline": 0.5,
+      "barcode_correlation": 0.2,
+      "informative_depth": true,
+      "n_variant": 400,
+      "n_wt": 2000,
+      "true_delta": 0.0,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 14,
+      "unconditional_rejection_rate": 0.07,
+      "rejection_interval95": [
+        0.03879557042956298,
+        0.11465973353712218
+      ],
+      "ci_covered": 186,
+      "conditional_ci_coverage": 0.93,
+      "conditional_ci_interval95": [
+        0.8853402664628779,
+        0.9612044295704371
+      ],
+      "p_quantiles": {
+        "0.01": 0.011150243234018802,
+        "0.05": 0.03347130769888941,
+        "0.5": 0.4820235680604081,
+        "0.95": 0.9503918952627849
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "null_rejection_upper_bound",
+        "ci_coverage_lower_bound"
+      ],
+      "null": true
+    },
+    {
+      "stratum": "simulation_24",
+      "kind": "simulation",
+      "baseline": 0.1,
+      "barcode_correlation": 0.2,
+      "informative_depth": true,
+      "n_variant": 400,
+      "n_wt": 2000,
+      "true_delta": -0.05,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 200,
+      "unconditional_rejection_rate": 1.0,
+      "rejection_interval95": [
+        0.9817246596448512,
+        1.0
+      ],
+      "ci_covered": 189,
+      "conditional_ci_coverage": 0.945,
+      "conditional_ci_interval95": [
+        0.9037223555661189,
+        0.9722277454478245
+      ],
+      "p_quantiles": {
+        "0.01": 2.3453173091395356e-16,
+        "0.05": 6.366129735117605e-14,
+        "0.5": 1.227999802025407e-07,
+        "0.95": 0.00043757820748903414
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": false
+    },
+    {
+      "stratum": "simulation_25",
+      "kind": "simulation",
+      "baseline": 0.1,
+      "barcode_correlation": 0.2,
+      "informative_depth": true,
+      "n_variant": 400,
+      "n_wt": 2000,
+      "true_delta": 0.05,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 195,
+      "unconditional_rejection_rate": 0.975,
+      "rejection_interval95": [
+        0.9426256488727329,
+        0.9918338338092901
+      ],
+      "ci_covered": 191,
+      "conditional_ci_coverage": 0.955,
+      "conditional_ci_interval95": [
+        0.916297311924146,
+        0.9792195777729956
+      ],
+      "p_quantiles": {
+        "0.01": 6.340347155991278e-08,
+        "0.05": 3.6660929453024634e-07,
+        "0.5": 0.0002132874380871862,
+        "0.95": 0.026877352254898932
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "pass",
+      "failures": [],
+      "null": false
+    },
+    {
+      "stratum": "simulation_26",
+      "kind": "simulation",
+      "baseline": 0.1,
+      "barcode_correlation": 0.2,
+      "informative_depth": true,
+      "n_variant": 400,
+      "n_wt": 2000,
+      "true_delta": 0.1,
+      "attempts": 200,
+      "testable": 200,
+      "rejected": 200,
+      "unconditional_rejection_rate": 1.0,
+      "rejection_interval95": [
+        0.9817246596448512,
+        1.0
+      ],
+      "ci_covered": 183,
+      "conditional_ci_coverage": 0.915,
+      "conditional_ci_interval95": [
+        0.8673948341704475,
+        0.9497040813697583
+      ],
+      "p_quantiles": {
+        "0.01": 1.2894195810583944e-18,
+        "0.05": 5.356375471690075e-16,
+        "0.5": 1.8430898529512066e-11,
+        "0.95": 1.2485070843421904e-07
+      },
+      "statuses": {
+        "ok": 200
+      },
+      "status": "fail",
+      "failures": [
+        "ci_coverage_lower_bound"
+      ],
+      "null": false
+    }
+  ],
+  "sources": [
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/config/ldlr_statistics.json",
+      "bytes": 1094,
+      "mtime_ns": 1792258639487785000,
+      "sha256": "63059ee618c5b7ca14de56648a65d919a4984949c3bfcccb0c6fbd5e31de6816"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_statistics_20261017/aggregates/audit.json",
+      "bytes": 1839,
+      "mtime_ns": 1792259297737306000,
+      "sha256": "ee30fba000f871547caa641496fab126763c895762b6d085d81f0b12f6c59e55"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_statistics_20261017/aggregates/barcode_counts.npy",
+      "bytes": 959381680,
+      "mtime_ns": 1792259293327911752
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_statistics_20261017/aggregates/barcode_molecules.npy",
+      "bytes": 2273544,
+      "mtime_ns": 1792259293329194301
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_statistics_20261017/aggregates/barcode_metadata.tsv.gz",
+      "bytes": 15599972,
+      "mtime_ns": 1792259297516279329,
+      "sha256": "65f327a9b683ee97867d3769ae2d10450d45f2739bee5490ee3c5b8637ba916c"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/fsmpra/statistics_calibration.py",
+      "bytes": 12169,
+      "mtime_ns": 1792259151657413000,
+      "sha256": "2be222e6ef500ba47d084f7893367cc546cbe3f6cee7c3bbf13e10b2488d8559"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/fsmpra/statistics.py",
+      "bytes": 27867,
+      "mtime_ns": 1792259031186096000,
+      "sha256": "d78af6618511e940d3ea810c6bdfd5b6df8914b7bb5f8f63e1acb1440ed359de"
+    }
+  ],
+  "biological_detectability_resolved": false,
+  "interpretation": "Sampling development checks only. Unconditional rejection uses all iterations; CI coverage uses testable iterations. Unresolved sparse cells do not validate inference. Nominal power is not FDR-adjusted power. WT splits reuse a finite empirical population; binomial bounds quantify conditional Monte Carlo precision, not biological replication. Simulation intervals reflect the specified model, not an empirical guarantee."
+}

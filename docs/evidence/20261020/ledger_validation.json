@@ -1,0 +1,65 @@
+{
+  "schema_version": "fsmpra.ledger.v1",
+  "sources": [
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_ledger_20261016/config.json",
+      "bytes": 3460,
+      "mtime_ns": 1792211519343912000,
+      "sha256": "156483ea7e14ef29cc2b2afabe3581293e3d847333f07db1b62d33a308148295"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_ledger_20261016/catalog/catalog.json",
+      "bytes": 1195650,
+      "mtime_ns": 1792211632252249234,
+      "sha256": "9e190886cacedb0a13755e76913b959d8c4f71b03b8c50052c2002451b79c1b6"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_ledger_20261016/extracted/observations.tsv.gz",
+      "bytes": 574404941,
+      "mtime_ns": 1792212413797873578
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_ledger_20261016/barcodes/molecule_assignments.tsv.gz",
+      "bytes": 240397847,
+      "mtime_ns": 1792212778027910894
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_ledger_20261016/barcodes/mprasnakeflow_assignments.tsv.gz",
+      "bytes": 28662226,
+      "mtime_ns": 1792212609168222247
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_ledger_20261016/extracted/qc.json",
+      "bytes": 71862,
+      "mtime_ns": 1792212413806063000,
+      "sha256": "07d6de024eef8e3c28353f61ade711a8670f6bef15d763a3502cdbdae20832f1"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_ledger_20261016/barcodes/audit.json",
+      "bytes": 2114,
+      "mtime_ns": 1792212884637082000,
+      "sha256": "a2e5a87396e6d3e3b5631e863a09fa37f82ed9c2d2d734c50e0e0e30058002f6"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/fsmpra/ledger.py",
+      "bytes": 12040,
+      "mtime_ns": 1792211570064606000,
+      "sha256": "7d22debdb2c487fb2f404ca352de26a9ebb9a89df83ad64278c057c1c3292a74"
+    }
+  ],
+  "counts": {
+    "molecules": 8715827,
+    "assigned_molecules": 4529384,
+    "analysis_eligible": 2594368,
+    "analysis_eligible_with_barcode": 2102906,
+    "exported_barcodes": 986680
+  },
+  "method": "exact",
+  "scope": "All primary alignments on the configured plasmid contig; other genomic contigs/unmapped reads were not traversed.",
+  "observed_variant_id": "Exact catalog sequence match; confidence is recorded separately in genotype_status.",
+  "assigned_variant_id": "Supported unambiguous barcode assignment consistent with the observed genotype; no rescue.",
+  "limitations": [
+    "Sequence/QC ledger only; footprint calls and occupancy statistics are not newly generated here.",
+    "Barcode coverage and effective barcode counts do not represent biological replicate counts."
+  ]
+}

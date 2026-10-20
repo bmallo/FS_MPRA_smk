@@ -1,0 +1,455 @@
+{
+  "schema_version": "fsmpra.ledger_summary.v1",
+  "run": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_ledger_20261016",
+  "validated_counts": {
+    "molecules": 8715827,
+    "assigned_molecules": 4529384,
+    "analysis_eligible": 2594368,
+    "analysis_eligible_with_barcode": 2102906,
+    "exported_barcodes": 986680
+  },
+  "extraction_qc": {
+    "alignment_records": 8729367,
+    "plasmid_primary": 8715827,
+    "genotype_exact_design": 4739908,
+    "barcode_ok": 7678617,
+    "structure_concatemer": 16458,
+    "analysis_eligible": 2594368,
+    "uncallable_modifications": 3108,
+    "structure_full": 8297446,
+    "genotype_off_design": 2344144,
+    "genotype_low_base_quality": 1325305,
+    "barcode_low_base_quality": 557030,
+    "barcode_incomplete_flanks": 283416,
+    "structure_partial": 401923,
+    "barcode_length_mismatch": 155297,
+    "barcode_flank_disagreement": 41467,
+    "genotype_incomplete_flanks": 288301,
+    "genotype_flank_disagreement": 18169,
+    "secondary_or_supplementary": 13540
+  },
+  "molecule_assignment_status": {
+    "supported": 4529384,
+    "genotype_unresolved": 428766,
+    "insufficient_support": 3503445,
+    "genotype_disagreement": 82982,
+    "collision": 171250
+  },
+  "barcode_status": {
+    "collision": 24087,
+    "insufficient_support": 1447118,
+    "supported": 986680
+  },
+  "assignment_evidence_molecules": 4425495,
+  "sequence_qualified_molecules": 4600022,
+  "wild_type": {
+    "sequence_assigned": {
+      "variant_id": "LDLR_HepG2_newer:25dde21058ac15b7ef51b42f815df93d9c0a610ec97959627732b094b85ec3d4",
+      "source_variant": "WT",
+      "cohort": "sequence_assigned",
+      "molecules": 1647429,
+      "assigned_molecules": 1217455,
+      "unique_barcodes": 268294,
+      "effective_barcodes": 191433.99742450824,
+      "largest_barcode_fraction": 5.5854220484535364e-05,
+      "observed_barcodes": 505088
+    },
+    "analysis_eligible": {
+      "variant_id": "LDLR_HepG2_newer:25dde21058ac15b7ef51b42f815df93d9c0a610ec97959627732b094b85ec3d4",
+      "source_variant": "WT",
+      "cohort": "analysis_eligible",
+      "molecules": 1243891,
+      "assigned_molecules": 985264,
+      "unique_barcodes": 268283,
+      "effective_barcodes": 194969.46143290968,
+      "largest_barcode_fraction": 5.6837558258497215e-05,
+      "observed_barcodes": 457811
+    },
+    "sequence_qualified": {
+      "variant_id": "LDLR_HepG2_newer:25dde21058ac15b7ef51b42f815df93d9c0a610ec97959627732b094b85ec3d4",
+      "source_variant": "WT",
+      "cohort": "sequence_qualified",
+      "molecules": 1275475,
+      "assigned_molecules": 992952,
+      "unique_barcodes": 268294,
+      "effective_barcodes": 195253.5076592084,
+      "largest_barcode_fraction": 5.639748950603856e-05,
+      "observed_barcodes": 459424
+    }
+  },
+  "coverage_by_class": [
+    {
+      "cohort": "analysis_eligible",
+      "class": "DEL",
+      "designed_variants": 146,
+      "variants_with_molecules": 0,
+      "molecules": 0,
+      "assigned_molecules": 0,
+      "sum_variant_barcode_counts": 0,
+      "variants_with_at_least_n_supported_barcodes": {
+        "1": 0,
+        "5": 0,
+        "10": 0,
+        "20": 0,
+        "50": 0
+      },
+      "molecules_per_variant_min_median_max": [
+        0,
+        0.0,
+        0
+      ],
+      "supported_barcodes_per_variant_min_median_max": [
+        0,
+        0.0,
+        0
+      ],
+      "effective_barcodes_per_variant_min_median_max": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "cohort": "analysis_eligible",
+      "class": "INS",
+      "designed_variants": 637,
+      "variants_with_molecules": 0,
+      "molecules": 0,
+      "assigned_molecules": 0,
+      "sum_variant_barcode_counts": 0,
+      "variants_with_at_least_n_supported_barcodes": {
+        "1": 0,
+        "5": 0,
+        "10": 0,
+        "20": 0,
+        "50": 0
+      },
+      "molecules_per_variant_min_median_max": [
+        0,
+        0,
+        0
+      ],
+      "supported_barcodes_per_variant_min_median_max": [
+        0,
+        0,
+        0
+      ],
+      "effective_barcodes_per_variant_min_median_max": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "cohort": "analysis_eligible",
+      "class": "SNV",
+      "designed_variants": 633,
+      "variants_with_molecules": 633,
+      "molecules": 1350477,
+      "assigned_molecules": 1117642,
+      "sum_variant_barcode_counts": 300071,
+      "variants_with_at_least_n_supported_barcodes": {
+        "1": 632,
+        "5": 630,
+        "10": 630,
+        "20": 630,
+        "50": 630
+      },
+      "molecules_per_variant_min_median_max": [
+        1,
+        1955,
+        7547
+      ],
+      "supported_barcodes_per_variant_min_median_max": [
+        0,
+        441,
+        1615
+      ],
+      "effective_barcodes_per_variant_min_median_max": [
+        0.0,
+        323.0619335347432,
+        1133.5697407285854
+      ]
+    },
+    {
+      "cohort": "analysis_eligible",
+      "class": "WT",
+      "designed_variants": 1,
+      "variants_with_molecules": 1,
+      "molecules": 1243891,
+      "assigned_molecules": 985264,
+      "sum_variant_barcode_counts": 268283,
+      "variants_with_at_least_n_supported_barcodes": {
+        "1": 1,
+        "5": 1,
+        "10": 1,
+        "20": 1,
+        "50": 1
+      },
+      "molecules_per_variant_min_median_max": [
+        1243891,
+        1243891,
+        1243891
+      ],
+      "supported_barcodes_per_variant_min_median_max": [
+        268283,
+        268283,
+        268283
+      ],
+      "effective_barcodes_per_variant_min_median_max": [
+        194969.46143290968,
+        194969.46143290968,
+        194969.46143290968
+      ]
+    },
+    {
+      "cohort": "sequence_assigned",
+      "class": "DEL",
+      "designed_variants": 146,
+      "variants_with_molecules": 145,
+      "molecules": 529255,
+      "assigned_molecules": 336659,
+      "sum_variant_barcode_counts": 73461,
+      "variants_with_at_least_n_supported_barcodes": {
+        "1": 145,
+        "5": 143,
+        "10": 141,
+        "20": 135,
+        "50": 124
+      },
+      "molecules_per_variant_min_median_max": [
+        0,
+        2675.5,
+        36686
+      ],
+      "supported_barcodes_per_variant_min_median_max": [
+        0,
+        432.5,
+        3018
+      ],
+      "effective_barcodes_per_variant_min_median_max": [
+        0.0,
+        313.75481750387655,
+        2136.4368533919137
+      ]
+    },
+    {
+      "cohort": "sequence_assigned",
+      "class": "INS",
+      "designed_variants": 637,
+      "variants_with_molecules": 633,
+      "molecules": 2098785,
+      "assigned_molecules": 1592942,
+      "sum_variant_barcode_counts": 344833,
+      "variants_with_at_least_n_supported_barcodes": {
+        "1": 609,
+        "5": 608,
+        "10": 605,
+        "20": 602,
+        "50": 601
+      },
+      "molecules_per_variant_min_median_max": [
+        0,
+        2640,
+        20864
+      ],
+      "supported_barcodes_per_variant_min_median_max": [
+        0,
+        445,
+        2781
+      ],
+      "effective_barcodes_per_variant_min_median_max": [
+        0.0,
+        317.3886516168395,
+        1971.1946140967293
+      ]
+    },
+    {
+      "cohort": "sequence_assigned",
+      "class": "SNV",
+      "designed_variants": 633,
+      "variants_with_molecules": 633,
+      "molecules": 1789744,
+      "assigned_molecules": 1382328,
+      "sum_variant_barcode_counts": 300092,
+      "variants_with_at_least_n_supported_barcodes": {
+        "1": 632,
+        "5": 630,
+        "10": 630,
+        "20": 630,
+        "50": 630
+      },
+      "molecules_per_variant_min_median_max": [
+        16,
+        2606,
+        9977
+      ],
+      "supported_barcodes_per_variant_min_median_max": [
+        0,
+        441,
+        1615
+      ],
+      "effective_barcodes_per_variant_min_median_max": [
+        0.0,
+        317.3308083058551,
+        1121.092084571029
+      ]
+    },
+    {
+      "cohort": "sequence_assigned",
+      "class": "WT",
+      "designed_variants": 1,
+      "variants_with_molecules": 1,
+      "molecules": 1647429,
+      "assigned_molecules": 1217455,
+      "sum_variant_barcode_counts": 268294,
+      "variants_with_at_least_n_supported_barcodes": {
+        "1": 1,
+        "5": 1,
+        "10": 1,
+        "20": 1,
+        "50": 1
+      },
+      "molecules_per_variant_min_median_max": [
+        1647429,
+        1647429,
+        1647429
+      ],
+      "supported_barcodes_per_variant_min_median_max": [
+        268294,
+        268294,
+        268294
+      ],
+      "effective_barcodes_per_variant_min_median_max": [
+        191433.99742450824,
+        191433.99742450824,
+        191433.99742450824
+      ]
+    },
+    {
+      "cohort": "sequence_qualified",
+      "class": "DEL",
+      "designed_variants": 146,
+      "variants_with_molecules": 145,
+      "molecules": 343811,
+      "assigned_molecules": 274099,
+      "sum_variant_barcode_counts": 73461,
+      "variants_with_at_least_n_supported_barcodes": {
+        "1": 145,
+        "5": 143,
+        "10": 141,
+        "20": 135,
+        "50": 124
+      },
+      "molecules_per_variant_min_median_max": [
+        0,
+        1988.5,
+        14963
+      ],
+      "supported_barcodes_per_variant_min_median_max": [
+        0,
+        432.5,
+        3018
+      ],
+      "effective_barcodes_per_variant_min_median_max": [
+        0.0,
+        322.58497815227634,
+        2164.393492628368
+      ]
+    },
+    {
+      "cohort": "sequence_qualified",
+      "class": "INS",
+      "designed_variants": 637,
+      "variants_with_molecules": 620,
+      "molecules": 1596198,
+      "assigned_molecules": 1297663,
+      "sum_variant_barcode_counts": 344833,
+      "variants_with_at_least_n_supported_barcodes": {
+        "1": 609,
+        "5": 608,
+        "10": 605,
+        "20": 602,
+        "50": 601
+      },
+      "molecules_per_variant_min_median_max": [
+        0,
+        2050,
+        13810
+      ],
+      "supported_barcodes_per_variant_min_median_max": [
+        0,
+        445,
+        2781
+      ],
+      "effective_barcodes_per_variant_min_median_max": [
+        0.0,
+        323.5061794734014,
+        1998.5311199549328
+      ]
+    },
+    {
+      "cohort": "sequence_qualified",
+      "class": "SNV",
+      "designed_variants": 633,
+      "variants_with_molecules": 633,
+      "molecules": 1384538,
+      "assigned_molecules": 1126320,
+      "sum_variant_barcode_counts": 300092,
+      "variants_with_at_least_n_supported_barcodes": {
+        "1": 632,
+        "5": 630,
+        "10": 630,
+        "20": 630,
+        "50": 630
+      },
+      "molecules_per_variant_min_median_max": [
+        9,
+        2008,
+        7767
+      ],
+      "supported_barcodes_per_variant_min_median_max": [
+        0,
+        441,
+        1615
+      ],
+      "effective_barcodes_per_variant_min_median_max": [
+        0.0,
+        323.41757397207635,
+        1136.9675538519678
+      ]
+    },
+    {
+      "cohort": "sequence_qualified",
+      "class": "WT",
+      "designed_variants": 1,
+      "variants_with_molecules": 1,
+      "molecules": 1275475,
+      "assigned_molecules": 992952,
+      "sum_variant_barcode_counts": 268294,
+      "variants_with_at_least_n_supported_barcodes": {
+        "1": 1,
+        "5": 1,
+        "10": 1,
+        "20": 1,
+        "50": 1
+      },
+      "molecules_per_variant_min_median_max": [
+        1275475,
+        1275475,
+        1275475
+      ],
+      "supported_barcodes_per_variant_min_median_max": [
+        268294,
+        268294,
+        268294
+      ],
+      "effective_barcodes_per_variant_min_median_max": [
+        195253.5076592084,
+        195253.5076592084,
+        195253.5076592084
+      ]
+    }
+  ],
+  "interpretation": "Descriptive coverage, not power or independence. Counts across variants may share conflicting observed barcodes; only supported assignments count toward unique_barcodes. DEL/INS are intentionally excluded from analysis_eligible."
+}

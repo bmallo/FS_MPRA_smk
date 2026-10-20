@@ -1,0 +1,280 @@
+{
+  "schema_version": "fsmpra.footprint_join_summary.v1",
+  "run": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_footprints_20261017",
+  "counts": {
+    "ledger_molecules": 8715827,
+    "bam_alignment_records": 8715827,
+    "evaluated_without_AQ": 3518,
+    "output_molecules": 8715827,
+    "evaluated": 8712120,
+    "region_complete": 6591700,
+    "ledger_analysis_eligible": 2594368,
+    "footprint_analysis_eligible": 2594368,
+    "footprint_analysis_eligible_with_barcode": 2102906,
+    "matched_primary_molecules": 8715827,
+    "omitted_empty_track_msp": 417069,
+    "omitted_empty_track_tf": 720670,
+    "omitted_empty_track_nuc": 1106721,
+    "missing_MA": 3707
+  },
+  "by_genotype_class": {
+    "DEL": {
+      "catalog_rows": 146,
+      "totals": {
+        "ledger_molecules": 529255,
+        "evaluated": 529059,
+        "missing_MA": 196,
+        "missing_bam": 0,
+        "region_complete": 0,
+        "ledger_analysis_eligible": 0,
+        "footprint_analysis_eligible": 0,
+        "footprint_analysis_eligible_with_barcode": 0
+      },
+      "variants_with_measured_molecules": 0,
+      "variants_with_measured_barcoded_molecules": 0,
+      "measured_molecules_min_median_max": [
+        0,
+        0.0,
+        0
+      ],
+      "measured_barcoded_molecules_min_median_max": [
+        0,
+        0.0,
+        0
+      ]
+    },
+    "INS": {
+      "catalog_rows": 637,
+      "totals": {
+        "ledger_molecules": 2098785,
+        "evaluated": 2098231,
+        "missing_MA": 554,
+        "missing_bam": 0,
+        "region_complete": 2098785,
+        "ledger_analysis_eligible": 0,
+        "footprint_analysis_eligible": 0,
+        "footprint_analysis_eligible_with_barcode": 0
+      },
+      "variants_with_measured_molecules": 0,
+      "variants_with_measured_barcoded_molecules": 0,
+      "measured_molecules_min_median_max": [
+        0,
+        0,
+        0
+      ],
+      "measured_barcoded_molecules_min_median_max": [
+        0,
+        0,
+        0
+      ]
+    },
+    "SNV": {
+      "catalog_rows": 633,
+      "totals": {
+        "ledger_molecules": 1789744,
+        "evaluated": 1789312,
+        "missing_MA": 432,
+        "missing_bam": 0,
+        "region_complete": 1789744,
+        "ledger_analysis_eligible": 1350477,
+        "footprint_analysis_eligible": 1350477,
+        "footprint_analysis_eligible_with_barcode": 1117642
+      },
+      "variants_with_measured_molecules": 633,
+      "variants_with_measured_barcoded_molecules": 632,
+      "measured_molecules_min_median_max": [
+        1,
+        1955,
+        7547
+      ],
+      "measured_barcoded_molecules_min_median_max": [
+        0,
+        1619,
+        6438
+      ]
+    },
+    "WT": {
+      "catalog_rows": 1,
+      "totals": {
+        "ledger_molecules": 1647429,
+        "evaluated": 1647025,
+        "missing_MA": 404,
+        "missing_bam": 0,
+        "region_complete": 1647429,
+        "ledger_analysis_eligible": 1243891,
+        "footprint_analysis_eligible": 1243891,
+        "footprint_analysis_eligible_with_barcode": 985264
+      },
+      "variants_with_measured_molecules": 1,
+      "variants_with_measured_barcoded_molecules": 1,
+      "measured_molecules_min_median_max": [
+        1243891,
+        1243891,
+        1243891
+      ],
+      "measured_barcoded_molecules_min_median_max": [
+        985264,
+        985264,
+        985264
+      ]
+    },
+    "unresolved": {
+      "catalog_rows": 1,
+      "totals": {
+        "ledger_molecules": 2650614,
+        "evaluated": 2648493,
+        "missing_MA": 2121,
+        "missing_bam": 0,
+        "region_complete": 1055742,
+        "ledger_analysis_eligible": 0,
+        "footprint_analysis_eligible": 0,
+        "footprint_analysis_eligible_with_barcode": 0
+      },
+      "variants_with_measured_molecules": 0,
+      "variants_with_measured_barcoded_molecules": 0,
+      "measured_molecules_min_median_max": [
+        0,
+        0,
+        0
+      ],
+      "measured_barcoded_molecules_min_median_max": [
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "lowest_coverage_snvs": [
+    {
+      "variant_id": "LDLR_HepG2_newer:6a29b28fb024e04ea4eac19bb8a1a7e14fa1a484ab8bc9c7fd6bfade4f9d4e6c",
+      "source_variant": "160A>G",
+      "genotype_class": "SNV",
+      "ledger_molecules": 16,
+      "evaluated": 16,
+      "missing_MA": 0,
+      "missing_bam": 0,
+      "region_complete": 16,
+      "ledger_analysis_eligible": 1,
+      "footprint_analysis_eligible": 1,
+      "footprint_analysis_eligible_with_barcode": 0
+    },
+    {
+      "variant_id": "LDLR_HepG2_newer:d4cd7cfd0eacd0b9247d8a741743eb633c60f2b1b75ce94a26fd6f1ab32f75bb",
+      "source_variant": "222T>C",
+      "genotype_class": "SNV",
+      "ledger_molecules": 23,
+      "evaluated": 23,
+      "missing_MA": 0,
+      "missing_bam": 0,
+      "region_complete": 23,
+      "ledger_analysis_eligible": 2,
+      "footprint_analysis_eligible": 2,
+      "footprint_analysis_eligible_with_barcode": 2
+    },
+    {
+      "variant_id": "LDLR_HepG2_newer:c2078320dee59667a96604bf0056187f63e4bf6f0503a256e210c4a3a6d45f5b",
+      "source_variant": "176G>A",
+      "genotype_class": "SNV",
+      "ledger_molecules": 35,
+      "evaluated": 35,
+      "missing_MA": 0,
+      "missing_bam": 0,
+      "region_complete": 35,
+      "ledger_analysis_eligible": 24,
+      "footprint_analysis_eligible": 24,
+      "footprint_analysis_eligible_with_barcode": 8
+    },
+    {
+      "variant_id": "LDLR_HepG2_newer:6f93b15c0d080bc311a46d71b532f308c9de7ff60c980a8d725b2d669607e623",
+      "source_variant": "25C>G",
+      "genotype_class": "SNV",
+      "ledger_molecules": 510,
+      "evaluated": 510,
+      "missing_MA": 0,
+      "missing_bam": 0,
+      "region_complete": 510,
+      "ledger_analysis_eligible": 381,
+      "footprint_analysis_eligible": 381,
+      "footprint_analysis_eligible_with_barcode": 283
+    },
+    {
+      "variant_id": "LDLR_HepG2_newer:20bd7ddae5eb2208d97e0abb5dea2b51d7a7fc24d5ba521bad152c314f26ab62",
+      "source_variant": "49G>C",
+      "genotype_class": "SNV",
+      "ledger_molecules": 523,
+      "evaluated": 523,
+      "missing_MA": 0,
+      "missing_bam": 0,
+      "region_complete": 523,
+      "ledger_analysis_eligible": 409,
+      "footprint_analysis_eligible": 409,
+      "footprint_analysis_eligible_with_barcode": 330
+    },
+    {
+      "variant_id": "LDLR_HepG2_newer:8f5fda89d499bf273bfdd4cd084b5e59499b4df28028941d56d303463fe87630",
+      "source_variant": "26G>C",
+      "genotype_class": "SNV",
+      "ledger_molecules": 643,
+      "evaluated": 643,
+      "missing_MA": 0,
+      "missing_bam": 0,
+      "region_complete": 643,
+      "ledger_analysis_eligible": 490,
+      "footprint_analysis_eligible": 490,
+      "footprint_analysis_eligible_with_barcode": 397
+    },
+    {
+      "variant_id": "LDLR_HepG2_newer:405a6d58f5f4a259703083e35081f3644631285c07693dacd563e3029619f9ac",
+      "source_variant": "88G>C",
+      "genotype_class": "SNV",
+      "ledger_molecules": 645,
+      "evaluated": 645,
+      "missing_MA": 0,
+      "missing_bam": 0,
+      "region_complete": 645,
+      "ledger_analysis_eligible": 476,
+      "footprint_analysis_eligible": 476,
+      "footprint_analysis_eligible_with_barcode": 401
+    },
+    {
+      "variant_id": "LDLR_HepG2_newer:ddc4cc6f427f065aef4916dc5658ada6784cc3ef6f43a8f593c971a8d16e78eb",
+      "source_variant": "174A>C",
+      "genotype_class": "SNV",
+      "ledger_molecules": 767,
+      "evaluated": 765,
+      "missing_MA": 2,
+      "missing_bam": 0,
+      "region_complete": 767,
+      "ledger_analysis_eligible": 579,
+      "footprint_analysis_eligible": 579,
+      "footprint_analysis_eligible_with_barcode": 471
+    },
+    {
+      "variant_id": "LDLR_HepG2_newer:f8d7e8c2d68af6870cc6b139ce6837d27f1a9938ea9163e76acead7088bdf0c6",
+      "source_variant": "30G>C",
+      "genotype_class": "SNV",
+      "ledger_molecules": 831,
+      "evaluated": 831,
+      "missing_MA": 0,
+      "missing_bam": 0,
+      "region_complete": 831,
+      "ledger_analysis_eligible": 620,
+      "footprint_analysis_eligible": 620,
+      "footprint_analysis_eligible_with_barcode": 474
+    },
+    {
+      "variant_id": "LDLR_HepG2_newer:58391dbf3b1351cd52c2bbe1908e8a0288775f6242be469405aae28e9adcd325",
+      "source_variant": "172A>C",
+      "genotype_class": "SNV",
+      "ledger_molecules": 779,
+      "evaluated": 778,
+      "missing_MA": 1,
+      "missing_bam": 0,
+      "region_complete": 779,
+      "ledger_analysis_eligible": 591,
+      "footprint_analysis_eligible": 591,
+      "footprint_analysis_eligible_with_barcode": 481
+    }
+  ],
+  "interpretation": "Coverage only. Barcode-linked molecules are not independent barcodes or biological replicates. No occupancy effects or significance tests are computed."
+}

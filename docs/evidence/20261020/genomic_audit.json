@@ -1,0 +1,141 @@
+{
+  "schema_version": "fsmpra.genomic_coordinates.v1",
+  "complete": true,
+  "library_id": "LDLR_HepG2_newer",
+  "mapping": {
+    "assembly": "GRCh38",
+    "chrom": "chr19",
+    "strand": "+",
+    "genomic_start1": 11089285,
+    "genomic_end1": 11089495,
+    "length": 211,
+    "reference_start0": 1234,
+    "oligo_start1": 21
+  },
+  "mutable_sequence": "CTTTCGAAGGACTGGAGTGGGAATCAGAGCTTCACGGGTTAAAAAGCCGATGTCACATCGGCCGTTCGAAACTCCTCCTCTTGCAGTGAGGTGAAGACATTTGAAAATCACCCCACTGCAAACTCCTCCCCCTGCTAGAAACCTCACATTGAAATGCTGTAAATGACGTGGGCCCCGAGTGCAATCGCGGGAAGCCAGGGTTTCCAGCTAG",
+  "sequence_sha256": "25dde21058ac15b7ef51b42f815df93d9c0a610ec97959627732b094b85ec3d4",
+  "forward_exact_bases": 211,
+  "reverse_complement_exact": false,
+  "local_search_interval0": [
+    11079284,
+    11099495
+  ],
+  "forward_matches1": [
+    11089285
+  ],
+  "reverse_matches1": [],
+  "independent_reference": {
+    "url": "https://api.genome.ucsc.edu/getData/sequence?genome=hg38;chrom=chr19;start=11089230;end=11089548",
+    "matched_bases": 318,
+    "download_time": "2026:10:19T15:47:54Z"
+  },
+  "mpra": [
+    {
+      "source": "published_LDLR",
+      "raw_rows": 1083,
+      "genomic_ref_matches": 1083,
+      "atlas_snvs": 633,
+      "allele_sequence_and_effect_matches": 633
+    },
+    {
+      "source": "published_LDLR_2",
+      "raw_rows": 1093,
+      "genomic_ref_matches": 1093,
+      "atlas_snvs": 633,
+      "allele_sequence_and_effect_matches": 633
+    }
+  ],
+  "legacy": {
+    "matched_rows": 954,
+    "source": "published_LDLR_2",
+    "position_formula": "genomic_pos1 = 11092732 - legacy_position",
+    "alleles": "complement both REF and ALT",
+    "effects": "unchanged; do not negate"
+  },
+  "scope": "Mutable element only; genomic forward alleles. Original plasmid coordinates retained. No indel VCF normalization.",
+  "sources": [
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/config/ldlr_processing.json",
+      "bytes": 3460,
+      "mtime_ns": 1792170890566585000,
+      "sha256": "156483ea7e14ef29cc2b2afabe3581293e3d847333f07db1b62d33a308148295"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_ledger_20261016/catalog/catalog.json",
+      "bytes": 1195650,
+      "mtime_ns": 1792211632252249234,
+      "sha256": "9e190886cacedb0a13755e76913b959d8c4f71b03b8c50052c2002451b79c1b6"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/pilot_20261014/catalog/catalog.json",
+      "bytes": 2179476,
+      "mtime_ns": 1792027395387772028,
+      "sha256": "d6b4894a011c7608864af366d2952c4aa2155eb2a7a1e632014c37f176405610"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_genomic_20261019_run/inputs/ucsc_hg38_chr19_11089230_11089548.json",
+      "bytes": 476,
+      "mtime_ns": 1792424958525801000,
+      "sha256": "6c24022c9a07d624948d224414bf10182015e0939dbc46a45fdfb02442ed4aa9"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/extras/data/LDLR_mpra_scores.tsv",
+      "bytes": 19979,
+      "mtime_ns": 1779227706992744000,
+      "sha256": "74715baf516b1713362bba89837007cd132e2e627a910a3091c612ecf706ea3f"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/fsmpra/genomic_coordinates.py",
+      "bytes": 10718,
+      "mtime_ns": 1792424958211793000,
+      "sha256": "74148a21aa996131903491fc9105862d2a61c896e3d7d2bb70cf71ba71b7a290"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/fsmpra/io.py",
+      "bytes": 3882,
+      "mtime_ns": 1792165317548401000,
+      "sha256": "6faf2d07629ae2b89af76359de1bd4a7cb788d59d1425fe2f1bc1dad7482405d"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/fsmpra/processing.py",
+      "bytes": 32472,
+      "mtime_ns": 1792211373818548000,
+      "sha256": "6c54a6785364838618187dbc9e4ae7560c95ead8cae594efcea8300ca6d672e6"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/projects/LDLR_MPRA/fiberseq/HepG2/replicate_3/ref/hg38.analysisSet_LDLR_MPRA_NotI.fa",
+      "bytes": 3144235824,
+      "mtime_ns": 1791253382023401528
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/projects/LDLR_MPRA/fiberseq/HepG2/replicate_3/ref/hg38.analysisSet_LDLR_MPRA_NotI.fa.fai",
+      "bytes": 7841,
+      "mtime_ns": 1791253393476788000,
+      "sha256": "8182e06cddb3790585b3dddb52283b8e22947ccb893b52f8f6e810de5d397b2a"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/projects/LDLR_MPRA/fiberseq/HepG2/replicate_3/ref/LDLR_MPRA_NotI.fa",
+      "bytes": 4838,
+      "mtime_ns": 1791253372813197000,
+      "sha256": "19c9b16ff133d0bcdf9a0b00290d99bcfefdbbf8ed367809c456d33487cc9bb7"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/projects/APC_Promoter_SGE/probe_design/LDLR_oligos.txt",
+      "bytes": 632802,
+      "mtime_ns": 1752017655563203748,
+      "sha256": "63b277ddec522e7b336725f17180168f847749e43905b1eec8489d293705c165"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/projects/LDLR_MPRA/mpra_published/GRCh38_LDLR.tsv",
+      "bytes": 50489,
+      "mtime_ns": 1791393128108365000,
+      "sha256": "a13e65e325b2e7d0248974ebc0e1843ff7d40c283a7c3a5762e3bdf91ad6ca97"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/projects/LDLR_MPRA/mpra_published/GRCh38_LDLR.2.csv",
+      "bytes": 53354,
+      "mtime_ns": 1791393128110151000,
+      "sha256": "ac940fe846f11fd7dbe2ef3f7aa87f549a96f128e6e720b0d9efe9de7a5fb125"
+    }
+  ]
+}

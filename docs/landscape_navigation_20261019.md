@@ -1,5 +1,12 @@
 # Variant navigation and functional lollipops
 
+This records the original navigation update. The
+[current genomic atlas](../results/rep3_landscape_20261018/atlas_genomic_20261019/index.html)
+retains these controls and uses verified genomic axes; see the
+[coordinate audit](genomic_coordinate_audit_20261020.md). Reproduction with the
+current code produces genomic coordinates, while the archived output below
+retains its original oligo axes.
+
 Open the [updated local atlas](../results/rep3_landscape_20261018/atlas_navigation_20261019/index.html)
 and choose **Open variant-by-variant browser** near the top.
 

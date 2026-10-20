@@ -1,5 +1,12 @@
 # FS_MPRA_smk
 
+**Start here:** [Scientific and implementation handoff — 20 October 2026](docs/PROJECT_HANDOFF_20261020.md).
+It summarizes the project from the initial review through the raw-methylation audit,
+including unsuccessful statistical approaches, biological candidates, reproduction
+instructions and untested next steps. [Compact evidence tables and provenance](docs/evidence/20261020/README.md)
+are included in Git; full BAMs, ledgers and generated dashboards remain on Klone.
+**No replicate-3 Fiber-seq variant significance has been released.**
+
 > **Raw-BAM redesign:** start with the new [processing workflow](docs/processing_workflow.md)
 > for replicate 3. It produces molecule QC/features, barcode assignments and
 > coverage, and an MPRAsnakeflow-compatible assignment export. Barcode correction
@@ -41,10 +48,21 @@
 > confidence intervals still need calibration before variant significance is released.
 > The [WT landscape and variant biology report](docs/rep3_landscape_20261019.md)
 > now categorizes protection by original call length and compares all designed
-> SNVs with WT. Open the [interactive landscape atlas](results/rep3_landscape_20261018/atlas_navigation_20261019/index.html)
+> SNVs with WT. Open the [interactive landscape atlas](results/rep3_landscape_20261018/atlas_biology_20261020/index.html)
 > for profiles, mutation maps, molecule combinations and published functional context.
 > The [variant browser update](docs/landscape_navigation_20261019.md) adds arrow
 > navigation and synchronized functional-effect lollipops above each comparison.
+> The [genomic orientation audit](docs/genomic_coordinate_audit_20261020.md)
+> verifies the forward-strand mapping against GRCh38 and UCSC; the latest atlas
+> uses genomic coordinates and preserves the original measurements.
+> The [candidate biology report](docs/rep3_candidate_biology_20261020.md) adds
+> sequence/A/T tracks, JASPAR/HOCOMOCO candidates, and barcode sensitivity checks.
+> See [annotated atlas usage and validation](docs/biology_atlas_usage.md).
+> The [raw-call and filtering audit](docs/rep3_raw_candidates_20261020.md)
+> examines 27 candidate substitutions at unchanged A/T sites, including
+> barcode-independent genotype comparisons and 18 sensitivity settings.
+> Open its [interactive audit](results/rep3_raw_candidates_20261020/viewer/index.html)
+> for raw-call profiles, footprint profiles, support counts and exports.
 > These are descriptive candidate patterns; additional confidence audits are deferred.
 > See [landscape workflow usage](docs/landscape_usage.md) to reproduce the analysis.
 

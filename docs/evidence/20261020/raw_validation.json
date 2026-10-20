@@ -1,0 +1,8 @@
+{
+  "complete": true,
+  "comparisons": 15552,
+  "profiles": 106344,
+  "retention_rows": 504,
+  "joint_groups": 216,
+  "max_variant_profile_rounding_error": 4.999620262235993e-08
+}

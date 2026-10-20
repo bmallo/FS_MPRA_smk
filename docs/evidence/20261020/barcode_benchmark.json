@@ -1,0 +1,380 @@
+{
+  "schema_version": "fsmpra.barcode_benchmark.v1",
+  "sources": [
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/config/ldlr_processing.json",
+      "bytes": 3460,
+      "mtime_ns": 1792170890566585000,
+      "sha256": "156483ea7e14ef29cc2b2afabe3581293e3d847333f07db1b62d33a308148295"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/barcode_benchmark_20261016/families/catalog/catalog.json",
+      "bytes": 1195637,
+      "mtime_ns": 1792189304328334214,
+      "sha256": "f18090978b0f199a2e29fff39029bc8d90cbcbb86311457c69d54741b936d2f1"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/barcode_benchmark_20261016/families/extracted/observations.tsv.gz",
+      "bytes": 231872,
+      "mtime_ns": 1792189669678616391,
+      "sha256": "1d209146cad0de8a9a9c9e172d67cff61161ed84c94e00fca1cb96566e43d53d"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/barcode_benchmark_20261016/families/extracted/qc.json",
+      "bytes": 1966,
+      "mtime_ns": 1792189669680734000,
+      "sha256": "ceb3c485d57327b859e0b95813e6ff53398a45ede9ad2b5d1a1a576a869ea9b4"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/fsmpra/barcode_benchmark.py",
+      "bytes": 30120,
+      "mtime_ns": 1792189780303080000,
+      "sha256": "9e95b461950dc875070853ba3741f85b2b8dd4c1a688693d5aa28f193e691a07"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/fsmpra/barcodes.py",
+      "bytes": 9763,
+      "mtime_ns": 1792170385273961000,
+      "sha256": "becd99bad553bc2f344b677f081a53cfdbdbaa3e48e7dd6480673f979a6bc521"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/fsmpra/processing.py",
+      "bytes": 29687,
+      "mtime_ns": 1792189232247231000,
+      "sha256": "0e3aa54627fa160a91c1125838cac756e174c5d2262b94f807259f5be809f1df"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/barcode_benchmark_20261016/sample/extracted/observations.tsv.gz",
+      "bytes": 5876148,
+      "mtime_ns": 1792189107260445580,
+      "sha256": "64ab119b42f47c9488643cc2a50b7e260ef8c5956d46d54ab2f7e61d65e83f34"
+    }
+  ],
+  "sampling": {
+    "sources": [
+      {
+        "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/config/ldlr_processing.json",
+        "bytes": 3460,
+        "mtime_ns": 1792170890566585000,
+        "sha256": "156483ea7e14ef29cc2b2afabe3581293e3d847333f07db1b62d33a308148295"
+      },
+      {
+        "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/projects/LDLR_MPRA/fiberseq/HepG2/replicate_3/aligned/PS01898.hg38_LDLR.ft.aligned.bam",
+        "bytes": 29346611024,
+        "mtime_ns": 1791255406307116378
+      },
+      {
+        "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/projects/LDLR_MPRA/fiberseq/HepG2/replicate_3/aligned/PS01898.hg38_LDLR.ft.aligned.bam.bai",
+        "bytes": 3315168,
+        "mtime_ns": 1791255519856496891
+      },
+      {
+        "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/barcode_benchmark_20261016/sample/extracted/observations.tsv.gz",
+        "bytes": 5876148,
+        "mtime_ns": 1792189107260445580,
+        "sha256": "64ab119b42f47c9488643cc2a50b7e260ef8c5956d46d54ab2f7e61d65e83f34"
+      }
+    ],
+    "counts": {
+      "target_alignment_records": 8729367,
+      "primary_plasmids": 8715827,
+      "sampled_primary_plasmids": 3738
+    },
+    "selection": "Complete anchored edit-distance <=1 barcode neighborhoods around deterministic discovery seeds",
+    "families_per_stratum_requested": 200,
+    "seeds": 400,
+    "neighborhood_sequences": 42522,
+    "seconds": 365.55223480801214,
+    "limitation": "Discovery-informed targeted families, not population-representative; neighborhoods exclude >1-edit errors relative to every seed and unreadable flanks."
+  },
+  "sampled_primary_plasmids": 3738,
+  "discovery_molecules_forced_into_training": 608,
+  "comparison_cohort_molecules": 2620,
+  "comparison_unique_observed_barcodes": 449,
+  "comparison_cohort": "High-confidence WT/SNV genotypes and sequence QC, anchored ACGT barcodes length 14\u201316; no chromatin-outcome filtering",
+  "all_sample_barcode_status": {
+    "low_base_quality": 241,
+    "length_mismatch": 29,
+    "ok": 3468
+  },
+  "cohort_barcode_status": {
+    "ok": 2608,
+    "low_base_quality": 7,
+    "length_mismatch": 5
+  },
+  "real": [
+    {
+      "method": "exact",
+      "input_molecules": 2620,
+      "assigned_molecules": 2533,
+      "changed_barcode_molecules": 0,
+      "variant_disagreements": 0,
+      "newly_assigned_vs_exact": 0,
+      "changed_previously_assigned_molecules": 0,
+      "exported_barcodes": 392,
+      "merges_between_q30_supported_barcodes": 0,
+      "synthetic_cases": {}
+    },
+    {
+      "method": "quality_directional",
+      "input_molecules": 2620,
+      "assigned_molecules": 2533,
+      "changed_barcode_molecules": 0,
+      "variant_disagreements": 0,
+      "newly_assigned_vs_exact": 0,
+      "changed_previously_assigned_molecules": 0,
+      "exported_barcodes": 392,
+      "merges_between_q30_supported_barcodes": 0,
+      "synthetic_cases": {}
+    },
+    {
+      "method": "pacybara_core_ed1",
+      "input_molecules": 2620,
+      "assigned_molecules": 2556,
+      "changed_barcode_molecules": 18,
+      "variant_disagreements": 0,
+      "newly_assigned_vs_exact": 23,
+      "changed_previously_assigned_molecules": 8,
+      "exported_barcodes": 390,
+      "merges_between_q30_supported_barcodes": 1,
+      "synthetic_cases": {}
+    }
+  ],
+  "synthetic": [
+    {
+      "method": "exact",
+      "input_molecules": 2980,
+      "assigned_molecules": 2520,
+      "changed_barcode_molecules": 0,
+      "variant_disagreements": 0,
+      "newly_assigned_vs_exact": 0,
+      "changed_previously_assigned_molecules": 0,
+      "incorrect_assignments": 0,
+      "exported_barcodes": 200,
+      "merges_between_q30_supported_barcodes": 0,
+      "merged_truth_families_clusters": 0,
+      "synthetic_cases": {
+        "low_quality_substitution": {
+          "input_molecules": 320,
+          "assigned_molecules": 300,
+          "correct_assignments": 300,
+          "incorrect_assignments": 0
+        },
+        "high_quality_substitution": {
+          "input_molecules": 320,
+          "assigned_molecules": 300,
+          "correct_assignments": 300,
+          "incorrect_assignments": 0
+        },
+        "insertion": {
+          "input_molecules": 320,
+          "assigned_molecules": 300,
+          "correct_assignments": 300,
+          "incorrect_assignments": 0
+        },
+        "deletion": {
+          "input_molecules": 320,
+          "assigned_molecules": 300,
+          "correct_assignments": 300,
+          "incorrect_assignments": 0
+        },
+        "genuine_neighbor_same_variant": {
+          "input_molecules": 360,
+          "assigned_molecules": 360,
+          "correct_assignments": 360,
+          "incorrect_assignments": 0
+        },
+        "genuine_neighbor_other_variant": {
+          "input_molecules": 360,
+          "assigned_molecules": 360,
+          "correct_assignments": 360,
+          "incorrect_assignments": 0
+        },
+        "barcode_collision": {
+          "input_molecules": 360
+        },
+        "ambiguous_parent": {
+          "input_molecules": 620,
+          "assigned_molecules": 600,
+          "correct_assignments": 600,
+          "incorrect_assignments": 0
+        }
+      }
+    },
+    {
+      "method": "quality_directional",
+      "input_molecules": 2980,
+      "assigned_molecules": 2540,
+      "changed_barcode_molecules": 20,
+      "variant_disagreements": 0,
+      "newly_assigned_vs_exact": 20,
+      "changed_previously_assigned_molecules": 0,
+      "incorrect_assignments": 0,
+      "exported_barcodes": 200,
+      "merges_between_q30_supported_barcodes": 0,
+      "merged_truth_families_clusters": 0,
+      "synthetic_cases": {
+        "low_quality_substitution": {
+          "input_molecules": 320,
+          "assigned_molecules": 320,
+          "correct_assignments": 320,
+          "incorrect_assignments": 0
+        },
+        "high_quality_substitution": {
+          "input_molecules": 320,
+          "assigned_molecules": 300,
+          "correct_assignments": 300,
+          "incorrect_assignments": 0
+        },
+        "insertion": {
+          "input_molecules": 320,
+          "assigned_molecules": 300,
+          "correct_assignments": 300,
+          "incorrect_assignments": 0
+        },
+        "deletion": {
+          "input_molecules": 320,
+          "assigned_molecules": 300,
+          "correct_assignments": 300,
+          "incorrect_assignments": 0
+        },
+        "genuine_neighbor_same_variant": {
+          "input_molecules": 360,
+          "assigned_molecules": 360,
+          "correct_assignments": 360,
+          "incorrect_assignments": 0
+        },
+        "genuine_neighbor_other_variant": {
+          "input_molecules": 360,
+          "assigned_molecules": 360,
+          "correct_assignments": 360,
+          "incorrect_assignments": 0
+        },
+        "barcode_collision": {
+          "input_molecules": 360
+        },
+        "ambiguous_parent": {
+          "input_molecules": 620,
+          "assigned_molecules": 600,
+          "correct_assignments": 600,
+          "incorrect_assignments": 0
+        }
+      }
+    },
+    {
+      "method": "pacybara_core_ed1",
+      "input_molecules": 2980,
+      "assigned_molecules": 2620,
+      "changed_barcode_molecules": 160,
+      "variant_disagreements": 0,
+      "newly_assigned_vs_exact": 100,
+      "changed_previously_assigned_molecules": 60,
+      "incorrect_assignments": 72,
+      "exported_barcodes": 180,
+      "merges_between_q30_supported_barcodes": 20,
+      "merged_truth_families_clusters": 32,
+      "synthetic_cases": {
+        "low_quality_substitution": {
+          "input_molecules": 320,
+          "assigned_molecules": 320,
+          "correct_assignments": 320,
+          "incorrect_assignments": 0
+        },
+        "high_quality_substitution": {
+          "input_molecules": 320,
+          "assigned_molecules": 320,
+          "correct_assignments": 320,
+          "incorrect_assignments": 0
+        },
+        "insertion": {
+          "input_molecules": 320,
+          "assigned_molecules": 320,
+          "correct_assignments": 320,
+          "incorrect_assignments": 0
+        },
+        "deletion": {
+          "input_molecules": 320,
+          "assigned_molecules": 320,
+          "correct_assignments": 320,
+          "incorrect_assignments": 0
+        },
+        "genuine_neighbor_same_variant": {
+          "input_molecules": 360,
+          "assigned_molecules": 360,
+          "correct_assignments": 300,
+          "incorrect_assignments": 60
+        },
+        "genuine_neighbor_other_variant": {
+          "input_molecules": 360,
+          "assigned_molecules": 360,
+          "correct_assignments": 360,
+          "incorrect_assignments": 0
+        },
+        "barcode_collision": {
+          "input_molecules": 360
+        },
+        "ambiguous_parent": {
+          "input_molecules": 620,
+          "assigned_molecules": 620,
+          "correct_assignments": 608,
+          "incorrect_assignments": 12
+        }
+      }
+    }
+  ],
+  "holdout": [
+    {
+      "method": "exact",
+      "input_molecules": 2223,
+      "assigned_molecules": 2138,
+      "changed_barcode_molecules": 0,
+      "variant_disagreements": 0,
+      "newly_assigned_vs_exact": 0,
+      "changed_previously_assigned_molecules": 0,
+      "exported_barcodes": 377,
+      "merges_between_q30_supported_barcodes": 0,
+      "heldout_molecules": 397,
+      "heldout_exact_export_matches": 372,
+      "heldout_variant_disagreements": 1,
+      "synthetic_cases": {}
+    },
+    {
+      "method": "quality_directional",
+      "input_molecules": 2223,
+      "assigned_molecules": 2138,
+      "changed_barcode_molecules": 0,
+      "variant_disagreements": 0,
+      "newly_assigned_vs_exact": 0,
+      "changed_previously_assigned_molecules": 0,
+      "exported_barcodes": 377,
+      "merges_between_q30_supported_barcodes": 0,
+      "heldout_molecules": 397,
+      "heldout_exact_export_matches": 372,
+      "heldout_variant_disagreements": 1,
+      "synthetic_cases": {}
+    },
+    {
+      "method": "pacybara_core_ed1",
+      "input_molecules": 2223,
+      "assigned_molecules": 2148,
+      "changed_barcode_molecules": 20,
+      "variant_disagreements": 0,
+      "newly_assigned_vs_exact": 10,
+      "changed_previously_assigned_molecules": 10,
+      "exported_barcodes": 375,
+      "merges_between_q30_supported_barcodes": 2,
+      "heldout_molecules": 397,
+      "heldout_exact_export_matches": 370,
+      "heldout_variant_disagreements": 1,
+      "synthetic_cases": {}
+    }
+  ],
+  "limitations": [
+    "Read-sampling reduces family depth; targeted-family sampling enriches discovery families. Neither estimates full-library correction yield.",
+    "Real barcode truth is unknown; assignment yield is not accuracy. Training agreement is gated, not validation.",
+    "Held-out genotypes never enter training. Exact matching against frozen representative export tests link consistency, not error correction or biological independence.",
+    "Synthetic cases are adversarial known-truth tests, not estimates of real error prevalence.",
+    "Pacybara core only, maxDiff=1 with exact radius-two distances; indel genotypes and maxDiff=2 not evaluated.",
+    "MPRAsnakeflow export barcode orientation still needs validation against future functional reads."
+  ]
+}

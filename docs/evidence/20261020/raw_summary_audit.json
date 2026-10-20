@@ -1,0 +1,193 @@
+{
+  "schema_version": "fsmpra.raw_candidate_summary.v1",
+  "complete": true,
+  "sources": [
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_raw_candidates_20261020/extracted/audit.json",
+      "bytes": 6778,
+      "mtime_ns": 1792515109870129000,
+      "sha256": "220f53d3eb61a5d37668c4ed553d3eb0f251fa8f78a10d5f4babd7b80283e7f3"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_raw_candidates_20261020/extracted/molecules.npz",
+      "bytes": 4040375,
+      "mtime_ns": 1792515106871233907,
+      "sha256": "93940ff040d693fc1ad8f0bb21c61751102ad01ed2da0fdd4a1813efffb8541d"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_raw_candidates_20261020/extracted/molecules.tsv.gz",
+      "bytes": 7770113,
+      "mtime_ns": 1792515109868383440,
+      "sha256": "34c21f9e5223019afb66fd44dd3d4f5101afca2bad39c568d6bfc1ab4b3037bc"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_raw_candidates_20261020/extracted/variants.json",
+      "bytes": 29620,
+      "mtime_ns": 1792515109869369000,
+      "sha256": "62a0cbe8756eb3845e305a8ad79471c328610903ba3c4e5e11cf7e54707a7cd3"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/fsmpra/raw_candidate_summary.py",
+      "bytes": 17518,
+      "mtime_ns": 1792515109493156000,
+      "sha256": "127282778b5a25bfa6384733b4e303ffdd187348f50b4feb2aae2ad261705f9d"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "primary_barcodes",
+      "weighting": "barcode",
+      "label": "Supported barcodes, equal barcode weight",
+      "ml_threshold": 128,
+      "baseq": 20
+    },
+    {
+      "id": "primary_molecules",
+      "weighting": "molecule",
+      "label": "Same supported-barcode cohort, equal molecule weight",
+      "ml_threshold": 128,
+      "baseq": 20
+    },
+    {
+      "id": "genotype_only",
+      "weighting": "molecule",
+      "label": "Direct genotype; circular/eligible; no barcode requirement",
+      "ml_threshold": 128,
+      "baseq": 20
+    },
+    {
+      "id": "genotype_all_full_element",
+      "weighting": "molecule",
+      "label": "Direct genotype; full element; circularity requirement removed",
+      "ml_threshold": 128,
+      "baseq": 20
+    },
+    {
+      "id": "genotype_noncircular",
+      "weighting": "molecule",
+      "label": "Direct genotype; noncircular subset; full element",
+      "ml_threshold": 128,
+      "baseq": 20
+    },
+    {
+      "id": "rq_9999",
+      "weighting": "barcode",
+      "label": "Supported cohort; read quality >=0.9999",
+      "ml_threshold": 128,
+      "baseq": 20
+    },
+    {
+      "id": "passes20",
+      "weighting": "barcode",
+      "label": "Supported cohort; >=20 passes",
+      "ml_threshold": 128,
+      "baseq": 20
+    },
+    {
+      "id": "passes40",
+      "weighting": "barcode",
+      "label": "Supported cohort; >=40 passes",
+      "ml_threshold": 128,
+      "baseq": 20
+    },
+    {
+      "id": "mapq60",
+      "weighting": "barcode",
+      "label": "Supported cohort; mapping quality >=60",
+      "ml_threshold": 128,
+      "baseq": 20
+    },
+    {
+      "id": "length_1pct",
+      "weighting": "barcode",
+      "label": "Supported cohort; read length within 1% of 4,647 bp",
+      "ml_threshold": 128,
+      "baseq": 20
+    },
+    {
+      "id": "alignment_plus",
+      "weighting": "barcode",
+      "label": "Supported cohort; forward alignment",
+      "ml_threshold": 128,
+      "baseq": 20
+    },
+    {
+      "id": "alignment_minus",
+      "weighting": "barcode",
+      "label": "Supported cohort; reverse alignment",
+      "ml_threshold": 128,
+      "baseq": 20
+    },
+    {
+      "id": "barcode_depth3",
+      "weighting": "barcode",
+      "label": "Supported cohort; >=3 eligible molecules per barcode",
+      "ml_threshold": 128,
+      "baseq": 20
+    },
+    {
+      "id": "barcode_depth5",
+      "weighting": "barcode",
+      "label": "Supported cohort; >=5 eligible molecules per barcode",
+      "ml_threshold": 128,
+      "baseq": 20
+    },
+    {
+      "id": "baseq30",
+      "weighting": "barcode",
+      "label": "Supported cohort; callable positions require base quality >=30",
+      "ml_threshold": 128,
+      "baseq": 30
+    },
+    {
+      "id": "retained_ml250",
+      "weighting": "barcode",
+      "label": "Supported cohort; retained ML threshold >=250 (not original probability calibration)",
+      "ml_threshold": 250,
+      "baseq": 20
+    },
+    {
+      "id": "whole_m6a_below90",
+      "weighting": "barcode",
+      "label": "Supported cohort; whole-plasmid m6A fraction <0.90 (phenotype-dependent)",
+      "ml_threshold": 128,
+      "baseq": 20
+    },
+    {
+      "id": "distal_m6a_10_80",
+      "weighting": "barcode",
+      "label": "Supported cohort; distal m6A 0.10\u20130.80 (phenotype-dependent)",
+      "ml_threshold": 128,
+      "baseq": 20
+    }
+  ],
+  "regions": [
+    {
+      "id": "WT_P3",
+      "start0": 93,
+      "end0": 113
+    },
+    {
+      "id": "adjacent_143_150",
+      "start0": 122,
+      "end0": 130
+    },
+    {
+      "id": "adjacent_flanks",
+      "start0": 112,
+      "end0": 148
+    },
+    {
+      "id": "promoter",
+      "start0": 0,
+      "end0": 211
+    }
+  ],
+  "rows": 15552,
+  "profiles": 106344,
+  "raw_definition": "Fraction of unchanged reference A/T positions, excluding mutation +/-2 bp, with a retained m6A call. All selected positions must be callable in a molecule; otherwise the endpoint is missing.",
+  "strand_definition": "Reference A = adenine on genomic forward strand; reference T = adenine on genomic reverse strand. Alignment strand is a separate sensitivity split.",
+  "missingness": "Per-barcode outcomes average available molecules, then barcodes equally. Missing modification channels and skipped question-mark sites are never zeros.",
+  "sampling": "WT primary: fixed 10,000-barcode sample/all its eligible molecules. Genotype-only WT: independent deterministic 1/32 read sample. All candidate molecules retained.",
+  "inference": "Post hoc descriptive sensitivity analyses, no new significance or confidence intervals. WT subset distributions describe sampling scale only."
+}

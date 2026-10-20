@@ -1,7 +1,14 @@
 # Descriptive landscape workflow
 
-The latest [variant browser](../results/rep3_landscape_20261018/atlas_navigation_20261019/index.html)
-adds previous/next arrows and synchronized published-functional-effect lollipops.
+The latest [variant browser](../results/rep3_landscape_20261018/atlas_biology_20261020/index.html)
+uses independently verified GRCh38 coordinates, with previous/next arrows and
+synchronized published-functional-effect lollipops. It now also adds sequence,
+A/T opportunities, motif candidates and barcode sensitivity checks; see
+[annotated atlas usage](biology_atlas_usage.md). See the
+[genomic audit and reproduction commands](genomic_coordinate_audit_20261020.md).
+The atlas builder now requires a complete coordinate audit; generate it first
+and supply `--config coordinate_audit=/path/to/audit.json` to Snakemake when
+using a path other than the default completed audit.
 See [navigation and read-count normalization](landscape_navigation_20261019.md).
 The original analysis and atlas below remain archived as the initial landscape.
 

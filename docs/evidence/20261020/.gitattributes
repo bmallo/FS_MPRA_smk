@@ -1,0 +1,5 @@
+# Frozen input/result bytes: preserve CRLF and trailing empty TSV fields.
+# Those bytes are covered by manifest checksums, not source-code formatting.
+*.tsv -text whitespace=-blank-at-eol
+*.csv -text whitespace=-blank-at-eol
+ucsc_hg38_chr19_11089230_11089548.json -text whitespace=-blank-at-eol

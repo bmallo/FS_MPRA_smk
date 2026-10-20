@@ -1,0 +1,55 @@
+Handoff regression checks, 2026-10-20
+
+All tests used one BLAS/OpenMP thread in verified Slurm allocation 41830288.
+Full Python discovery: 124 tests ran, OK, one optional upstream integration skipped.
+The six barcode benchmark tests then passed separately with PACYBARA_CHECKOUT set, including that integration.
+Pinned upstream: b5e39bd0e2731283eee2ee88c0e0852ddf83fe33 (clean checkout).
+
+Python regression
+s.......................Exact barcode support aggregated
+............../mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/scipy/stats/_axis_nan_policy.py:531: RuntimeWarning: Precision loss occurred in moment calculation due to catastrophic cancellation. This occurs when the data are nearly identical. Results may be unreliable.
+  res = hypotest_fun_out(*samples, **kwds)
+.../mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:64: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+  prop = Group((name + Suppress("=") + comma_separated(value)) | oneOf(_CONSTANTS))
+/mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+  parse = parser.parseString(pattern)
+/mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89: PyparsingDeprecationWarning: 'resetCache' deprecated - use 'reset_cache'
+  parser.resetCache()
+/mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/_mathtext.py:45: PyparsingDeprecationWarning: 'enablePackrat' deprecated - use 'enable_packrat'
+  ParserElement.enablePackrat()
+WARNING:matplotlib.style.core:In /mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/mpl-data/stylelib/classic.mplstyle: 'parseString' deprecated - use 'parse_string'
+WARNING:matplotlib.style.core:In /mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/mpl-data/stylelib/classic.mplstyle: 'resetCache' deprecated - use 'reset_cache'
+...........WT A/A n=50: 2 draws, 19 reference permutations
+WT A/A n=100: 2 draws, 19 reference permutations
+WT A/A n=400: 2 draws, 19 reference permutations
+WT A/A n=1000: 2 draws, 19 reference permutations
+simulation_00: 2 draws
+.....................................Exact barcode support aggregated
+.Extracted 1 primary plasmids (1 chunks)
+Extracted 2 primary plasmids (2 chunks)
+Extracted 3 primary plasmids (3 chunks)
+Exact barcode support aggregated
+Extracted 1 primary plasmids (1 chunks)
+Extracted 2 primary plasmids (2 chunks)
+..Exact barcode support aggregated
+...Exact barcode support aggregated
+.............................
+----------------------------------------------------------------------
+Ran 124 tests in 11.930s
+
+OK (skipped=1)
+
+Optional pinned Pacybara integration
+......
+----------------------------------------------------------------------
+Ran 6 tests in 0.418s
+
+OK
+
+Biology atlas DOM/canvas
+Viewer checks passed: genomic axes/alleles/search, all 633 navigation steps, wrapping, keyboard focus, synchronized lollipop/source selection, point clicks, filters, and missingness.
+
+Raw viewer DOM/canvas
+{"complete":true,"variant_scenario_region_combinations":1944,"canvas":"mocked; no browser visual QA"}
+
+DOM/canvas tests are not full browser visual QA. No new scientific inference was run for this handoff.

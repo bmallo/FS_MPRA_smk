@@ -1,0 +1,109 @@
+{
+  "complete": true,
+  "original_measurements_unchanged": true,
+  "counts": {
+    "profiles": 1070192,
+    "region_effects": 15850,
+    "variants": 634,
+    "wt_boundaries": 1509
+  },
+  "genomic_bases": 211,
+  "sources": [
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_landscape_20261018/atlas_genomic_20261019/atlas.json",
+      "bytes": 24369454,
+      "mtime_ns": 1792425115567667027,
+      "sha256": "8c84d92e45531d56c118da090a31e9b35fd05f59930931a1ddd6ea6ddb082387"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_landscape_20261018/atlas_navigation_20261019/atlas.json",
+      "bytes": 24268146,
+      "mtime_ns": 1792424423680353202,
+      "sha256": "0a2f57c7fdf32e58fbc127f222f5637ba3f719f6e9de13289e13156b04a094de"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_landscape_20261018/atlas_genomic_20261019/audit.json",
+      "bytes": 10150,
+      "mtime_ns": 1792425118469858000,
+      "sha256": "757d0888c5204f004368d70fe4396559e6b820e5c6fd93da219fce0b8916fbf9"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_landscape_20261018/atlas_genomic_20261019/genomic_profiles.tsv.gz",
+      "bytes": 16938086,
+      "mtime_ns": 1792425114849461689,
+      "sha256": "ce79fd9d42ed11fe01751d3b4788b632386900132b7175318c4abb6eeea27754"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_landscape_20261018/landscape/profiles.tsv.gz",
+      "bytes": 11751636,
+      "mtime_ns": 1792422927932691769,
+      "sha256": "429510d6f91859f31f25c49e08378a2b158d143b8dd77315fed911fea6d2c12a"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_landscape_20261018/atlas_genomic_20261019/region_effects.tsv.gz",
+      "bytes": 444375,
+      "mtime_ns": 1792425102387728749,
+      "sha256": "df576696ed7f94b6227ddcc8fc36c83dfc95bdc31e830b0b9221206bbaab675d"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_landscape_20261018/atlas_navigation_20261019/region_effects.tsv.gz",
+      "bytes": 435452,
+      "mtime_ns": 1792424423017104332,
+      "sha256": "0a164b2b92c7c5bdab40bd692b62a1a9e6dff2b30e02088e0bbdb7ccf3dc77c5"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_landscape_20261018/atlas_genomic_20261019/variant_summary.tsv",
+      "bytes": 493074,
+      "mtime_ns": 1792425102153980000,
+      "sha256": "75154f4978832a0b58370f577a8f28e83e66905fc8a0d7b3664465307ca22f0a"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_landscape_20261018/atlas_navigation_20261019/variant_summary.tsv",
+      "bytes": 468315,
+      "mtime_ns": 1792424422828329000,
+      "sha256": "f70df7f0ceae797c81e253293376255695a3a5f6f4504d99c0858b55b54c3ab2"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_landscape_20261018/atlas_genomic_20261019/wt_tf_boundaries_genomic.tsv",
+      "bytes": 127097,
+      "mtime_ns": 1792425114862844000,
+      "sha256": "483aea92c32dcbdef5c74d24f9025b62eb4be227a448569477d0d7eadd14d231"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_landscape_20261018/landscape/wt_tf_boundaries.tsv",
+      "bytes": 50060,
+      "mtime_ns": 1792422928095845000,
+      "sha256": "8942f441a6858174a43ca82490e0e53957092398d061e56dda3c42642ee81d4c"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_landscape_20261018/atlas_genomic_20261019/functional_correlations.tsv",
+      "bytes": 501,
+      "mtime_ns": 1792425102388619000,
+      "sha256": "d711e2f29b13c072f3c95199e319413249c20e1e373b5fc4937a867c3072dc65"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_landscape_20261018/atlas_navigation_20261019/functional_correlations.tsv",
+      "bytes": 501,
+      "mtime_ns": 1792424423017996000,
+      "sha256": "d711e2f29b13c072f3c95199e319413249c20e1e373b5fc4937a867c3072dc65"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_landscape_20261018/atlas_genomic_20261019/base_coordinates.tsv",
+      "bytes": 8331,
+      "mtime_ns": 1792425102389586000,
+      "sha256": "045c88210bc268f5503ce5871e9224db25febc15ffa0673040a472012f40add5"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_landscape_20261018/atlas_genomic_20261019/wt_regions.bed",
+      "bytes": 1018,
+      "mtime_ns": 1792425114863328000,
+      "sha256": "fc171536f91d9ea8244f08339331b21b485ac9af35c931f861b384e9e0d04d80"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/tools/validate_genomic_atlas.py",
+      "bytes": 4947,
+      "mtime_ns": 1792425141673025000,
+      "sha256": "fc39fe4fa325fbca81d1171b6ef6e85c03847be8a293e31a15cd762a367ec2a7"
+    }
+  ]
+}
