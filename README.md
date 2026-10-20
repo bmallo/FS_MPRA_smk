@@ -7,6 +7,11 @@ instructions and untested next steps. [Compact evidence tables and provenance](d
 are included in Git; full BAMs, ledgers and generated dashboards remain on Klone.
 **No replicate-3 Fiber-seq variant significance has been released.**
 
+**Then read:** [Independent review and recommended direction — 20 October 2026](docs/INDEPENDENT_REVIEW_20261020.md).
+It re-checks the evidence snapshot, finds a robust library-level link between promoter
+architecture and published activity, and recommends a library-wide naked-DNA control
+plus a same-condition replicate before any per-variant claims or construct panel.
+
 > **Raw-BAM redesign:** start with the new [processing workflow](docs/processing_workflow.md)
 > for replicate 3. It produces molecule QC/features, barcode assignments and
 > coverage, and an MPRAsnakeflow-compatible assignment export. Barcode correction
