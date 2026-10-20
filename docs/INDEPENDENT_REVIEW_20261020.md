@@ -108,6 +108,8 @@ The reports summarize WT A/A rejection rates over both directions. Split by dire
 
 ### Analysis on existing replicate-3 data (no new experiments)
 
+Steps 2–4 are implemented as the [site-methylation stage](site_methylation_usage.md) (`workflow/site_methylation.smk`). It uses near-unmethylated and heavily methylated molecules from this reaction as proxy controls, and its interpretation rules are fixed before it is run.
+
 1. **Freeze a small confirmatory family now, before new data.**
    - Elements: Repeat 1, Repeat 2/SRE-1 core, Repeat 3, P1 core.
    - Endpoints: distal-adjusted MSP, 85–250-bp protection, and local per-site m6A at unchanged A/T sites.

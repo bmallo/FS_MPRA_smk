@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from tools.independent_review_20261020 import circular_shift, split_half
+from fsmpra.library_stats import circular_shift, split_half
 
 
 class IndependentReviewTests(unittest.TestCase):

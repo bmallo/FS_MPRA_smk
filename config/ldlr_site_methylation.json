@@ -1,0 +1,38 @@
+{
+  "schema_version": "fsmpra.site_methylation_config.v1",
+  "features": "results/rep3_heterogeneity_20261017/features/molecule_heterogeneity.tsv.gz",
+  "feature_audit": "results/rep3_heterogeneity_20261017/features/audit.json",
+  "catalog": "results/rep3_ledger_20261016/catalog/catalog.json",
+  "footprint_contract": "config/rep3_existing_footprints.json",
+  "published_activity": {
+    "LDLR": "docs/evidence/20261020/published_GRCh38_LDLR.tsv",
+    "LDLR_2": "docs/evidence/20261020/published_GRCh38_LDLR.2.csv"
+  },
+  "output_dir": "results/rep3_site_methylation_20261021",
+  "processing_python": "/mmfs1/home/bmallo/miniconda3/bin/python",
+  "analysis": {
+    "cohort": "eligible",
+    "baseq_min": 20,
+    "ml_min": 128,
+    "unmethylated_max_distal_m6a": 0.01,
+    "methylated_min_distal_m6a": 0.6,
+    "sensitivity_thresholds": [[0.02, 0.7], [0.005, 0.5]],
+    "labeling_strata": 10,
+    "min_class_molecules": 30,
+    "min_stratum_molecules": 10,
+    "bootstrap": 200,
+    "aa_draws": 200,
+    "seed": 20261021,
+    "mask_radius": 2,
+    "windows": {"near": [1, 2], "local": [3, 10], "flank": [11, 30]},
+    "regions0": {
+      "WT_P1": [31, 51], "WT_P2": [53, 73], "WT_P3": [93, 113], "WT_P4": [128, 148],
+      "adjacent_143_150": [122, 130], "P1_core": [33, 42],
+      "Repeat1_Sp1": [68, 84], "Repeat2_SRE1": [103, 119], "Repeat3_Sp1": [119, 135]
+    },
+    "primary_endpoints": ["local:A_norm", "flank:A_norm", "msp_C_std", "nuc_85_250_C_std"],
+    "kernel_max_offset": 40,
+    "figures": true,
+    "interpretation": "Classes use distal retained m6A only. U and M are same-reaction proxies for unmethylated and near-saturated naked plasmids, not separately prepared controls. Thresholds are fixed before viewing variant effects; sensitivity runs reuse the same extraction."
+  }
+}

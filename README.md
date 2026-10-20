@@ -11,6 +11,9 @@ are included in Git; full BAMs, ledgers and generated dashboards remain on Klone
 It re-checks the evidence snapshot, finds a robust library-level link between promoter
 architecture and published activity, and recommends a library-wide naked-DNA control
 plus a same-condition replicate before any per-variant claims or construct panel.
+Its analysis steps on existing data are implemented in the
+[site-methylation stage](docs/site_methylation_usage.md) (per-site m6A for all SNVs,
+normalized by same-reaction unmethylated/heavily methylated proxy controls).
 
 > **Raw-BAM redesign:** start with the new [processing workflow](docs/processing_workflow.md)
 > for replicate 3. It produces molecule QC/features, barcode assignments and
