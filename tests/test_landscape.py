@@ -1,10 +1,17 @@
 import json
 import unittest
 import numpy as np
-from fsmpra.landscape import category, decode_calls, state_code, union, reconcile
+from fsmpra.landscape import category, decode_calls, state_code, union, reconcile, fractions, number
 
 
 class LandscapeTests(unittest.TestCase):
+    def test_zero_coverage_is_distinct_from_missing_variant(self):
+        result=fractions(np.array([0.,0.,1.]),np.array([2,0,2]))
+        self.assertEqual(result[0],0)
+        self.assertTrue(np.isnan(result[1]))
+        self.assertIsNone(number(result[1]))
+        self.assertEqual(result[2],.5)
+
     def row(self, tf=None, nuc=None, msp=None):
         return {k+'_ref_calls0':json.dumps(v or []) for k,v in [('tf',tf),('nuc',nuc),('msp',msp)]}
 

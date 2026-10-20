@@ -16,6 +16,15 @@ START, END = 1234, 1445
 LENGTH = END - START
 
 
+def fractions(numerator, denominator):
+    numerator, denominator = np.broadcast_arrays(numerator, denominator)
+    return np.divide(numerator, denominator, out=np.full(numerator.shape, np.nan), where=denominator > 0)
+
+
+def number(value):
+    return float(value) if np.isfinite(value) else None
+
+
 def category(kind, length):
     if type(length) is not int or length < 1:
         raise ValueError('Invalid original query length')
@@ -135,7 +144,7 @@ def run(config, output=None):
         raise ValueError('Incomplete barcode metadata')
     nbarcodes = np.bincount(bvariant, minlength=len(variants))
     nmolecules = np.bincount(bvariant, weights=depths, minlength=len(variants)).astype(np.int64)
-    if nbarcodes[wi] != 268283 or nmolecules[wi] != 985264 or np.any(nbarcodes == 0):
+    if nbarcodes[wi] != 268283 or nmolecules[wi] != 985264:
         raise ValueError('WT or variant cohort mismatch')
     diff = np.zeros((len(variants), len(TRACKS), LENGTH+1), dtype=float)
     mdiff = np.zeros_like(diff, dtype=np.int64)
@@ -200,23 +209,24 @@ def run(config, output=None):
     coverage_sum = np.cumsum(diff, axis=2)[:, :, :LENGTH]
     mcoverage_sum = np.cumsum(mdiff, axis=2)[:, :, :LENGTH]
     raw_error = reconcile(counts, depths, bvariant, coverage_sum[:, [0, 7], :])
-    coverage = coverage_sum / nbarcodes[:, None, None]
-    mcoverage = mcoverage_sum / nmolecules[:, None, None]
-    if np.min(coverage) < -1e-10 or np.max(coverage) > 1+1e-10 or np.any(mcoverage_sum < 0):
+    coverage = fractions(coverage_sum, nbarcodes[:, None, None])
+    mcoverage = fractions(mcoverage_sum, nmolecules[:, None, None])
+    if np.nanmin(coverage) < -1e-10 or np.nanmax(coverage) > 1+1e-10 or np.any(mcoverage_sum < 0):
         raise ValueError('Invalid coverage')
     coverage = np.clip(coverage, 0, 1)
-    p = presence / nbarcodes[:, None]
+    p = fractions(presence, nbarcodes[:, None])
     if np.any(coverage.mean(axis=2) > p + 1e-10) or np.any(p > 1+1e-10):
         raise ValueError('Coverage/presence conservation failure')
-    state_fractions = states / nbarcodes[:, None]
-    if not np.allclose(state_fractions.sum(axis=1), 1, atol=1e-10, rtol=0) or not np.array_equal(mstates.sum(axis=1), nmolecules):
+    state_fractions = fractions(states, nbarcodes[:, None])
+    if not np.allclose(state_fractions[nbarcodes > 0].sum(axis=1), 1, atol=1e-10, rtol=0) or not np.array_equal(mstates.sum(axis=1), nmolecules):
         raise ValueError('State conservation failure')
     audit = dict(schema_version='fsmpra.landscape.v1', complete=True, descriptive_only=True,
                  sample_id=cfg['sample_id'], interval=[START, END], tracks=list(TRACKS),
                  counts=dict(joined_rows=total, eligible_molecules=eligible, barcodes=len(depths),
-                             wt_barcodes=int(nbarcodes[wi]), wt_molecules=int(nmolecules[wi]), variants=len(variants)),
+                             wt_barcodes=int(nbarcodes[wi]), wt_molecules=int(nmolecules[wi]), variants=len(variants),
+                             variants_without_data=int(np.sum(nbarcodes == 0))),
                  reconciliation_max_raw_weight_error=raw_error,
-                 reconciliation_fraction_error_upper_bound=raw_error / int(nbarcodes.min()),
+                 reconciliation_fraction_error_upper_bound=raw_error / int(nbarcodes[nbarcodes > 0].min()),
                  wt_multi_interval_small_tf_calls=wt_multi_interval_tf, sources=sources,
                  limitations=['Observed annotation/length categories, not protein identities.',
                               'Primary interval is the 211-bp element; original lengths can extend outside it.',
@@ -227,8 +237,8 @@ def run(config, output=None):
         np.savez_compressed(out/'landscape.npz', variant_ids=np.array([v['variant_id'] for v in variants]),
                             source_variants=np.array([v['source_variant'] for v in variants]),
                             tracks=np.array(TRACKS), coverage=coverage, molecule_coverage=mcoverage,
-                            presence=p, molecule_presence=mpresence/nmolecules[:, None],
-                            states=state_fractions, molecule_states=mstates/nmolecules[:, None],
+                            presence=p, molecule_presence=fractions(mpresence,nmolecules[:, None]),
+                            states=state_fractions, molecule_states=fractions(mstates,nmolecules[:, None]),
                             n_barcodes=nbarcodes, n_molecules=nmolecules)
         write_table(out/'variants.tsv', variants, list(variants[0]))
         def profile_rows():
@@ -237,8 +247,8 @@ def run(config, output=None):
                     for pos in range(LENGTH):
                         yield dict(variant_id=v['variant_id'], source_variant=v['source_variant'], track=track,
                                    relative_pos0=pos, reference_pos0=START+pos,
-                                   mean_equal_barcode=float(coverage[vi, ti, pos]),
-                                   mean_molecule_weighted=float(mcoverage[vi, ti, pos]),
+                                   mean_equal_barcode=number(coverage[vi, ti, pos]),
+                                   mean_molecule_weighted=number(mcoverage[vi, ti, pos]),
                                    n_barcodes=int(nbarcodes[vi]), n_molecules=int(nmolecules[vi]))
         fields=['variant_id','source_variant','track','relative_pos0','reference_pos0',
                 'mean_equal_barcode','mean_molecule_weighted','n_barcodes','n_molecules']
@@ -248,14 +258,14 @@ def run(config, output=None):
             base=dict(variant_id=v['variant_id'], source_variant=v['source_variant'],
                       n_barcodes=int(nbarcodes[vi]), n_molecules=int(nmolecules[vi]))
             for ti, track in enumerate(TRACKS):
-                categories.append(dict(base, track=track, mean_coverage=float(coverage[vi,ti].mean()),
-                                       any_call_fraction=float(p[vi,ti]),
-                                       molecule_mean_coverage=float(mcoverage[vi,ti].mean()),
-                                       molecule_any_call_fraction=float(mpresence[vi,ti]/nmolecules[vi])))
+                categories.append(dict(base, track=track, mean_coverage=number(coverage[vi,ti].mean()),
+                                       any_call_fraction=number(p[vi,ti]),
+                                       molecule_mean_coverage=number(mcoverage[vi,ti].mean()),
+                                       molecule_any_call_fraction=number(mpresence[vi,ti]/nmolecules[vi]) if nmolecules[vi] else None))
             for state in range(8):
                 state_rows.append(dict(base, state_code=state, tf_small=bool(state&1), nuc_85_250=bool(state&2),
-                                       nuc_gt250=bool(state&4), fraction=float(state_fractions[vi,state]),
-                                       molecule_fraction=float(mstates[vi,state]/nmolecules[vi]),
+                                       nuc_gt250=bool(state&4), fraction=number(state_fractions[vi,state]),
+                                       molecule_fraction=float(mstates[vi,state]/nmolecules[vi]) if nmolecules[vi] else None,
                                        state_molecules=int(mstates[vi,state])))
         write_table(out/'categories.tsv', categories, list(categories[0]))
         write_table(out/'states.tsv', state_rows, list(state_rows[0]))

@@ -39,6 +39,14 @@
 > See the [completed expanded calibration](docs/rep3_heldout_calibration_20261018.md):
 > permutation testing improves false-positive control, but sparse effects and
 > confidence intervals still need calibration before variant significance is released.
+> The [WT landscape and variant biology report](docs/rep3_landscape_20261019.md)
+> now categorizes protection by original call length and compares all designed
+> SNVs with WT. Open the [interactive landscape atlas](results/rep3_landscape_20261018/atlas_navigation_20261019/index.html)
+> for profiles, mutation maps, molecule combinations and published functional context.
+> The [variant browser update](docs/landscape_navigation_20261019.md) adds arrow
+> navigation and synchronized functional-effect lollipops above each comparison.
+> These are descriptive candidate patterns; additional confidence audits are deferred.
+> See [landscape workflow usage](docs/landscape_usage.md) to reproduce the analysis.
 
 > **Redesign pilot:** the new, replicate-aware LDLR implementation is available
 > through `python -m fsmpra`. See [pilot usage and limitations](docs/pilot_usage.md)
