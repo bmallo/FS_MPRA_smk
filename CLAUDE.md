@@ -2,139 +2,83 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## What This Repository Is
+## Start here
 
-A **Fiber-seq MPRA (Massively Parallel Reporter Assay)** Snakemake pipeline. It processes PacBio Fiber-seq reads from a saturation mutagenesis plasmid library to measure how single nucleotide variants affect chromatin architecture (protein footprints, nucleosome positioning).
+1. `docs/PROJECT_HANDOFF_20261020.md` — the current scientific and implementation synthesis. Read it first.
+2. `docs/INDEPENDENT_REVIEW_20261020.md` — a re-check of the evidence snapshot and the recommended direction. It says to build on the data foundation, but to stop the per-variant × 20-bp-window significance program in its current form.
 
-## Directory Structure
+Other dated reports in `docs/` record earlier decisions and may propose steps that were later completed. Where they disagree with the handoff, the handoff wins. **No replicate-3 Fiber-seq variant effect has been released as statistically significant.**
 
-```
-workflow/
-  Snakefile                  # Pipeline DAG (filter -> variants -> analysis)
-  scripts/
-    common.py                # Shared utilities, constants, analysis core
-    01_filter_reads.py       # Filter raw BAM, separate genomic/plasmid, add nc/bn tags
-    02_call_variants.py      # Tag reads with variant calls and barcode clusters
-    03_analyze_library.py    # Library-scale null calibration and footprint analysis
-config/
-  config.yaml                # Sample sheet and pipeline parameters
-extras/
-  fs_mpra_browser.py         # Interactive Dash browser (reads HDF5 from stage 3)
-  mpra_analysis_qc.py        # Single-variant deep-dive analysis
-  MPRA_qc_visualization.py   # PDF report from QC HDF5
-  mpra_library_browser.ipynb # Notebook for library exploration
-  fs_mpra_tf_annotate.py     # P4.1: motif -> candidate-TF (JASPAR+HOCOMOCO)
-  data/                      # Bundled PWM DBs (JASPAR 2024, HOCOMOCO v12)
-results/{sample}/            # Created by Snakemake at runtime
-  filtered/                  # Stage 1 output
-  variants/                  # Stage 2 output
-  analysis/                  # Stage 3 output
-```
+## What this repository is
 
-## Running the Pipeline
+Analysis code for an LDLR promoter saturation-mutagenesis plasmid library (plasmid MPRA) measured by PacBio Fiber-seq. The goal is to relate single-base substitutions to small (TF-sized) protection, promoter accessibility (MSPs) and published functional activity. The highest-priority data set is HepG2 replicate 3. Its data live on Klone; exact paths are in handoff §1/§8 and in `config/*.json`.
 
-### Via Snakemake (recommended)
-
-Edit `config/config.yaml` to define samples and parameters, then:
-
-```bash
-snakemake --cores 8
-snakemake --cores 8 -n          # dry run
-```
-
-### Standalone (for development/debugging)
-
-All pipeline scripts are independently runnable. They share utilities via `common.py` (imported via `sys.path`).
-
-```bash
-# Stage 1 — Filter reads, output single merged plasmid BAM
-python workflow/scripts/01_filter_reads.py input.bam \
-    --reference ref.fa --output-dir out/ --sample-name MySample
-
-# Stage 2 — Tag with variant calls and barcode clusters
-python workflow/scripts/02_call_variants.py filtered.plasmid.bam ref.fa \
-    --promoter-region PlasmidName:3184-3501 \
-    --barcode-region 3502-3516 \
-    --output-dir out/ --sample-name MySample
-
-# Stage 3 — Library-scale analysis
-python workflow/scripts/03_analyze_library.py \
-    --bam tagged.bam --output-dir out/ --sample-name MySample \
-    --min-reads 50 --threads 8
-
-# Interactive browser (post-pipeline)
-python extras/fs_mpra_browser.py --h5 results.h5 --port 8050
-```
-
-### CLI conventions
-
-- All flags use hyphens: `--output-dir`, `--sample-name`
-- Every pipeline script accepts `-o/--output-dir`, `-n/--sample-name`, `-v/--verbose`, `-q/--quiet`
-- Regions: `CHROM:START-END` (e.g., `PlasmidName:3184-3501`) or `START-END` when chrom is implied
-
-## Pipeline Architecture
-
-### Data flow
+## Current code
 
 ```
-Raw Fiber-seq BAM
-    -> 01_filter_reads.py    -> {sample}.plasmid.bam  (adds nc, bn tags)
-    -> 02_call_variants.py   -> {sample}.tagged.bam   (adds PV, VC, PR, BK, CS tags)
-    -> 03_analyze_library.py -> {sample}.h5 + _summary.tsv + _motifs.tsv
-                                + _cooccupancy.tsv + .pdf
+fsmpra/          # Current package: python -m fsmpra <process|catalog|molecules|measure|plot|dashboard|compare>
+                 #   or python -m fsmpra.<module> (ledger, footprint_join, statistics, heterogeneity, ...)
+workflow/*.smk   # Current Snakemake workflows, one per stage: snakemake -s workflow/<name>.smk
+config/*.json    # Per-workflow configs (ldlr_*.json, rep3_existing_footprints.json)
+tools/           # Current: summarize_*, validate_*, render_*, plot_*, audit_rep3_caller_provenance,
+                 #   inspect_heterogeneity_annotations, package_handoff_evidence, independent_review_*
+dashboard/       # Viewer templates/JS; generated HTML goes under results/ (Git-ignored)
+tests/           # unittest suite for fsmpra and current tools (+ Node checks for the viewers)
+docs/evidence/   # Committed evidence snapshot (20261020) and independent-review tables
 ```
 
-Stage 3 also runs the **TF binding-motif layer** (Phase 2): with an
-optional `--reference` FASTA it annotates significant clusters with
-DNA + sign-consistency + causal-variant distance, then aggregates
-across independent SNVs into motif calls (`motifs` HDF5 group +
-`_motifs.tsv`). Gated on the calibrated cross-variant FDR.
+Entry points in dependency order (from handoff §8; usage docs are in `docs/`):
 
-Optionally (`--enable-co-occupancy`, default off) Stage 3 runs the
-**protein co-occupancy module** (Phase 3 / §2.4–2.5): for each
-site 1 = a disrupted motif, test whether distal site-2 footprint
-changes exceed the WT `P(O2|O1)` channel across the many independent
-SNVs disrupting site 1, with a directional-consistency call gate and
-the §2.5 secondary-mutation control; `cooccupancy` HDF5 group +
-`_cooccupancy.tsv`. WT-vs-WT calibrated (P3.6, exact FDR) but
-conservative power on sparse data — read the `underpowered`/`mde`
-columns (a null ≠ no dependency). Calibrate per dataset with
-`tools/cooccupancy_calibration.sbatch` before trusting calls.
+| Stage | Workflow / code | Instructions |
+|---|---|---|
+| Original pilot catalog / published function joins | `workflow/pilot.smk`, `fsmpra.catalog` | `pilot_usage.md` |
+| New raw BAM through features | `workflow/process.smk`, `config/ldlr_processing.json` | `processing_workflow.md`; only a bounded smoke test was completed end-to-end |
+| Existing-alignment complete ledger | `workflow/ledger.smk`, `fsmpra.ledger` | `rep3_ledger.md`; the saved run config is in the evidence bundle |
+| Reuse historical calls | `workflow/footprint_join.smk` | `footprint_join.md` |
+| Barcode arrays, diagnostic inference/calibration | `workflow/statistics.smk` | `statistics_usage.md` |
+| Molecule heterogeneity and barcode summaries | `workflow/heterogeneity.smk` | `heterogeneity_usage.md` |
+| WT sampled raw calls, quality, first benchmark | `workflow/footprint_quality.smk` | `footprint_quality_usage.md` |
+| Large WT presence/coverage and calibration | `workflow/heldout_calibration.smk` | `heldout_calibration_usage.md` |
+| Landscape and genomic atlas | `workflow/landscape.smk`, `fsmpra.genomic_coordinates` | `landscape_usage.md`, `genomic_coordinate_audit_20261020.md` |
+| Motifs and barcode audits | `fsmpra.biology`, `tools.render_biology_atlas` | `rep3_candidate_biology_20261020.md`, `biology_atlas_usage.md` |
+| Candidate raw extraction/sensitivities/viewer | `fsmpra.raw_candidate_extract`, `fsmpra.raw_candidate_summary`, `tools.render_raw_candidates` | `rep3_raw_candidates_20261020.md` |
 
-### BAM tags that flow between stages
+`workflow/compare.smk` (`fsmpra compare`) compares existing pilot measurements across HepG2 runs with their reaction conditions kept explicit. It does not pool them (`condition_comparison_20261014.md`). Later stages read dated upstream paths under `results/`, so each workflow's config names the exact inputs it was run on.
 
-| Tag | Set by | Meaning |
-|-----|--------|---------|
-| `nc` | 01_filter_reads | Nucleosome count per read |
-| `bn` | 01_filter_reads | Basepairs per nucleosome |
-| `ns`/`nl`/`nq` | upstream HMM caller | Footprint starts/lengths/quality (array, query coords) |
-| `PV` | 02_call_variants | Variant ID JSON array or `"WT"` |
-| `VC` | 02_call_variants | Variant count (0=WT, 1=single, 2+=multi) |
-| `PR` | 02_call_variants | Raw (pre-cluster) variant call |
-| `BK` | 02_call_variants | Barcode cluster centroid |
-| `CS` | 02_call_variants | Cluster size |
+**Coordinates:** reference `LDLR_MPRA_NotI` (4,647 bp). The mutable element is plasmid `[1234,1445)` = oligo 21–231 = GRCh38 chr19:11089285–11089495 (+), so `genomic_pos1 = 11089264 + oligo_pos1`. The barcode is `[3294,3309)`. Displayed positions are 1-based inclusive; arrays and BED files are 0-based half-open. Never give genomic coordinates to backbone or barcode bases.
 
-### Footprint size bins (defined in `common.py`)
+## Legacy code (historical, not revalidated)
 
-| Bin | Range | Biological interpretation |
-|-----|-------|--------------------------|
-| `sub_TF` | 10-19 bp | Sub-TF |
-| `TF` | 20-40 bp | Transcription factor |
-| `PIC` | 41-80 bp | Pre-initiation complex |
-| `NUC` | 81+ bp | Nucleosome |
+The following predate the barcode-aware cohort, and their calibration claims were **not revalidated** (handoff §2, §8):
 
-## Key Design Patterns
+- `workflow/Snakefile`, `config/config.yaml` and `workflow/scripts/`: `01_filter_reads` → `02_call_variants` → `03_analyze_library`, `common.py`, HDF5 output, the empirical-null, motif and co-occupancy layers.
+- `extras/*.py` and the notebook (Dash/HDF5 browsers, QC and TF annotation).
+- The legacy `tools/`: `*marginal*`, `*cooccupancy*` (including `tools/test_cooccupancy_*`), `wt_vs_wt_calibration.py`, `profile_*`, `phase0_benchmark.py`, `verify_null_equivalence.py`, `calibration_sweep/` and the `*.sbatch` files.
+- The legacy docs: `statistical_framework.md`, `sensitivity_and_power.md`, `stage3_redesign_plan.md` and `dashboard_design_prompt.md`.
 
-**Shared utilities in `common.py`**: Constants, tag parsing, `ReadData` class, BAM parsing, NC-matched subsampling, shared memory helpers, cluster detection, and null calibration are all centralized. Pipeline scripts import from it; `extras/mpra_analysis_qc.py` should also import from it (migration pending).
+Keep them for history. Don't treat them as the pipeline, extend them by default, or present their output as an independent reproduction. The Pixi `run` task (`snakemake --cores 8`) and `dry-run` task target this legacy Snakefile; don't use them.
 
-**Empirical null calibration**: WT reads are subsampled at a grid of coverage depths to build a null distribution. Each variant is tested against the nearest null by coverage. This avoids parametric assumptions.
+`extras/data/` is still used. `fsmpra.biology` reads the JASPAR 2024 and HOCOMOCO v12 files there. `fsmpra.genomic_coordinates` reconciles the legacy `LDLR_mpra_scores.tsv`, which needs `11092732 - legacy_position` and complemented alleles. Complementing alleles does not negate activity.
 
-**Two-pass barcode clustering** (02_call_variants.py): Pass 1 collects all barcodes; pass 2 clusters by Levenshtein edit distance using neighborhood hashing, then calls consensus variants per cluster.
+**Legacy definitions:** the BAM tags `nc`/`bn` (set by `01_filter_reads`) and `PV`/`VC`/`PR`/`BK`/`CS` (set by `02_call_variants`), and the `ns`/`nl`/`nq` caller tags, are used only by the legacy scripts. Current code reads FiberHMM annotations from `MA`/`AQ` (`fsmpra.footprint_join`). The `common.py` footprint bins (`sub_TF` 10–19, `TF` 20–40, `PIC` 41–80, `NUC` 81+ bp) are legacy too. Current analyses use small calls of 10–60 bp and nucleosome-sized protection of 85–250 bp, with lengths classified before clipping to the element.
 
-**HDF5 interchange format**: Stage 3 writes HDF5 storing null calibration data and per-variant results. The browser and visualization scripts read from these files.
+## Operational rules
 
-## Dependencies
+- Run substantive work only inside a verified Slurm allocation. Size threads and memory from the allocation and the per-stage resource declarations, never from visible node totals. Use node-local scratch for temporary SQLite/BAM work. Set threads to 1:
+  ```bash
+  export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_MAX_THREADS=1
+  export MPLCONFIGDIR=/tmp/fsmpra-matplotlib
+  ```
+- Outputs are atomic and refuse to overwrite (`fsmpra.io.atomic_output` / `new_output` raise `FileExistsError`). Use a new directory and a copied config. Changing `--output` alone does not retarget the downstream stages.
+- Frozen-source guards check hashes and/or path/size/mtime, and a fresh checkout changes mtimes. Never disable a guard or edit a historical audit to force a pass; recreate the audit from verified inputs instead.
+- Never use `pysam.modified_bases` on these mixed MM/ML tags, because it can segfault. Use the custom parsers in `fsmpra` (`processing`, `heterogeneity`, `footprint_quality`, `raw_candidate_extract`). They consume all MM groups with their matching ML columns, handle reverse orientation and preserve missing channels and unknown skipped sites.
+- Missing measurements are not zeros. A present, evaluated-empty annotation track is zero. An absent annotation, a variant without supported molecules, or a known site without a retained call is missing.
+- Tests: `python -m unittest discover -s tests -p 'test_*.py'` (with the thread settings above). Software agreement does not establish biological validity.
 
-**Pipeline**: `pysam`, `numpy`, `scipy`, `h5py`, `matplotlib`, `seaborn`, `tqdm`, `snakemake`
+## Scientific guardrails
 
-**Browser (extras)**: `plotly`, `dash`, `pandas`
+- Don't pool different libraries or reaction conditions. HEK293T uses an older library and HepG2 a shorter element. HepG2 runs 1–2 used 10 min with 1.5 µL Hia5, while run 3 used 5 min with 3 µL. Compare them; don't combine them.
+- High-methylation molecules come from the same Fiber-seq reaction. They are not naked-DNA or protein-free controls.
+- Long nucleosome-class annotations (e.g. >1,000 bp) are unresolved protection, not single nucleosomes.
+- Don't tune filters against significance counts or agreement with functional data. Don't interpret the withheld candidate q-values as discoveries.
+- Footprint coverage is an assay measurement, not occupancy by an identified protein. Published functional statistics do not validate footprint effects.
