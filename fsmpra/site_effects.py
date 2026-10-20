@@ -387,8 +387,11 @@ def run(config, extract, output, u_max=None, m_min=None, draws=None, cohort=None
     with atomic_output(output) as out:
         write_table(out / 'effects.tsv.gz', clean(effects), fields)
         write_table(out / 'calibration_draws.tsv.gz', clean(calibration), list(calibration[0]))
-        write_table(out / 'calibration_summary.tsv', clean(calibration_summary), list(calibration_summary[0]))
-        write_table(out / 'kernel.tsv', clean(kernel_rows), list(kernel_rows[0]))
+        # Sparse smoke runs can leave these empty; an absent file means no estimable rows.
+        if calibration_summary:
+            write_table(out / 'calibration_summary.tsv', clean(calibration_summary), list(calibration_summary[0]))
+        if kernel_rows:
+            write_table(out / 'kernel.tsv', clean(kernel_rows), list(kernel_rows[0]))
         if association:
             write_table(out / 'activity_association.tsv', clean(association), list(association[0]))
         if observability:
@@ -407,7 +410,7 @@ def run(config, extract, output, u_max=None, m_min=None, draws=None, cohort=None
             primary_endpoints=spec['primary_endpoints'], windows=windows, regions0=regions, mask_radius=spec['mask_radius'], baseq_min=spec['baseq_min'], ml_min=spec['ml_min'],
             interpretation='U/M are same-reaction proxies, not prepared controls. z/p/q are only as good as the WT '
                            'pseudo-variant calibration in calibration_summary.tsv; check it per endpoint before use.'))
-        if spec.get('figures', True):
+        if spec.get('figures', True) and kernel_rows:
             figures(out, kernel_rows, calibration, effects, hist, u_max, m_min)
     print('Complete', flush=True)
 

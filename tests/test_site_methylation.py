@@ -115,6 +115,12 @@ class SiteExtractTests(unittest.TestCase):
             audit = json.loads((out / 'audit.json').read_text())
             self.assertTrue(audit['complete'])
             self.assertEqual(audit['bam_primary_rows_scanned'], 4)
+            extract_run(tmp / 'cfg.json', tmp / 'smoke', limit=2)               # smoke mode stops early
+            self.assertEqual(np.load(tmp / 'smoke' / 'scores.npy').shape, (2, 211))
+            np.testing.assert_array_equal(np.load(tmp / 'smoke' / 'scores.npy'), scores[:2])
+            self.assertFalse(json.loads((tmp / 'smoke' / 'audit.json').read_text())['complete'])
+            with self.assertRaises(FileExistsError):
+                extract_run(tmp / 'cfg.json', tmp / 'out')                       # never overwrites
 
 
 def simulate(tmp, rng, n_wt=20000, n_snv=1500, artifact=None, biology=None):
