@@ -19,6 +19,9 @@ Sp1-repeat accessibility/nucleosome changes are robust and track activity, while
 footprint candidates at A runs, including oligo 125, are dominated by an adjacent-adenine
 observability artifact. The calibrated mask-4 follow-up adds local candidates outside A runs
 (oligo 117, 56, 191) and a [revised construct panel](docs/evidence/validation_panel_v2_20261021.tsv).
+Post hoc [transcription-factor footprint evidence](docs/rep3_site_methylation_20261021.md#transcription-factor-footprint-evidence-post-hoc)
+links motif disruption, local protection and activity at the P1 core, with
+[overview and motif-site figures](docs/figures/top_hits_20261021/top_hits_overview.png).
 
 > **Raw-BAM redesign:** start with the new [processing workflow](docs/processing_workflow.md)
 > for replicate 3. It produces molecule QC/features, barcode assignments and

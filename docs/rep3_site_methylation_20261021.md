@@ -152,6 +152,55 @@ Klone job 42093363, 6:39 for all four runs; the extraction was reused unchanged,
 
 The figures are mean percentage-point changes over the position's substitutions. The 117, 56 and 191 candidates hold in all four runs; their local z ranges are 3.1–4.3 (117A>T), 3.2–4.7 (56G>C) and 6.4–7.4 (191G>T). Twenty-four local calls have no flank or accessibility counterpart; several of those carry large M-proxy changes (78T>C, 113G>C, 129C>G), and normalization can turn such changes into apparent effects, so single-substitution local-only calls are not prioritized. Motif identity is not assigned here.
 
+## Transcription-factor footprint evidence (post hoc)
+
+These analyses were chosen after seeing the results above. They describe one preparation and are not prespecified tests. They reuse only committed evidence (mask-4 effects, published activity, JASPAR 2024 and HOCOMOCO v12 matrices). `python -m tools.variant_hit_figures figures --output <dir>` reproduces the tables and the [overview](figures/top_hits_20261021/top_hits_overview.png) and [motif-site](figures/top_hits_20261021/motif_sites.png) figures. Per-variant WT-vs-variant occupancy figures need one Klone step; see [the Klone prompt](klone_agent_prompt_hit_figures.md).
+
+**Proxy-dominated check.** A local change counts as proxy-dominated when the heavily methylated proxy moves at the same site (|z| > 3) by at least as much as chromatin. Normalization can then turn an observability change into apparent opening or closing. This check flags 202 of 630 SNVs.
+
+**1. Library level: a modest activator-footprint signature.** The question is whether local chromatin change at 5–10 bp tracks activity once broad accessibility and nucleosome-sized change are accounted for. Local change and activity were each regressed on the MSP and nucleosome-sized changes, and the residuals correlated. The test uses SNVs outside A runs with at least 300 molecules, and the circular position-shift null ([table](figures/top_hits_20261021/footprint_association.tsv)).
+
+| SNVs | Local endpoint | n | Partial r | Position-level partial r | Null max | p (shift) |
+|---|---|---:|---:|---:|---:|---:|
+| Outside A runs | chromatin (`local:C_std`) | 473 | −0.23 | −0.26 | 0.33 | 0.021 |
+| Outside A runs | normalized (`local:A_norm`) | 472 | −0.12 | −0.17 | 0.22 | 0.036 |
+| … and not proxy-dominated | chromatin | 306 | −0.24 | −0.29 | 0.24 | 0.008 (floor) |
+| … and not proxy-dominated | normalized | 305 | −0.13 | −0.15 | 0.26 | 0.14 |
+
+The sign is the one expected for activator footprints: beyond broad opening, SNVs that unprotect their immediate neighbourhood lower activity. The effect is small (about 6% of residual variance) and clearest in the chromatin class. The normalized version does not survive the proxy filter.
+
+**2. Element level: motif disruption against chromatin and function.** For each named element, every substitution inside the best WT motif match is ranked by how much it weakens that match. Spearman ρ is given with p and n; local chromatin excludes A-run and proxy-dominated points.
+
+| Element (oligo; chr19) | Best WT motif model (p) | Activity | Local chromatin | Accessibility | Nucleosome-sized |
+|---|---|---|---|---|---|
+| P1 core 52–62 `TCACGGGTTAA` (11089316–26) | ZN652, HOCOMOCO v12 (7e-5) | **−0.87** (6e-11, 33) | **+0.46** (0.05, 19); +0.49 (0.004, 33) unfiltered | −0.19 (0.3) | +0.23 (0.2) |
+| Repeat 1 82–102 (11089346–66) | SP4, HOCOMOCO v12 (3e-5) | **−0.64** (2e-8, 63) | −0.10 (0.6, 26) | **−0.42** (5e-4) | **+0.40** (0.001) |
+| SRE-1 127–136 (11089391–400) | SREBF1, JASPAR MA0595 (1e-6) | **−0.46** (0.01, 30) | +0.19 (0.6, 12) | −0.30 (0.1) | +0.19 (0.3) |
+| Repeat 3 143–152 (11089407–16) | WT1, HOCOMOCO v12 (1e-6) | **−0.40** (0.03, 30) | +0.02 (1.0, 16) | **−0.46** (0.01) | **+0.54** (0.002) |
+
+The four elements behave in three different ways:
+- **P1 core: motif, local footprint and activity line up, with no broad accessibility change.**
+  - Motif strength nearly ranks activity (ρ −0.87). Substitutions that strengthen the match (55C>A, 55C>G) are neutral (+0.06, +0.08 log2).
+  - 56G>C and 56G>T open the 5–10-bp neighbourhood in chromatin by +3.1 and +2.9 pp (z 6.2, 7.1), against +1.6 and +0.8 pp in the proxy. Activity falls by 1.2–1.6 log2, and MSP does not change.
+  - At 54, 58 and 59, chromatin opens at 8 of 9 substitutions (+0.9 to +2.4 pp), but the proxy rises nearly as much, so these sites support the pattern only weakly.
+  - The motif model is not an identification. ZNF652 has mostly been described as a repressor, so the activator acting here may be another C2H2 zinc-finger or a factor with similar specificity.
+- **Sp1 repeats: motif loss acts through the open region, not through a resolved footprint.** Disruption lowers accessibility, raises nucleosome-sized protection and lowers activity. The 5–10-bp readout does not follow the motif.
+- **SRE-1: function without a visible chromatin change.** Motif loss lowers activity without changing accessibility. Most local readouts here are unresolved (A run), so a footprint can be neither seen nor excluded.
+
+**3. Oligo 115–117: opening, and creating an AP-1/CRE-like match adds activity.**
+- Every substitution at 115 and 117 opens chromatin (MSP +1.3 to +4.6 pp; local chromatin +1.3 to +3.5 pp, proxy −1.5 to +2.0 pp) and raises activity.
+- The alleles that create or strengthen AP-1/CRE-like matches gain the most:
+  - 117A>T (CREM p 3e-5 → 6e-7, JDP2): +1.45 log2;
+  - 115A>C (CREB5, ATF1, ATF4): +1.31;
+  - 115A>T (FOS, FOSB): +1.22.
+- The others gain less (+0.54 to +0.84), although 117A>C opens just as much (+4.6 pp) as 117A>T.
+- A reading consistent with this is loss of a repressive or nucleosome-positioning protection, plus a new activator site for some alleles. These are small numbers, and the analysis is post hoc.
+
+**4. Not supported: oligo 73–74.**
+- All three 73 substitutions lower the proxy by 21–23 pp in the local window (z ≈ −30), more than chromatin (−8 pp). The normalized readout shows apparent opening (+3.7 to +5.7 pp) only because of that. The window covers the A run at oligo 61–65.
+- Two of three 74 substitutions are proxy-dominated.
+- The activity losses at 73 (T>C, T>G) and 74 are not explained by any resolved chromatin change here.
+
 ## Limitations
 
 - **One preparation.** All results come from a single HepG2 preparation.
