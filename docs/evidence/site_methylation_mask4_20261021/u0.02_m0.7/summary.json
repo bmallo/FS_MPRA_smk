@@ -1,0 +1,165 @@
+{
+  "schema_version": "fsmpra.site_effects.v1",
+  "sources": [
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/config/ldlr_site_methylation_mask4.json",
+      "bytes": 2506,
+      "mtime_ns": 1792549139147529000,
+      "sha256": "5de0197835179648c30aec1877e9eeef2f07b786a48342a4424f2176ef99c4ec"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_site_methylation_20261021/extract/audit.json",
+      "bytes": 6260,
+      "mtime_ns": 1792543223092873000,
+      "sha256": "6d929edb3727a2d0584b8b49a7421cdb1a86690d370f9420823122a490a03d11"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/results/rep3_site_methylation_20261021/extract/meta.npz",
+      "bytes": 148947220,
+      "mtime_ns": 1792543222686410407,
+      "sha256": "3db2794fccf2b2fda6700ec3abaee78e4519ab5785e4e3be938bd8f4842c2e44"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/docs/evidence/20261020/published_GRCh38_LDLR.tsv",
+      "bytes": 50489,
+      "mtime_ns": 1792532897663155000,
+      "sha256": "a13e65e325b2e7d0248974ebc0e1843ff7d40c283a7c3a5762e3bdf91ad6ca97"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/docs/evidence/20261020/published_GRCh38_LDLR.2.csv",
+      "bytes": 53354,
+      "mtime_ns": 1792532897663396000,
+      "sha256": "ac940fe846f11fd7dbe2ef3f7aa87f549a96f128e6e720b0d9efe9de7a5fb125"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/fsmpra/site_effects.py",
+      "bytes": 30222,
+      "mtime_ns": 1792549139153658274,
+      "sha256": "837f18dc4f84f56854f21baa4465bdf78f043737f18d3db9b31003396ca7e7d6"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/fsmpra/library_stats.py",
+      "bytes": 2057,
+      "mtime_ns": 1792539174100166000,
+      "sha256": "601056d478bb2d23a1601cd3d75fd098570e1283e1dc5df86253a38a9fb29272"
+    },
+    {
+      "path": "/mmfs1/gscratch/stergachislab/bmallo/large_home/code/mine/FS_MPRA_smk/fsmpra/io.py",
+      "bytes": 3882,
+      "mtime_ns": 1792165317548401000,
+      "sha256": "6faf2d07629ae2b89af76359de1bd4a7cb788d59d1425fe2f1bc1dad7482405d"
+    }
+  ],
+  "cohort": "eligible",
+  "thresholds": {
+    "unmethylated_max_distal_m6a": 0.02,
+    "methylated_min_distal_m6a": 0.7,
+    "labeling_strata_edges": [
+      0.06057494878768921,
+      0.10574948787689209,
+      0.1735112965106964,
+      0.2679671347141266,
+      0.35831621289253235,
+      0.43759629130363464,
+      0.512320339679718,
+      0.5856410264968872,
+      0.6504106521606445
+    ],
+    "labeling_strata_wt_weights": [
+      0.09919555357732125,
+      0.10044740497440659,
+      0.10013564121651178,
+      0.09977207671115136,
+      0.10012029284689233,
+      0.10030447328232558,
+      0.09986896329437406,
+      0.10015482667853608,
+      0.09942769766781524,
+      0.10057306975066574
+    ]
+  },
+  "molecules": {
+    "cohort": 2594368,
+    "classified": 2594368,
+    "wt": {
+      "U": 121914,
+      "M": 79521,
+      "C": 1042456
+    },
+    "snv": {
+      "U": 132230,
+      "M": 86288,
+      "C": 1131959
+    }
+  },
+  "class_dispersion": {
+    "fraction_U_pearson_dispersion": 1.0190633381618972,
+    "fraction_M_pearson_dispersion": 1.0425549303009487,
+    "interpretation": "Mean squared standardized deviation of each SNV class fraction from WT (Pearson chi-square/df). ~1 means binomial sampling only; well above 1 indicates barcode clustering or genotype-dependent class membership. Robust to SNVs with very few molecules, unlike a variance ratio."
+  },
+  "bootstrap": 200,
+  "aa_draws": 1000,
+  "aa_target_molecules": 1955,
+  "primary_endpoints": [
+    "local:A_norm",
+    "flank:A_norm",
+    "msp_C_std",
+    "nuc_85_250_C_std"
+  ],
+  "windows": {
+    "near": [
+      1,
+      4
+    ],
+    "local": [
+      5,
+      10
+    ],
+    "flank": [
+      11,
+      30
+    ]
+  },
+  "regions0": {
+    "WT_P1": [
+      31,
+      51
+    ],
+    "WT_P2": [
+      53,
+      73
+    ],
+    "WT_P3": [
+      93,
+      113
+    ],
+    "WT_P4": [
+      128,
+      148
+    ],
+    "adjacent_143_150": [
+      122,
+      130
+    ],
+    "P1_core": [
+      33,
+      42
+    ],
+    "Repeat1_Sp1": [
+      68,
+      84
+    ],
+    "Repeat2_SRE1": [
+      103,
+      119
+    ],
+    "Repeat3_Sp1": [
+      119,
+      135
+    ]
+  },
+  "mask_radius": 4,
+  "baseq_min": 20,
+  "ml_min": 128,
+  "interpretation": "U/M are same-reaction proxies, not prepared controls. z/p/q are only as good as the WT pseudo-variant calibration in calibration_summary.tsv; check it per endpoint before use."
+}
