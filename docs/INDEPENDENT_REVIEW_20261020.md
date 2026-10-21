@@ -108,7 +108,7 @@ The reports summarize WT A/A rejection rates over both directions. Split by dire
 
 ### Analysis on existing replicate-3 data (no new experiments)
 
-Steps 2–4 are implemented as the [site-methylation stage](site_methylation_usage.md) (`workflow/site_methylation.smk`). It uses near-unmethylated and heavily methylated molecules from this reaction as proxy controls, and its interpretation rules are fixed before it is run.
+Steps 2–4 are implemented as the [site-methylation stage](site_methylation_usage.md) (`workflow/site_methylation.smk`). It uses near-unmethylated and heavily methylated molecules from this reaction as proxy controls, and its interpretation rules are fixed before it is run. Results: [site-methylation run, 21 October 2026](rep3_site_methylation_20261021.md). It confirms the library-level association with calibrated per-variant calls and finds oligo 125 predominantly observability-driven.
 
 1. **Freeze a small confirmatory family now, before new data.**
    - Elements: Repeat 1, Repeat 2/SRE-1 core, Repeat 3, P1 core.

@@ -8,7 +8,7 @@ from pathlib import Path
 import numpy as np
 import pysam
 from fsmpra.io import source_info, write_json
-from fsmpra.site_effects import assign_groups, measures, run as effects_run, window_masks
+from fsmpra.site_effects import assign_groups, homopolymer_context, measures, run as effects_run, window_masks
 from fsmpra.site_extract import run as extract_run
 
 COMP = str.maketrans('ACGT', 'TGCA')
@@ -200,6 +200,13 @@ class SiteEffectsTests(unittest.TestCase):
         self.assertFalse(rows['element'][98:103].any())
         np.testing.assert_array_equal(np.flatnonzero(rows['r']), [95, 96, 97, 103, 104, 105])
 
+    def test_homopolymer_context_marks_runs_and_their_neighbours(self):
+        seq = 'GCAAAACGTTG'
+        self.assertEqual([homopolymer_context(seq, p) for p in range(len(seq))],
+                         ['other'] + ['homopolymer'] * 6 + ['other'] * 4)       # TT is shorter than 3
+        self.assertEqual(homopolymer_context('CCTTTCC', 1), 'homopolymer')
+        self.assertEqual(homopolymer_context('CCTTTCC', 0), 'other')
+
     def test_normalization_cancels_multiplicative_observability(self):
         masks = np.ones((1, 211))
         def sums(eff):
@@ -241,6 +248,10 @@ class SiteEffectsTests(unittest.TestCase):
             with open(out / 'kernel.tsv') as h:
                 kernel = list(csv.DictReader(h, delimiter='\t'))
             self.assertFalse(any(r['offset'] == '0' for r in kernel))
+            self.assertEqual({r['context'] for r in kernel}, {'all', 'homopolymer', 'other'})
+            for name in ('U', 'M'):                                              # binomial classes: dispersion ~1
+                self.assertLess(abs(summary['class_dispersion'][f'fraction_{name}_pearson_dispersion'] - 1), .5)
+            self.assertIn('gate_pass', calib['local:A_norm'])
             self.assertTrue((out / 'kernel.png').exists() and (out / 'activity_association.tsv').exists())
 
 

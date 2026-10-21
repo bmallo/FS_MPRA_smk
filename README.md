@@ -14,6 +14,10 @@ plus a same-condition replicate before any per-variant claims or construct panel
 Its analysis steps on existing data are implemented in the
 [site-methylation stage](docs/site_methylation_usage.md) (per-site m6A for all SNVs,
 normalized by same-reaction unmethylated/heavily methylated proxy controls).
+**Latest results:** [site-methylation run, 21 October 2026](docs/rep3_site_methylation_20261021.md):
+Sp1-repeat accessibility/nucleosome changes are robust and track activity, while local
+footprint candidates at A runs, including oligo 125, are dominated by an adjacent-adenine
+observability artifact.
 
 > **Raw-BAM redesign:** start with the new [processing workflow](docs/processing_workflow.md)
 > for replicate 3. It produces molecule QC/features, barcode assignments and

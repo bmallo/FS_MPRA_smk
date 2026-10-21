@@ -1,0 +1,99 @@
+{
+  "schema_version": "fsmpra.site_methylation_config.v1",
+  "features": "results/rep3_heterogeneity_20261017/features/molecule_heterogeneity.tsv.gz",
+  "feature_audit": "results/rep3_heterogeneity_20261017/features/audit.json",
+  "catalog": "results/rep3_ledger_20261016/catalog/catalog.json",
+  "footprint_contract": "config/rep3_existing_footprints.json",
+  "published_activity": {
+    "LDLR": "docs/evidence/20261020/published_GRCh38_LDLR.tsv",
+    "LDLR_2": "docs/evidence/20261020/published_GRCh38_LDLR.2.csv"
+  },
+  "output_dir": "results/rep3_site_methylation_20261021",
+  "processing_python": "/mmfs1/home/bmallo/miniconda3/bin/python",
+  "analysis": {
+    "cohort": "eligible",
+    "baseq_min": 20,
+    "ml_min": 128,
+    "unmethylated_max_distal_m6a": 0.01,
+    "methylated_min_distal_m6a": 0.6,
+    "sensitivity_thresholds": [
+      [
+        0.02,
+        0.7
+      ],
+      [
+        0.005,
+        0.5
+      ]
+    ],
+    "labeling_strata": 10,
+    "min_class_molecules": 30,
+    "min_stratum_molecules": 10,
+    "bootstrap": 200,
+    "aa_draws": 1000,
+    "seed": 20261021,
+    "mask_radius": 4,
+    "windows": {
+      "near": [
+        1,
+        4
+      ],
+      "local": [
+        5,
+        10
+      ],
+      "flank": [
+        11,
+        30
+      ]
+    },
+    "regions0": {
+      "WT_P1": [
+        31,
+        51
+      ],
+      "WT_P2": [
+        53,
+        73
+      ],
+      "WT_P3": [
+        93,
+        113
+      ],
+      "WT_P4": [
+        128,
+        148
+      ],
+      "adjacent_143_150": [
+        122,
+        130
+      ],
+      "P1_core": [
+        33,
+        42
+      ],
+      "Repeat1_Sp1": [
+        68,
+        84
+      ],
+      "Repeat2_SRE1": [
+        103,
+        119
+      ],
+      "Repeat3_Sp1": [
+        119,
+        135
+      ]
+    },
+    "primary_endpoints": [
+      "local:A_norm",
+      "flank:A_norm",
+      "msp_C_std",
+      "nuc_85_250_C_std"
+    ],
+    "kernel_max_offset": 40,
+    "figures": true,
+    "interpretation": "Rule-2-triggered rerun on the 2026-10-21 extraction. The first run showed the M-class (near-saturated proxy) kernel reaching +/-4 bp from A/T-changing substitutions (about -32/+31 pp at +/-1 bp, ~3 pp at +/-3-4 bp, ~0 beyond). Mask radius 4 and local window 5-10 bp are set from that library kernel only, before any per-variant result with these windows. \"near\" (1-4 bp) is diagnostic, not primary. 1,000 WT pseudo-variants so an exactly calibrated endpoint rarely fails the gate.",
+    "min_association_molecules": 300
+  }
+}

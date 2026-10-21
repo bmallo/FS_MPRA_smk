@@ -90,6 +90,19 @@ def measures(cs, vs, ss, cnt, masks, weights, min_class=30, min_stratum=10):
     return out, scal
 
 
+def homopolymer_context(seq, p0, min_run=3):
+    """'homopolymer' if the substituted base is in, or adjacent to, a WT A or T run of >= min_run."""
+    i = 0
+    while i < len(seq):
+        j = i
+        while j + 1 < len(seq) and seq[j + 1] == seq[i]:
+            j += 1
+        if seq[i] in 'AT' and j - i + 1 >= min_run and i - 1 <= p0 <= j + 1:
+            return 'homopolymer'
+        i = j + 1
+    return 'other'
+
+
 def window_masks(seq, p0, windows, regions, mask_radius):
     """Unchanged A/T sites only; the substituted base is always excluded."""
     j = np.arange(211)
@@ -242,8 +255,8 @@ def run(config, extract, output, u_max=None, m_min=None, draws=None, cohort=None
         base = dict(source_variant=v['source_variant'], variant_id=v['variant_id'], oligo_pos1=v['oligo_pos1'],
                     genomic_pos1=GENOMIC_OFFSET + v['oligo_pos1'], ref=v['ref'], alt=v['alt'],
                     at_change=('retained_count' if (v['ref'] in 'AT') == (v['alt'] in 'AT') else 'loss' if v['ref'] in 'AT' else 'gain'),
-                    molecules=int(cnt[i].sum()), molecules_U=int(cnt[i, 0]), molecules_M=int(cnt[i, 1]),
-                    molecules_C=int(cnt[i, 2:].sum()))
+                    context=homopolymer_context(seq, p0), molecules=int(cnt[i].sum()), molecules_U=int(cnt[i, 0]),
+                    molecules_M=int(cnt[i, 1]), molecules_C=int(cnt[i, 2:].sum()))
         for src in act:
             base[f'activity_{src}'] = act[src].get((GENOMIC_OFFSET + v['oligo_pos1'], v['ref'], v['alt']))
         per_variant[i] = base
@@ -313,7 +326,8 @@ def run(config, extract, output, u_max=None, m_min=None, draws=None, cohort=None
             lo, hi = exact_ci(int((np.abs(z) > 1.96).sum()), len(z))
             calibration_summary.append(dict(endpoint=ep, draws=len(z), mean_z=z.mean(), sd_z=z.std(ddof=1) if len(z) > 1 else np.nan,
                                             rate_abs_z_gt_1_96=float((np.abs(z) > 1.96).mean()), rate_ci_low=lo, rate_ci_high=hi,
-                                            rate_lower_tail=float((z < -1.96).mean()), rate_upper_tail=float((z > 1.96).mean())))
+                                            rate_lower_tail=float((z < -1.96).mean()), rate_upper_tail=float((z > 1.96).mean()),
+                                            gate_pass=bool(len(z) > 1 and .85 <= z.std(ddof=1) <= 1.2 and hi <= .10)))
     print(f'WT pseudo-variant calibration complete: {draws} draws', flush=True)
 
     # Library kernel: per-site change by offset from the substitution, per class.
@@ -329,10 +343,11 @@ def run(config, extract, output, u_max=None, m_min=None, draws=None, cohort=None
                     x = site_all[m][i, j] - site_all[m][wt_i, j]
                     if np.isfinite(x):
                         for cls in (base['at_change'], 'all'):
-                            deltas.setdefault((cls, j - p0), []).append(x)
-        for (cls, d), xs in sorted(deltas.items()):
+                            for ctx in (base['context'], 'all'):
+                                deltas.setdefault((cls, ctx, j - p0), []).append(x)
+        for (cls, ctx, d), xs in sorted(deltas.items()):
             xs = np.array(xs)
-            kernel_rows.append(dict(measure=m, at_change=cls, offset=d, pairs=len(xs), mean_delta=xs.mean(),
+            kernel_rows.append(dict(measure=m, at_change=cls, context=ctx, offset=d, pairs=len(xs), mean_delta=xs.mean(),
                                     se=xs.std(ddof=1) / np.sqrt(len(xs)) if len(xs) > 1 else np.nan, median_delta=np.median(xs)))
 
     # Library association with published activity and observability regression.
@@ -340,7 +355,10 @@ def run(config, extract, output, u_max=None, m_min=None, draws=None, cohort=None
     by_ep = {}
     for e in effects:
         by_ep.setdefault(e['endpoint'], []).append(e)
+    # One SNV set for every endpoint: tiny cohorts would otherwise enter only the unstandardized endpoints.
+    common_set = {b['source_variant'] for b in per_variant.values() if b['molecules'] >= spec.get('min_association_molecules', 300)}
     for ep, rows in by_ep.items():
+        rows = [r for r in rows if r['source_variant'] in common_set]
         for src in act:
             x = np.array([r['delta'] for r in rows], float)
             y = np.array([np.nan if r.get(f'activity_{src}') is None else r[f'activity_{src}'] for r in rows], float)
@@ -369,14 +387,16 @@ def run(config, extract, output, u_max=None, m_min=None, draws=None, cohort=None
             for k in range(100)]
     class_rows = [dict(source_variant=b['source_variant'], molecules=b['molecules'], molecules_U=b['molecules_U'],
                        molecules_M=b['molecules_M'], molecules_C=b['molecules_C']) for b in per_variant.values()]
-    fu = np.array([r['molecules_U'] / r['molecules'] for r in class_rows if r['molecules']])
-    fm = np.array([r['molecules_M'] / r['molecules'] for r in class_rows if r['molecules']])
-    n_mol = np.array([r['molecules'] for r in class_rows if r['molecules']])
-    wt_fu, wt_fm = cnt[wt_i, 0] / cnt[wt_i].sum(), cnt[wt_i, 1] / cnt[wt_i].sum()
-    dispersion = dict(fraction_U_variance_ratio=float(np.var(fu, ddof=1) / np.mean(wt_fu * (1 - wt_fu) / n_mol)),
-                      fraction_M_variance_ratio=float(np.var(fm, ddof=1) / np.mean(wt_fm * (1 - wt_fm) / n_mol)),
-                      interpretation='Observed between-SNV variance of class fractions over the molecule-level binomial expectation; '
-                                     'values well above 1 reflect barcode clustering and/or genotype-dependent class membership.')
+    n_mol = np.array([r['molecules'] for r in class_rows], float)
+    dispersion = {}
+    for name, col, k in (('U', 'molecules_U', 0), ('M', 'molecules_M', 1)):
+        p_wt = cnt[wt_i, k] / cnt[wt_i].sum()
+        f = np.array([r[col] for r in class_rows]) / np.where(n_mol > 0, n_mol, 1)
+        z = (f - p_wt) / np.sqrt(p_wt * (1 - p_wt) / np.where(n_mol > 0, n_mol, 1))
+        dispersion[f'fraction_{name}_pearson_dispersion'] = float(np.mean(z[n_mol > 0] ** 2))
+    dispersion['interpretation'] = ('Mean squared standardized deviation of each SNV class fraction from WT (Pearson chi-square/df). '
+                                    '~1 means binomial sampling only; well above 1 indicates barcode clustering or genotype-dependent '
+                                    'class membership. Robust to SNVs with very few molecules, unlike a variance ratio.')
 
     def clean(rows):
         return [{k: (None if isinstance(v, (float, np.floating)) and not np.isfinite(v) else
@@ -423,7 +443,7 @@ def figures(out, kernel_rows, calibration, effects, hist, u_max, m_min):
     fig, axes = plt.subplots(1, 3, figsize=(15, 4.2), sharey=True)
     for ax, cls in zip(axes, ('gain', 'loss', 'retained_count')):
         for m in ('U', 'M', 'C_std'):
-            rows = [r for r in kernel_rows if r['measure'] == m and r['at_change'] == cls]
+            rows = [r for r in kernel_rows if r['measure'] == m and r['at_change'] == cls and r['context'] == 'all']
             d = np.array([r['offset'] for r in rows])
             y = 100 * np.array([r['mean_delta'] for r in rows])
             e = 100 * np.array([r['se'] for r in rows], dtype=float)
