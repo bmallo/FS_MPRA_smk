@@ -1,3 +1,4 @@
+import csv
 import json
 import tempfile
 import unittest
@@ -83,9 +84,15 @@ class VariantHitFigureTests(unittest.TestCase):
             vhf.figures(tmp / 'profiles', motifs, tmp / 'figures', variants=['146C>G', '56G>C', '125A>T'])
             out = {p.name for p in (tmp / 'figures').iterdir()}
             for name in ('top_hits_overview.png', 'motif_sites.png', 'motif_sites.tsv', 'footprint_association.tsv',
+                         'profile_changes.tsv', 'profile_association.tsv',
                          '146C_to_G.png', '56G_to_C.png', '125A_to_T.png',
                          'position_146.png', 'position_56.png'):
                 self.assertIn(name, out)
+            changes = {r['variant']: r for r in csv.DictReader(open(tmp / 'figures' / 'profile_changes.tsv'), delimiter='\t')}
+            self.assertLess(float(changes['146C>G']['msp_element_pp']), -20)      # the synthetic hit closes the element
+            self.assertEqual(changes['146C>G']['at_change'], 'none')
+            self.assertEqual(changes['56G>T']['at_change'], 'gain')
+            self.assertEqual(changes['56G>T']['tf_resolved'], 'False')         # adds an A/T: footprint readout not interpretable
             with self.assertRaises(FileExistsError):
                 vhf.figures(None, motifs, tmp / 'figures')
 

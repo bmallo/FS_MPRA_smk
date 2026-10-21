@@ -1,0 +1,16 @@
+subset	readout	snvs	partial_r	raw_r	positions	position_partial_r	rotations	null_abs_max	p_circular_shift
+all	tf_site_pp	630	0.174	0.1121	211	0.2158	192	0.2899	0.0725
+all	msp_site_pp	630	-0.1767	0.265	211	-0.2325	192	0.2399	0.0104
+all	msp_region_pp	630	-0.2205	0.3424	211	-0.332	192	0.2038	0.0052
+A/T-neutral	tf_site_pp	211	0.234	0.2302	211	0.234	192	0.2672	0.0155
+A/T-neutral	msp_site_pp	211	-0.2265	0.268	211	-0.2265	192	0.2169	0.0052
+A/T-neutral	msp_region_pp	211	-0.2355	0.3474	211	-0.2355	192	0.239	0.0104
+A/T-neutral, outside A runs	tf_site_pp	159	0.244	0.2716	159	0.244	140	0.2393	0.0071
+A/T-neutral, outside A runs	msp_site_pp	159	-0.2402	0.2726	159	-0.2402	140	0.2628	0.0142
+A/T-neutral, outside A runs	msp_region_pp	159	-0.2487	0.3452	159	-0.2487	140	0.2354	0.0071
+A/T-neutral, outside A runs, proxy-clean	tf_site_pp	93	0.2312	0.2062	93	0.2312	74	0.3188	0.0267
+A/T-neutral, outside A runs, proxy-clean	msp_site_pp	93	-0.2717	0.3342	93	-0.2717	74	0.2594	0.0133
+A/T-neutral, outside A runs, proxy-clean	msp_region_pp	93	-0.3354	0.3616	93	-0.3354	74	0.2825	0.0133
+A/T-neutral, WT TF-sized occupancy >= 4%	tf_site_pp	54	0.1939	0.1513	54	0.1939	35	0.414	0.25
+A/T-neutral, WT TF-sized occupancy >= 4%	msp_site_pp	54	-0.2837	0.2362	54	-0.2837	35	0.4391	0.1389
+A/T-neutral, WT TF-sized occupancy >= 4%	msp_region_pp	54	-0.3592	0.2668	54	-0.3592	35	0.3642	0.0556

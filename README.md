@@ -20,8 +20,10 @@ footprint candidates at A runs, including oligo 125, are dominated by an adjacen
 observability artifact. The calibrated mask-4 follow-up adds local candidates outside A runs
 (oligo 117, 56, 191) and a [revised construct panel](docs/evidence/validation_panel_v2_20261021.tsv).
 Post hoc [transcription-factor footprint evidence](docs/rep3_site_methylation_20261021.md#transcription-factor-footprint-evidence-post-hoc)
-links motif disruption, local protection and activity at the P1 core, with
-[overview and motif-site figures](docs/figures/top_hits_20261021/top_hits_overview.png).
+finds a modest library-wide footprint signature. The top hits act mainly through open/nucleosome-covered states over
+large spans, and per-variant TF-sized footprint calls are dominated by observability. See the
+[overview](docs/figures/top_hits_20261021/top_hits_overview.png), [motif-site figure](docs/figures/top_hits_20261021/motif_sites.png)
+and per-variant WT-vs-variant figures in [`docs/figures/top_hits_20261021/`](docs/figures/top_hits_20261021/).
 
 > **Raw-BAM redesign:** start with the new [processing workflow](docs/processing_workflow.md)
 > for replicate 3. It produces molecule QC/features, barcode assignments and

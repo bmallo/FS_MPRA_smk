@@ -28,15 +28,17 @@ COMPARE_POSITIONS = [56, 58, 73, 117, 146]   # all three substitutions side by s
 HIT_POSITIONS = [54, 56, 58, 59, 73, 74, 98, 115, 117, 125, 129, 133, 146, 149, 191]   # motif table covers every substitution here
 ROLES = {'146C>G': 'Repeat 3 (Sp1): accessibility loss', '146C>T': 'Repeat 3 (Sp1): accessibility loss, adds A/T',
          '149C>G': 'Repeat 3 (Sp1): accessibility loss', '98C>G': 'Repeat 1 (Sp1): accessibility loss',
-         '129C>G': 'SRE-1: activity loss without accessibility change', '133C>G': 'SRE-1: activity loss without accessibility change',
-         '56G>C': 'P1 core: local protection loss with activity loss', '56G>T': 'P1 core: local protection loss with activity loss',
+         '129C>G': 'SRE-1: activity loss without accessibility change; TF-sized call loss, proxy also moves',
+         '133C>G': 'SRE-1: activity loss without accessibility loss',
+         '56G>C': 'P1 core: left-half opening with activity loss; TF-sized calls unchanged',
+         '56G>T': 'P1 core: left-half opening with activity loss; adds an A/T inside the TF-sized footprint',
          '117A>T': 'Oligo 117: opening with activity gain; creates AP-1/CRE-like match',
          '117A>C': 'Oligo 117: opening with smaller activity gain; no motif created',
          '115A>C': 'Oligo 115: opening with activity gain; creates AP-1/CRE-like match',
-         '191G>T': 'Oligo 191: local protection without function',
-         '58G>T': 'P1 core: local protection loss with activity loss',
+         '191G>T': 'Oligo 191: local opening without function',
+         '58G>T': 'P1 core: activity loss with small chromatin change',
          '73T>C': 'Artifact example: methylated proxy drops more than chromatin at the A run 8-10 bp away',
-         '125A>T': 'Oligo 125 (A run): observability control'}
+         '125A>T': 'Oligo 125 (A run): observability control; largest TF-sized call loss, no function'}
 # Named elements and the motif model that best matches each in WT (chosen after seeing the data); oligo search range.
 MOTIF_SITES = [('P1 core', 'HOCOMOCOv12', 'ZN652', (45, 70)), ('Repeat 1 (Sp1)', 'HOCOMOCOv12', 'SP4', (82, 108)),
                ('SRE-1', 'JASPAR2024', 'SREBF1', (120, 140)), ('Repeat 3 (Sp1)', 'HOCOMOCOv12', 'WT1', (138, 158))]
@@ -261,6 +263,73 @@ def footprint_association(effects, min_molecules=300):
     return out
 
 
+def profile_changes(prof, effects, min_molecules=300):
+    """Per-SNV changes from the per-base profiles (pp), with observability flags for footprint readouts.
+
+    site = +/-5 bp, region = +/-30 bp, element = all 211 bases. tf_site_null_sd is the spread of the same window's change
+    over SNVs > 40 bp away (sampling noise plus distal effects). m6A columns average unchanged A/T sites within 10 bp."""
+    seq = wt_sequence()
+    names = list(prof['source_variant'])
+    wt = names.index('WT')
+    rows = []
+    for v, r in effects.items():
+        if v == 'WT' or v not in names or 'msp_C_std' not in r or int(r['msp_C_std']['molecules']) < min_molecules:
+            continue
+        i = names.index(v)
+        if not np.isfinite(prof['tf_C_std'][i]).all():
+            continue
+        pos, ref, alt = parse(v)
+        d = {k: 100 * (prof[k][i] - prof[k][wt]) for k in ('tf_C_std', 'msp_C_std', 'nuc_C_std', 'm6a_C_std', 'm6a_M')}
+        site, region = slice(max(pos - 26, 0), pos - 15), slice(max(pos - 51, 0), pos + 10)
+        at = [k for k in range(pos - 31, pos - 10) if 0 <= k < 211 and seq[k] in 'AT' and k != pos - 21]
+        with np.errstate(invalid='ignore'):
+            dc, dm = float(np.nanmean(d['m6a_C_std'][at])), float(np.nanmean(d['m6a_M'][at]))
+        rows.append(dict(variant=v, oligo_pos=pos, at_change='gain' if ref in 'CG' and alt in 'AT' else 'loss' if ref in 'AT' and alt in 'CG'
+                         else 'none', context=r['msp_C_std']['context'], activity_log2=float(r['msp_C_std']['activity_LDLR']),
+                         wt_tf_site_pct=100 * float(prof['tf_C_std'][wt][site].mean()), tf_site_pp=float(d['tf_C_std'][site].mean()),
+                         msp_site_pp=float(d['msp_C_std'][site].mean()), msp_region_pp=float(d['msp_C_std'][region].mean()),
+                         nuc_region_pp=float(d['nuc_C_std'][region].mean()), msp_element_pp=float(d['msp_C_std'].mean()),
+                         nuc_element_pp=float(d['nuc_C_std'].mean()), m6a_chromatin_10bp_pp=dc, m6a_proxy_10bp_pp=dm,
+                         proxy_clean=bool(abs(dm) < max(2., abs(dc)))))
+    pos = np.array([r['oligo_pos'] for r in rows])
+    D = np.array([100 * (prof['tf_C_std'][names.index(r['variant'])] - prof['tf_C_std'][wt]) for r in rows])
+    for r in rows:
+        w = D[:, max(r['oligo_pos'] - 26, 0):r['oligo_pos'] - 15].mean(1)
+        sd = float(np.std(w[np.abs(pos - r['oligo_pos']) > 40], ddof=1))
+        r.update(tf_site_null_sd=sd, tf_site_z=r['tf_site_pp'] / sd,
+                 tf_resolved=r['at_change'] == 'none' and r['context'] == 'other' and r['proxy_clean'])
+    return rows
+
+
+def profile_association(rows):
+    """Partial correlation of site/region changes with activity after regressing both on element MSP and nucleosome change."""
+    from fsmpra.library_stats import circular_shift
+    subsets = {'all': lambda r: True, 'A/T-neutral': lambda r: r['at_change'] == 'none',
+               'A/T-neutral, outside A runs': lambda r: r['at_change'] == 'none' and r['context'] == 'other',
+               'A/T-neutral, outside A runs, proxy-clean': lambda r: r['tf_resolved'],
+               'A/T-neutral, WT TF-sized occupancy >= 4%': lambda r: r['at_change'] == 'none' and r['wt_tf_site_pct'] >= 4}
+    out = []
+    for name, keep in subsets.items():
+        d = [r for r in rows if keep(r)]
+        if len({r['oligo_pos'] for r in d}) < 30:                   # too few positions for the rotation null
+            out += [dict(subset=name, readout=key, snvs=len(d), partial_r=np.nan, raw_r=np.nan, positions=len({r['oligo_pos'] for r in d}),
+                         position_partial_r=np.nan, rotations=0, null_abs_max=np.nan, p_circular_shift=np.nan)
+                    for key in ('tf_site_pp', 'msp_site_pp', 'msp_region_pp')]
+            continue
+        X = np.c_[np.ones(len(d)), [r['msp_element_pp'] for r in d], [r['nuc_element_pp'] for r in d]]
+        y = np.array([r['activity_log2'] for r in d])
+        ry = y - X @ np.linalg.lstsq(X, y, rcond=None)[0]
+        for key in ('tf_site_pp', 'msp_site_pp', 'msp_region_pp'):
+            x = np.array([r[key] for r in d])
+            rx = x - X @ np.linalg.lstsq(X, x, rcond=None)[0]
+            cs = circular_shift(np.array([r['oligo_pos'] for r in d]), rx, ry)
+            out.append(dict(subset=name, readout=key, snvs=len(d), partial_r=round(float(np.corrcoef(rx, ry)[0, 1]), 4),
+                            raw_r=round(float(np.corrcoef(x, y)[0, 1]), 4), positions=cs['positions'],
+                            position_partial_r=round(cs['position_pearson'], 4), rotations=cs['rotations'],
+                            null_abs_max=round(cs['null_abs_max'], 4), p_circular_shift=round(cs['p_circular_shift'], 4)))
+    return out
+
+
 def _style(plt):
     plt.rcParams.update({'font.family': 'sans-serif', 'font.size': 8.5, 'axes.edgecolor': '#c3c2b7', 'axes.labelcolor': '#52514e',
                          'xtick.color': '#898781', 'ytick.color': '#898781', 'text.color': '#0b0b0b', 'axes.titlesize': 9.5,
@@ -272,13 +341,15 @@ WT_C, VAR_C = '#52514e', '#2a78d6'
 STATE_COLORS = ['#f2f1ec', '#cfe0f5', '#52514e', '#9b9a94', '#eb6834']
 
 
-def overview(effects, activity, motifs, output, plt):
-    """One row per top hit: activity, calibrated chromatin changes with 95% intervals, proxy check, top motif change."""
+def overview(effects, activity, motifs, output, plt, prows=None):
+    """One row per top hit: activity, calibrated chromatin changes with 95% intervals, proxy check, TF-sized footprint change
+    (when per-base profiles are given), top motif change."""
     hits = [h for h in TOP_HITS if h in effects]
     endpoints = [('msp_C_std', 'Accessibility'), ('nuc_85_250_C_std', 'Nucleosome-sized'), ('local:A_norm', 'Local, normalized'),
                  ('local:C_std', 'Local, chromatin'), ('local:M', 'Local, proxy')]
-    fig = plt.figure(figsize=(17, 0.6 * len(hits) + 1.8))
-    gs = fig.add_gridspec(1, 8, width_ratios=[2.6, 1.05, 1.05, 1.05, 1.05, 1.05, 1.05, 2.3], wspace=.14)
+    n_tf = 1 if prows else 0
+    fig = plt.figure(figsize=(17 + 1.6 * n_tf, 0.6 * len(hits) + 1.8))
+    gs = fig.add_gridspec(1, 8 + n_tf, width_ratios=[2.6] + [1.05] * (6 + n_tf) + [2.3], wspace=.14)
     fig.subplots_adjust(top=.9)
     y = np.arange(len(hits))[::-1]
     ax0 = fig.add_subplot(gs[0])
@@ -324,7 +395,20 @@ def overview(effects, activity, motifs, output, plt):
         ax.axvline(0, color='#c3c2b7', lw=1)
         ax.set_title(f'{label}\n(Δ pp, 95%)')
         _tidy(ax)
-    ax = fig.add_subplot(gs[7], sharey=ax0)
+    if prows:
+        ax = fig.add_subplot(gs[7], sharey=ax0)
+        for yi, h in zip(y, hits):
+            r = prows.get(h)
+            if not r:
+                continue
+            band = 1.96 * r['tf_site_null_sd']
+            ax.plot([-band, band], [yi, yi], color=GRID, lw=6, solid_capstyle='butt', zorder=1)
+            color = VAR_C if abs(r['tf_site_z']) > 3 and r['tf_resolved'] else MUTED
+            ax.plot(r['tf_site_pp'], yi, 'o', color=color if r['tf_resolved'] else 'white', mec=color, ms=5.5, zorder=3)
+        ax.axvline(0, color='#c3c2b7', lw=1)
+        ax.set_title('TF-sized footprint\n±5 bp (Δ pp)')
+        _tidy(ax)
+    ax = fig.add_subplot(gs[7 + n_tf], sharey=ax0)
     ax.set_xlim(0, 1)
     ax.axis('off')
     ax.set_title('Largest motif changes\n(best p ≤ 1e-4, ≥10-fold)', loc='left')
@@ -337,7 +421,10 @@ def overview(effects, activity, motifs, output, plt):
         if em and not any(em.split(':')[0].split()[-1] in line for line in lines):
             lines.append(em)
         ax.text(0, yi, '\n'.join(lines) if lines else 'no strong motif change', fontsize=7.3, color=INK2, va='center')
-    fig.text(.01, .01, 'Activity: ● LDLR, ◆ LDLR.2 published MPRA. Blue: called at q < 0.05 in the prespecified primary family (mask-4 run); for local chromatin, |z| > 3. '
+    tf_note = ('TF-sized footprint: per-base FiberHMM 10–60 bp calls in chromatinized molecules, ±5 bp of the substitution; grey band, 95% range '
+               'of the same window over SNVs > 40 bp away; blue, |z| > 3; hollow, not interpretable (adds or removes an A/T, A run, or proxy m6A moves '
+               'at least as much as chromatin within 10 bp). ' if prows else '')
+    fig.text(.01, .01, tf_note + 'Activity: ● LDLR, ◆ LDLR.2 published MPRA. Blue: called at q < 0.05 in the prespecified primary family (mask-4 run); for local chromatin, |z| > 3. '
              'Grey: not called. Hollow: local readout unresolved (substitution in or next to an A run, or the methylated proxy changes at least as much as chromatin '
              'with |z| > 3). Dark grey: heavily methylated proxy class, an observability check, not a result. Motifs: best match over windows containing the base, '
              'JASPAR 2024 / HOCOMOCO v12, uniform background; sequence matches, not binding.', fontsize=7, color=MUTED, wrap=True)
@@ -355,7 +442,7 @@ def _tidy(ax):
     ax.set_axisbelow(True)
 
 
-def variant_figure(h, prof, raster, effects, activity, motifs, output, plt):
+def variant_figure(h, prof, raster, effects, activity, motifs, output, plt, prow=None):
     """WT vs variant: per-base occupancy, per-site m6A in chromatin and proxy classes, molecules, function and motifs."""
     seq = wt_sequence()
     names = list(prof['source_variant'])
@@ -380,7 +467,10 @@ def variant_figure(h, prof, raster, effects, activity, motifs, output, plt):
                '   ·   proxy-dominated: local readout unresolved' if proxy_dominated(r) else ''),
             fontsize=8.5, color=INK2, va='top')
     ax.text(0, .1, f"Molecules {r['msp_C_std']['molecules']} (U {r['msp_C_std']['molecules_U']}, M {r['msp_C_std']['molecules_M']}, "
-            f"C {r['msp_C_std']['molecules_C']}). Profiles: chromatinized molecules standardized over WT labeling strata.",
+            f"C {r['msp_C_std']['molecules_C']}). Profiles: chromatinized molecules standardized over WT labeling strata."
+            + (f"   TF-sized footprint ±5 bp Δ {prow['tf_site_pp']:+.2f} pp (WT {prow['wt_tf_site_pct']:.1f}%, z {prow['tf_site_z']:+.1f}"
+               + (')' if prow['tf_resolved'] else '; not interpretable: ' + ('adds/removes an A/T' if prow['at_change'] != 'none' else
+                  'A run' if prow['context'] != 'other' else 'proxy m6A moves as much as chromatin') + ')') if prow else ''),
             fontsize=7.5, color=MUTED, va='bottom')
     tracks = [('msp_C_std', 'Accessible (MSP)'), ('nuc_C_std', 'Nucleosome-sized\n85–250 bp'), ('tf_C_std', 'TF-sized footprint\n10–60 bp')]
     axes = []
@@ -559,8 +649,10 @@ def position_figure(pos, prof, effects, activity, motifs, output, plt):
     plt.close(fig)
 
 
-def motif_site_rows(effects, activity):
-    """For each named site: every substitution inside the best WT match, with motif change and chromatin/function effects."""
+def motif_site_rows(effects, activity, prof=None):
+    """For each named site: every substitution inside the best WT match, with motif change and chromatin/function effects.
+
+    With per-base profiles, also the TF-sized footprint and MSP change over the whole match +/-5 bp (blank otherwise)."""
     from fsmpra.biology_motifs import BASES, read_matrices, pwm, score_distribution
     seq = wt_sequence()
     db = {'HOCOMOCOv12': read_matrices('extras/data/HOCOMOCOv12_H12CORE_pcm.txt', 'HOCOMOCOv12'),
@@ -586,6 +678,8 @@ def motif_site_rows(effects, activity):
             if best is None or pw < best[0]:
                 best = (pw, st, L, m['matrix_id'], score)
         pw, st, L, mid, score = best
+        span = slice(max(st - 5, 0), st + L + 5)
+        names = list(prof['source_variant']) if prof is not None else []
         for j in range(st, st + L):
             for alt in 'ACGT':
                 if alt == seq[j]:
@@ -594,12 +688,15 @@ def motif_site_rows(effects, activity):
                 pa = score(seq[:j] + alt + seq[j + 1:], max(0, st - L + 1), min(211, st + 2 * L - 1) - 1)[0]
                 r = effects.get(v, {})
                 get = lambda ep: 100 * float(r[ep]['delta']) if ep in r and r[ep]['delta'] and int(r[ep]['molecules']) >= 300 else np.nan
+                deep = v in names and np.isfinite(get('msp_C_std'))
+                site = lambda k: 100 * float(prof[k][names.index(v)][span].mean() - prof[k][names.index('WT')][span].mean()) if deep else np.nan
                 out.append(dict(site=label, database=database, motif=name, matrix_id=mid, site_start=st + 21, site_end=st + L + 20, wt_p=pw,
                                 variant=v, oligo_pos=j + 21, ref=seq[j], alt=alt, motif_log10_p_change=np.log10(pa) - np.log10(pw),
                                 activity_log2=activity['LDLR'].get((GENOMIC_OFFSET + j + 21, seq[j], alt), np.nan),
                                 local_chromatin_pp=get('local:C_std'), local_proxy_pp=get('local:M'), accessibility_pp=get('msp_C_std'),
                                 nucleosome_pp=get('nuc_85_250_C_std'), proxy_dominated=bool(r) and proxy_dominated(r),
-                                a_run=bool(r) and r['msp_C_std']['context'] == 'homopolymer'))
+                                a_run=bool(r) and r['msp_C_std']['context'] == 'homopolymer',
+                                at_change=(seq[j] in 'AT') != (alt in 'AT'), tf_site_pp=site('tf_C_std'), msp_site_pp=site('msp_C_std')))
     return out
 
 
@@ -609,7 +706,11 @@ def motif_site_figure(rows, output, plt):
     sites = list(dict.fromkeys(r['site'] for r in rows))
     tracks = [('motif_log10_p_change', 'Motif disruption\n(log10 p, alt − WT)'), ('activity_log2', 'Published activity\n(log2)'),
               ('local_chromatin_pp', 'Local chromatin\n5–10 bp (Δ pp)'), ('accessibility_pp', 'Accessibility\nMSP (Δ pp)')]
-    fig, axes = plt.subplots(len(tracks), len(sites), figsize=(4.1 * len(sites), 9.5), squeeze=False, gridspec_kw=dict(hspace=.35, wspace=.28))
+    profiled = any(np.isfinite(r.get('tf_site_pp', np.nan)) for r in rows)
+    if profiled:
+        tracks.insert(3, ('tf_site_pp', 'TF-sized footprint\nover match ±5 bp (Δ pp)'))
+    fig, axes = plt.subplots(len(tracks), len(sites), figsize=(4.1 * len(sites), 2.4 * len(tracks) - .1), squeeze=False,
+                             gridspec_kw=dict(hspace=.35, wspace=.28))
     seq = wt_sequence()
     for c, site in enumerate(sites):
         rs = [r for r in rows if r['site'] == site]
@@ -619,6 +720,8 @@ def motif_site_figure(rows, output, plt):
             ax = axes[k, c]
             y = np.array([r[key] for r in rs], float)
             unresolved = np.array([r['a_run'] or r['proxy_dominated'] for r in rs]) & (key == 'local_chromatin_pp')
+            if key == 'tf_site_pp':                                      # A/T changes alter footprint-call observability
+                unresolved = np.array([r['a_run'] or r['at_change'] for r in rs])
             ok = np.isfinite(y)
             ax.axhline(0, color='#c3c2b7', lw=1)
             ax.scatter(x[ok & ~unresolved], y[ok & ~unresolved], s=22, c=np.clip(motif[ok & ~unresolved], -1, 3), cmap='Blues', vmin=-1, vmax=3,
@@ -648,9 +751,11 @@ def motif_site_figure(rows, output, plt):
                              f"WT match p {r0['wt_p']:.0e}", fontsize=9)
         axes[-1, c].set_xlabel(f"WT base (oligo {r0['site_start']}–{r0['site_end']}); dots: A, C, G, T left to right", fontsize=7.5)
     fig.suptitle('Motif disruption, footprint, accessibility and function at four promoter elements (replicate 3)', x=.01, ha='left', fontsize=12)
-    fig.text(.01, .005, 'Each dot is one substitution inside the best WT match, shaded by how much it weakens the motif (darker = more). Hollow: local readout unresolved '
-             '(A run or proxy-dominated). Spearman ρ excludes unresolved points. Motif matches are sequence models, not identified proteins; sites were '
-             'chosen after seeing the data.', fontsize=7, color=MUTED)
+    fig.text(.01, .005, 'Each dot is one substitution inside the best WT match, shaded by how much it weakens the motif (darker = more). Hollow: readout unresolved '
+             '(local chromatin: A run or proxy-dominated' + ('; TF-sized footprint: A run, or the substitution adds or removes an A/T' if profiled else '') +
+             '). Spearman ρ excludes unresolved points.\nMotif matches are sequence models, not identified proteins; sites were chosen after seeing the data.'
+             + (' TF-sized footprint: per-base FiberHMM 10–60 bp calls in chromatinized molecules, averaged over the match ±5 bp.' if profiled else ''),
+             fontsize=7, color=MUTED)
     for ext in ('png', 'svg'):
         fig.savefig(Path(output) / f'motif_sites.{ext}', dpi=160, bbox_inches='tight')
     plt.close(fig)
@@ -663,20 +768,27 @@ def figures(profiles_dir, motifs_path, output, variants=None):
     _style(plt)
     output = Path(output)
     output.mkdir(parents=True, exist_ok=False)
-    effects, activity, motifs = load_effects(), load_activity(), load_motifs(motifs_path)
-    overview(effects, activity, motifs, output, plt)
     from fsmpra.io import write_table
+    effects, activity, motifs = load_effects(), load_activity(), load_motifs(motifs_path)
+    prof = dict(np.load(Path(profiles_dir) / 'profiles.npz')) if profiles_dir else None
+    prows = None
+    if prof is not None:
+        changes = profile_changes(prof, effects)
+        write_table(output / 'profile_changes.tsv', changes, list(changes[0]))
+        assoc = profile_association(changes)
+        write_table(output / 'profile_association.tsv', assoc, list(assoc[0]))
+        prows = {r['variant']: r for r in changes}
+    overview(effects, activity, motifs, output, plt, prows)
     assoc = footprint_association(effects)
     write_table(output / 'footprint_association.tsv', assoc, list(assoc[0]))
-    rows = motif_site_rows(effects, activity)
+    rows = motif_site_rows(effects, activity, prof)
     write_table(output / 'motif_sites.tsv', rows, list(rows[0]))
     motif_site_figure(rows, output, plt)
-    if profiles_dir:
-        prof = dict(np.load(Path(profiles_dir) / 'profiles.npz'))
+    if prof is not None:
         raster = dict(np.load(Path(profiles_dir) / 'rasters.npz'))
         for h in variants or TOP_HITS:
             if h in effects and h in list(prof['source_variant']):
-                variant_figure(h, prof, raster, effects, activity, motifs, output, plt)
+                variant_figure(h, prof, raster, effects, activity, motifs, output, plt, prows.get(h))
         for pos in COMPARE_POSITIONS:
             position_figure(pos, prof, effects, activity, motifs, output, plt)
     print(output)
