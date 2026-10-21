@@ -17,7 +17,8 @@ normalized by same-reaction unmethylated/heavily methylated proxy controls).
 **Latest results:** [site-methylation run, 21 October 2026](docs/rep3_site_methylation_20261021.md):
 Sp1-repeat accessibility/nucleosome changes are robust and track activity, while local
 footprint candidates at A runs, including oligo 125, are dominated by an adjacent-adenine
-observability artifact.
+observability artifact. The calibrated mask-4 follow-up adds local candidates outside A runs
+(oligo 117, 56, 191) and a [revised construct panel](docs/evidence/validation_panel_v2_20261021.tsv).
 
 > **Raw-BAM redesign:** start with the new [processing workflow](docs/processing_workflow.md)
 > for replicate 3. It produces molecule QC/features, barcode assignments and

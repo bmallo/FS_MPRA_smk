@@ -1,6 +1,6 @@
 # Replicate-3 per-site methylation with proxy controls — results, 21 October 2026
 
-This report interprets the [site-methylation run](evidence/site_methylation_20261021/README.md) (commit `fc4731a`, Klone job 42090780) against the rules fixed beforehand in the [usage doc](site_methylation_usage.md). Read the [independent review](INDEPENDENT_REVIEW_20261020.md) first. All numbers here were recomputed from the bundle's tables; corrections to the run summary are listed at the end.
+This report interprets the [site-methylation run](evidence/site_methylation_20261021/README.md) (commit `fc4731a`, Klone job 42090780) and its [mask-4 follow-up](evidence/site_methylation_mask4_20261021/README.md) (commit `f8840e8`, job 42093363) against rules fixed before each run, in the [usage doc](site_methylation_usage.md) and the follow-up section below. Read the [independent review](INDEPENDENT_REVIEW_20261020.md) first. All numbers here were recomputed from the bundle's tables; corrections to the run summary are listed at the end.
 
 ## Bottom line
 
@@ -14,6 +14,11 @@ This report interprets the [site-methylation run](evidence/site_methylation_2026
    - Repeat 3: accessibility −2.0 pp (z −20) and nucleosome-sized protection +1.9 pp (z +16), with little change in the methylation proxy.
    - Repeat 1 shows the same pattern, weaker.
    - SRE-1 lowers activity just as much without changing accessibility.
+4. **After a ±4-bp mask, a calibrated local readout exists outside A runs, and it yields three new local candidates** (mask-4 follow-up; all 73 non-U endpoints pass calibration).
+   - Oligo 115–117 (chr19:11089379–81): substitutions open the site and the whole element, reduce nucleosome-sized protection and *raise* activity. This is a repressive or nucleosome-positioning candidate at the left edge of the old P3 "footprint".
+   - Oligo 56 in the P1 core (chr19:11089320): local protection loss with activity loss. This is an activator-footprint candidate, at a position free of the A-run artifact.
+   - Oligo 165–166 and 190–191 (`TGACGTGG`): local protection loss without any activity change.
+   - Oligo 125 stays unsupported: its context is homopolymer, which the prespecified rule marks unresolved, and the proxy class moves as much as chromatin.
 
 ## The measurement: an adjacent-adenine observability kernel
 
@@ -104,7 +109,8 @@ Region means over SNVs inside each element are below (primary run). Across the t
 
 - **Lead mechanistic result:** Sp1 repeats maintain accessibility, and their disruption brings nucleosome-sized protection and lower activity. Repeat 3 is strongest. SRE-1 changes activity without accessibility.
 - **Deprioritize oligo 125** as a protein footprint, as rule 3 dictates. In any construct panel, keep it only as an observability test case. Weight the panel toward Repeat 3/Repeat 1 substitutions spanning A/T gain, loss and retention, plus SRE-1 core substitutions as the activity-without-accessibility contrast.
-- **Local TF footprints remain unresolved** wherever substitutions touch A runs. A separately prepared, in-vitro-methylated library is still the decisive control. It matters most for homopolymer contexts, where the proxy kernel is strongest and least well characterized.
+- **Local footprints:** unresolved wherever substitutions touch A runs (154 of 630 SNVs). Elsewhere, oligo 117, 56 and 191 are the best-supported local candidates; see the follow-up results. A separately prepared, in-vitro-methylated library is still the decisive control, most of all for homopolymer contexts.
+- **Revised construct panel:** [`evidence/validation_panel_v2_20261021.tsv`](evidence/validation_panel_v2_20261021.tsv) has 11 constructs with exact mutable sequences and supporting numbers. It replaces the 20 October panel's emphasis on oligo 125.
 
 ## Follow-up run, prespecified before it is executed
 
@@ -120,6 +126,31 @@ Mask and window widths come only from the library kernel above. The mask covers 
 3. **Residual artifact:** `local:A_norm` is usable only if it passes the gate and its mean Δ for A/T gains and losses differ by less than 3 SE (SE from per-SNV deltas within each class).
 4. **Position 125:** rule 3 is reapplied unchanged to the new windows.
 5. **Library association:** the same table on the common SNV set; no new endpoints are added to the primary family.
+
+## Mask-4 follow-up: results
+
+Klone job 42093363, 6:39 for all four runs; the extraction was reused unchanged, and the pinned files are identical to `fc4731a`. Numbers below were recomputed from the [bundle](evidence/site_methylation_mask4_20261021/README.md).
+
+1. **Calibration:** 73/73 non-U endpoints pass in the primary run (z SD 0.97–1.08, median rejection rate 0.053, 1,000 draws), including all four primary endpoints. One M-proxy endpoint fails at thresholds 0.02/0.70 (`adjacent_143_150:M`, z SD 1.24); none fails in the other runs.
+2. **Homopolymer reach: rule triggered.** The M kernel for homopolymer-context A/T gains exceeds 2 SE at offsets −14, −8 and −5 (−5: −6.1 pp, z −3.1), so local endpoints for the 154 homopolymer-context SNVs are unresolved. Their core artifact is also stronger: about −46/+44 pp at ±1 bp and ±10 pp at ±3 bp, against about −30 pp (gains) and +6 to +18 pp (losses) at ±1 bp, and ≤ 4 pp at ±3 bp, elsewhere.
+3. **Residual artifact:** `local:A_norm` is usable. The gain-minus-loss difference is −0.59 pp (z −2.7) overall and −0.24 pp (z −0.9) outside A runs.
+4. **Position 125:** the observability clause is met for 3/3 substitutions (M +5.1/+3.8/+6.3 pp against C +4.5/+3.9/+5.9 pp), and the chromatin clause is not. All three are homopolymer context. Not a supported protein footprint.
+5. **Library association:** unchanged for MSP and nucleosome endpoints (r = 0.50 and −0.48). The local 5–10-bp endpoint gives r = 0.24, just beyond its rotation null (0.26 against 0.23).
+
+**Primary-family calls (q < 0.05):** local 93, flank 75, accessibility 80, nucleosome-sized 38, with sign agreement with activity of 74%, 78%, 87% and 100%. Of the 93 local calls, 28 are in homopolymer context and therefore unresolved. Of the 65 interpretable ones, 38 also have a flank call and 30 an accessibility call, so most local calls are the broad Sp1-repeat architecture seen at shorter range.
+
+**Position-consistent local calls outside A runs.** These are positions where at least two substitutions are called with the same sign; 13 of 159 testable positions qualify:
+
+| Oligo (chr19) | WT context | Called | Local Δ | M proxy | Accessibility | Activity | Reading |
+|---|---|---|---:|---:|---:|---:|---|
+| 146, 148–150 (11089410–14) | Repeat 3 `CTCCTCCCCC` | 2–3/3 each | −2.0 to −4.4 | −0.8 to +6.4 | −3.1 to −4.4 | −2.1 to −2.7 | Sp1-repeat architecture at short range |
+| 115, 117 (11089379, 81) | `GTGAAG[A]CATTTG` | 2/3, 3/3 | +3.7, +6.2 | ≈ 0 | +2.6, +3.7 | +1.1, +0.9 | Protected element whose loss opens chromatin and raises activity |
+| 56 (11089320) | `CTTCAC[G]GGTTAA` | 2/3 | +4.2 | +1.0 | +0.3 | −1.25 | Local protection loss with activity loss |
+| 165, 166 (11089429–30) | `AAACCT[C]ACATTG` | 3/3, 2/3 | +2.8 | +1.8, −0.3 | +0.2, +0.8 | +0.1, +0.3 | Protection without function |
+| 190, 191 (11089454–55) | `TGACGT[G]GGCCCC` | 2/3 each | +3.3, +3.8 | −3.3, +1.1 | +1.2, +0.9 | +0.2, +0.1 | Protection without function (`TGACG`, CRE-like) |
+| 198, 202 (11089462, 66) | `GCCCCG[A]GTGCAA`, `CGAGTG[C]AATCGC` | 2/3 each | −3.2, −3.5 | small | −1.4, −2.0 | ≈ 0 | Small local losses, no function |
+
+The figures are mean percentage-point changes over the position's substitutions. The 117, 56 and 191 candidates hold in all four runs; their local z ranges are 3.1–4.3 (117A>T), 3.2–4.7 (56G>C) and 6.4–7.4 (191G>T). Twenty-four local calls have no flank or accessibility counterpart; several of those carry large M-proxy changes (78T>C, 113G>C, 129C>G), and normalization can turn such changes into apparent effects, so single-substitution local-only calls are not prioritized. Motif identity is not assigned here.
 
 ## Limitations
 
