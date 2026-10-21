@@ -1,0 +1,40 @@
+{
+  "schema_version": "fsmpra.hit_profiles.v1",
+  "extract": "results/rep3_site_methylation_20261021/extract",
+  "config": "config/ldlr_site_methylation_mask4.json",
+  "strata_edges": [
+    0.04260780289769173,
+    0.07854209095239639,
+    0.12012320011854172,
+    0.18326488137245178,
+    0.2643737196922302,
+    0.34240245819091797,
+    0.4111909568309784,
+    0.4758726954460144,
+    0.5385010242462158
+  ],
+  "strata_weights": [
+    0.09951216091337774,
+    0.09939905192042103,
+    0.10021230557977973,
+    0.10030053059428597,
+    0.1001206872954848,
+    0.0999317952772471,
+    0.09992953309738797,
+    0.10057425435724118,
+    0.09937190576211143,
+    0.10064777520266303
+  ],
+  "groups": "0 U, 1 M, 2.. C strata",
+  "cohort": "eligible and footprint evaluated",
+  "raster_per_allele": 150,
+  "seed": 20261021,
+  "states": [
+    "unannotated",
+    "accessible (MSP)",
+    "nucleosome-sized 85-250 bp",
+    "long protection >250 bp",
+    "TF-sized footprint 10-60 bp"
+  ],
+  "interpretation": "Per-base fractions; C_std is standardized over WT distal-labeling strata. Rasters are random C-class molecules ordered by element MSP fraction. Descriptive; one preparation."
+}

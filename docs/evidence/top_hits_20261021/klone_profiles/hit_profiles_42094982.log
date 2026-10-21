@@ -1,0 +1,188 @@
+host=n3432 job=42094982 start=Tue Oct 20 20:30:58 PDT 2026
+s.......................Exact barcode support aggregated
+............../mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/scipy/stats/_axis_nan_policy.py:531: RuntimeWarning: Precision loss occurred in moment calculation due to catastrophic cancellation. This occurs when the data are nearly identical. Results may be unreliable.
+  res = hypotest_fun_out(*samples, **kwds)
+.../mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:64: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+  prop = Group((name + Suppress("=") + comma_separated(value)) | oneOf(_CONSTANTS))
+/mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+  parse = parser.parseString(pattern)
+/mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89: PyparsingDeprecationWarning: 'resetCache' deprecated - use 'reset_cache'
+  parser.resetCache()
+WARNING:matplotlib.font_manager:Matplotlib is building the font cache; this may take a moment.
+/mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/_mathtext.py:45: PyparsingDeprecationWarning: 'enablePackrat' deprecated - use 'enable_packrat'
+  ParserElement.enablePackrat()
+WARNING:matplotlib.style.core:In /mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/mpl-data/stylelib/classic.mplstyle: 'parseString' deprecated - use 'parse_string'
+WARNING:matplotlib.style.core:In /mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/mpl-data/stylelib/classic.mplstyle: 'resetCache' deprecated - use 'reset_cache'
+...........WT A/A n=50: 2 draws, 19 reference permutations
+WT A/A n=100: 2 draws, 19 reference permutations
+WT A/A n=400: 2 draws, 19 reference permutations
+WT A/A n=1000: 2 draws, 19 reference permutations
+simulation_00: 2 draws
+........................................Exact barcode support aggregated
+.Extracted 1 primary plasmids (1 chunks)
+Extracted 2 primary plasmids (2 chunks)
+Extracted 3 primary plasmids (3 chunks)
+Exact barcode support aggregated
+Extracted 1 primary plasmids (1 chunks)
+Extracted 2 primary plasmids (2 chunks)
+..Exact barcode support aggregated
+...Exact barcode support aggregated
+...................Cohort 98,000 molecules; classified 98,000
+Variant contrasts complete: 52 SNVs
+WT pseudo-variant calibration complete: 40 draws
+/mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:85: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+  parse = parser.parseString(pattern)
+/mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/_fontconfig_pattern.py:89: PyparsingDeprecationWarning: 'resetCache' deprecated - use 'reset_cache'
+  parser.resetCache()
+/mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/_mathtext.py:2010: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+  p.space          = oneOf(self._space_widths)("space")
+/mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/_mathtext.py:2012: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+  p.style_literal  = oneOf(
+/mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/_mathtext.py:2015: PyparsingDeprecationWarning: 'leaveWhitespace' deprecated - use 'leave_whitespace'
+  p.symbol         = Regex(
+/mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/_mathtext.py:2024: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+  p.start_group    = Optional(r"\math" + oneOf(self._fontnames)("font")) + "{"
+/mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/_mathtext.py:2027: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+  p.delim          = oneOf(self._delims)
+/mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/_mathtext.py:1984: PyparsingDeprecationWarning: 'setName' deprecated - use 'set_name'
+  val.setName(key)
+/mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/_mathtext.py:1987: PyparsingDeprecationWarning: 'setParseAction' deprecated - use 'set_parse_action'
+  val.setParseAction(getattr(self, key))
+/mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/_mathtext.py:1748: PyparsingDeprecationWarning: 'setParseAction' deprecated - use 'set_parse_action'
+  return Empty().setParseAction(raise_error)
+/mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/_mathtext.py:2088: PyparsingDeprecationWarning: 'endQuoteChar' argument is deprecated, use 'end_quote_char'
+  p.text = cmd(r"\text", QuotedString('{', '\\', endQuoteChar="}"))
+/mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/_mathtext.py:2097: PyparsingDeprecationWarning: 'oneOf' deprecated - use 'one_of'
+  + OneOrMore(oneOf(["_", "^"]) - p.placeable)("subsuper")
+/mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/_mathtext.py:2146: PyparsingDeprecationWarning: 'unquoteResults' argument is deprecated, use 'unquote_results'
+  p.math_string   = QuotedString('$', '\\', unquoteResults=False)
+/mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/_mathtext.py:2147: PyparsingDeprecationWarning: 'leaveWhitespace' deprecated - use 'leave_whitespace'
+  p.non_math      = Regex(r"(?:(?:\\[$])|[^$])*").leaveWhitespace()
+/mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/_mathtext.py:2170: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+  result = self._expression.parseString(s)
+/mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/_mathtext.py:2197: PyparsingDeprecationWarning: 'parseString' deprecated - use 'parse_string'
+  return self._math_expression.parseString(toks[0][1:-1], parseAll=True)
+/mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/pyparsing/util.py:466: PyparsingDeprecationWarning: 'parseAll' argument is deprecated, use 'parse_all'
+  return fn(self, *args, **kwargs)
+/mmfs1/home/bmallo/miniconda3/lib/python3.9/site-packages/matplotlib/_mathtext.py:2178: PyparsingDeprecationWarning: 'resetCache' deprecated - use 'reset_cache'
+  ParserElement.resetCache()
+Complete
+.....Selected 3 molecules (1 barcodes); scanning BAM
+Complete: 3 molecules in 0.0s
+Selected 2 molecules (1 barcodes); scanning BAM
+Complete: 2 molecules in 0.0s
+Selected 3 molecules (1 barcodes); scanning BAM
+.............
+----------------------------------------------------------------------
+Ran 135 tests in 60.412s
+
+OK (skipped=1)
+/tmp/tmpduh0t78d/profiles
+/tmp/tmpduh0t78d/figures
+results/rep3_site_methylation_20261021/hit_profiles
+	Command being timed: "/mmfs1/home/bmallo/miniconda3/bin/python -m tools.variant_hit_figures profiles --extract results/rep3_site_methylation_20261021/extract --output results/rep3_site_methylation_20261021/hit_profiles"
+	User time (seconds): 12.56
+	System time (seconds): 5.71
+	Percent of CPU this job got: 83%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:21.96
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 3155796
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 760533
+	Voluntary context switches: 246
+	Involuntary context switches: 87
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 8
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+results/rep3_site_methylation_20261021/hit_figures
+	Command being timed: "/mmfs1/home/bmallo/miniconda3/bin/python -m tools.variant_hit_figures figures --profiles results/rep3_site_methylation_20261021/hit_profiles --output results/rep3_site_methylation_20261021/hit_figures"
+	User time (seconds): 21.09
+	System time (seconds): 13.15
+	Percent of CPU this job got: 78%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:43.53
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 347292
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 122367
+	Voluntary context switches: 463
+	Involuntary context switches: 189
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 8
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+results/rep3_site_methylation_20261021/hit_figures:
+total 11537
+drwxrwsr-x 2 bmallo stergachislab   8192 Oct 20 20:33 .
+drwxrwsr-x 9 bmallo stergachislab    512 Oct 20 20:33 ..
+-rw-rw-r-- 1 bmallo stergachislab 384716 Oct 20 20:33 115A_to_C.png
+-rw-rw-r-- 1 bmallo stergachislab 354035 Oct 20 20:33 115A_to_C.svg
+-rw-rw-r-- 1 bmallo stergachislab 357841 Oct 20 20:33 117A_to_C.png
+-rw-rw-r-- 1 bmallo stergachislab 335052 Oct 20 20:33 117A_to_C.svg
+-rw-rw-r-- 1 bmallo stergachislab 384262 Oct 20 20:33 117A_to_T.png
+-rw-rw-r-- 1 bmallo stergachislab 352207 Oct 20 20:33 117A_to_T.svg
+-rw-rw-r-- 1 bmallo stergachislab 368110 Oct 20 20:33 125A_to_T.png
+-rw-rw-r-- 1 bmallo stergachislab 343990 Oct 20 20:33 125A_to_T.svg
+-rw-rw-r-- 1 bmallo stergachislab 382830 Oct 20 20:33 129C_to_G.png
+-rw-rw-r-- 1 bmallo stergachislab 358707 Oct 20 20:33 129C_to_G.svg
+-rw-rw-r-- 1 bmallo stergachislab 388364 Oct 20 20:33 133C_to_G.png
+-rw-rw-r-- 1 bmallo stergachislab 354810 Oct 20 20:33 133C_to_G.svg
+-rw-rw-r-- 1 bmallo stergachislab 390519 Oct 20 20:33 146C_to_G.png
+-rw-rw-r-- 1 bmallo stergachislab 352874 Oct 20 20:33 146C_to_G.svg
+-rw-rw-r-- 1 bmallo stergachislab 391769 Oct 20 20:33 146C_to_T.png
+-rw-rw-r-- 1 bmallo stergachislab 354944 Oct 20 20:33 146C_to_T.svg
+-rw-rw-r-- 1 bmallo stergachislab 395463 Oct 20 20:33 149C_to_G.png
+-rw-rw-r-- 1 bmallo stergachislab 356210 Oct 20 20:33 149C_to_G.svg
+-rw-rw-r-- 1 bmallo stergachislab 362743 Oct 20 20:33 191G_to_T.png
+-rw-rw-r-- 1 bmallo stergachislab 346974 Oct 20 20:33 191G_to_T.svg
+-rw-rw-r-- 1 bmallo stergachislab 382062 Oct 20 20:33 56G_to_C.png
+-rw-rw-r-- 1 bmallo stergachislab 348472 Oct 20 20:33 56G_to_C.svg
+-rw-rw-r-- 1 bmallo stergachislab 377649 Oct 20 20:33 56G_to_T.png
+-rw-rw-r-- 1 bmallo stergachislab 344977 Oct 20 20:33 56G_to_T.svg
+-rw-rw-r-- 1 bmallo stergachislab 375445 Oct 20 20:33 58G_to_T.png
+-rw-rw-r-- 1 bmallo stergachislab 346383 Oct 20 20:33 58G_to_T.svg
+-rw-rw-r-- 1 bmallo stergachislab 380997 Oct 20 20:33 73T_to_C.png
+-rw-rw-r-- 1 bmallo stergachislab 352646 Oct 20 20:33 73T_to_C.svg
+-rw-rw-r-- 1 bmallo stergachislab 390709 Oct 20 20:33 98C_to_G.png
+-rw-rw-r-- 1 bmallo stergachislab 353713 Oct 20 20:33 98C_to_G.svg
+-rw-rw-r-- 1 bmallo stergachislab    466 Oct 20 20:33 footprint_association.tsv
+-rw-rw-r-- 1 bmallo stergachislab 432891 Oct 20 20:33 motif_sites.png
+-rw-rw-r-- 1 bmallo stergachislab 362108 Oct 20 20:33 motif_sites.svg
+-rw-rw-r-- 1 bmallo stergachislab  31789 Oct 20 20:33 motif_sites.tsv
+-rw-rw-r-- 1 bmallo stergachislab 192622 Oct 20 20:33 position_117.png
+-rw-rw-r-- 1 bmallo stergachislab 179897 Oct 20 20:33 position_117.svg
+-rw-rw-r-- 1 bmallo stergachislab 217548 Oct 20 20:33 position_146.png
+-rw-rw-r-- 1 bmallo stergachislab 195829 Oct 20 20:33 position_146.svg
+-rw-rw-r-- 1 bmallo stergachislab 217067 Oct 20 20:33 position_56.png
+-rw-rw-r-- 1 bmallo stergachislab 180195 Oct 20 20:33 position_56.svg
+-rw-rw-r-- 1 bmallo stergachislab 219321 Oct 20 20:33 position_58.png
+-rw-rw-r-- 1 bmallo stergachislab 179644 Oct 20 20:33 position_58.svg
+-rw-rw-r-- 1 bmallo stergachislab 213862 Oct 20 20:33 position_73.png
+-rw-rw-r-- 1 bmallo stergachislab 179272 Oct 20 20:33 position_73.svg
+-rw-rw-r-- 1 bmallo stergachislab 540584 Oct 20 20:33 top_hits_overview.png
+-rw-rw-r-- 1 bmallo stergachislab 271991 Oct 20 20:33 top_hits_overview.svg
+
+results/rep3_site_methylation_20261021/hit_profiles:
+total 2946
+drwx--S--- 2 bmallo stergachislab     512 Oct 20 20:33 .
+drwxrwsr-x 9 bmallo stergachislab     512 Oct 20 20:33 ..
+-rw-rw-r-- 1 bmallo stergachislab    1178 Oct 20 20:33 audit.json
+-rw-rw-r-- 1 bmallo stergachislab 2627597 Oct 20 20:33 profiles.npz
+-rw-rw-r-- 1 bmallo stergachislab   74652 Oct 20 20:33 rasters.npz
+HIT PROFILES DONE Tue Oct 20 20:33:44 PDT 2026
