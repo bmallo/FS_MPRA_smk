@@ -1,0 +1,76 @@
+{
+ "delivery": {
+  "n": 50000,
+  "median_len": 4647.0,
+  "flanked": 38294,
+  "np_ge10": 0.7941714106648561,
+  "np_ge20": 0.5005483887815324
+ },
+ "alignment": {
+  "total": 10513725,
+  "chrM": 1188119,
+  "nuclear": 603847,
+  "other_genomic": 4489,
+  "plasmid_concatemer": 16458,
+  "plasmid_full": 8297446,
+  "plasmid_partial": 401923,
+  "unmapped": 1443
+ },
+ "genotypes": {
+  "total": 8715827,
+  "WT": 1638104,
+  "SNV": 1779643,
+  "DEL": 528019,
+  "INS": 2087565,
+  "MULTI": 1815537,
+  "LARGE_INDEL": 546586,
+  "SINGLE_NONDESIGN": 0,
+  "PARTIAL": 206026,
+  "NO_INSERT": 114347
+ },
+ "funnel": {
+  "Primary plasmid reads": 8715827,
+  "Exact design, element bases \u2265 Q20": 4739908,
+  "Analysis-eligible WT + SNV": 2594368,
+  "  \u2026 with supported barcode": 2102906
+ },
+ "coverage": {
+  "n": 633,
+  "p10_25_50_75_90": [
+   1276.0,
+   1654.0,
+   1955.0,
+   2464.0,
+   2978.2000000000007
+  ],
+  "lt100": 3,
+  "fold80": 1.375180466870773
+ },
+ "barcodes": {
+  "median_bc": 441.0,
+  "p10_bc": 284.0,
+  "ge50": 630,
+  "supported_barcodes": 986680,
+  "median_reads_per_bc": 4.0,
+  "r_bc_mol": 0.9976611940038426
+ },
+ "methylation": {
+  "wt": 1243891.0,
+  "U": 0.07478951129962352,
+  "C": 0.710756006756219,
+  "M": 0.21445448194415748,
+  "per_read_n": 78504,
+  "per_read_median_m6a": 0.36075367647058826
+ },
+ "sources": {
+  "random50k": "/gscratch/stergachislab/bmallo/large_home/projects/LDLR_MPRA/fiberseq/HepG2/replicate_3/qc/random50k.reads.tsv.gz",
+  "read_classes": "/gscratch/stergachislab/bmallo/large_home/projects/LDLR_MPRA/fiberseq/HepG2/replicate_3/report/filters/read_class_summary.tsv",
+  "promoter_classes": "/gscratch/stergachislab/bmallo/large_home/projects/LDLR_MPRA/fiberseq/HepG2/replicate_3/report/class_summary.tsv",
+  "per_read_m6a": "/gscratch/stergachislab/bmallo/large_home/projects/LDLR_MPRA/fiberseq/HepG2/replicate_3/qc/m6a_nuc/plasmid_per_read.tsv.gz",
+  "ledger_summary": "results/rep3_ledger_20261016/summary.json",
+  "variant_coverage": "results/rep3_ledger_20261016/barcodes/variant_barcode_coverage.tsv",
+  "barcode_map": "results/rep3_ledger_20261016/barcodes/barcode_map.tsv.gz",
+  "distal_hist": "results/rep3_site_methylation_20261021/effects/distal_m6a_histogram.tsv",
+  "site_summary": "results/rep3_site_methylation_20261021/effects/summary.json"
+ }
+}
