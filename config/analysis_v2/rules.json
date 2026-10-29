@@ -1,0 +1,29 @@
+{
+  "description": "Analysis v2 read, genotype and clone rules. Fixed from read properties only (steps A2-A3, 2026-10-28), before any chromatin or variant-effect result was examined. Later steps read this file.",
+  "molecules": {
+    "genotype": "exact match of the 211-bp element to one of 1,417 designed sequences (fsmpra ledger extract)",
+    "classes": ["WT", "SNV", "DEL", "INS"],
+    "min_passes": 10,
+    "min_read_quality": 0.99,
+    "min_mapq": 20,
+    "min_element_base_quality": 20,
+    "full_length_only": true,
+    "excluded": {
+      "partial_reads": "A3: partial reads in runs 1-2 disagree with their clone in up to 15% of reads (full-length: about 1%)",
+      "off_design": "A2: mostly two designed edits (double mutants) and large indels; not single-variant data",
+      "low_passes": "A2/A3: one-edit genotype errors 1.29% at 10-14 passes vs 0.37% at 30+; m6A reliability tested in A5"
+    }
+  },
+  "clones": {
+    "unit": "exact N15 barcode (no error correction)",
+    "accept": {"min_full_length_qualified_reads": 2, "min_majority_fraction": 0.9},
+    "singleton_barcodes": "kept; each is its own clone",
+    "unreadable_barcode": "kept; each molecule is its own clone",
+    "drop_read_if": {"contradicts_clone_with_min_reads": 3, "clone_majority_fraction": 0.9},
+    "basis": "A3: exact rule accepts 41% of run-1 molecules (deep clones rejected by one stray read) vs 92% with the majority rule"
+  },
+  "indel_checks": {
+    "wt_misread_rates_run3": {"to_INS": 0.0079, "to_DEL": 0.0053, "to_SNV": 0.0028},
+    "required": "per-variant estimate of WT misread contamination for designed indels, and a sensitivity analysis at >= 20 passes, before indel effects are reported (A10)"
+  }
+}

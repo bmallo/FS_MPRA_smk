@@ -1,0 +1,71 @@
+{
+  "description": "Run registry for analysis v2 (step A1 onward). One entry per sequencing run. Reaction fields come from the named source; null = not recorded anywhere we found.",
+  "project_root": "/gscratch/stergachislab/bmallo/large_home/projects/LDLR_MPRA/fiberseq",
+  "runs": [
+    {
+      "id": "HepG2_run1",
+      "cell": "HepG2",
+      "construct": "LDLR_MPRA (4,647 bp, 211-bp element forward)",
+      "bam_raw": "HepG2/replicate_1/source_bams/LDLR_MPRA_HepG2_unaligned.ft.bam",
+      "bam_aligned": "HepG2/replicate_1/source_bams/LDLR_MPRA_HepG2_aligned.sorted.ft.bam",
+      "plasmid_contig": "LDLR",
+      "aligned_includes_unmapped": false,
+      "reaction_min": 10,
+      "hia5_ul": 1.5,
+      "cells_per_reaction": 2000000,
+      "reaction_source": "docs/condition_comparison_20261014.md (user-confirmed 2026-10-14)",
+      "bam_realigned": "HepG2/replicate_1/reanalysis_2026-10/aligned/rep1.hg38_LDLR.ft.aligned.bam",
+      "plasmid_contig_realigned": "LDLR_MPRA_NotI",
+      "realigned_note": "Oct 2026 realignment with the replicate-3 pipeline (hg38 + NotI-rotated plasmid, --unmapped); use for A2 onward."
+    },
+    {
+      "id": "HepG2_run2",
+      "cell": "HepG2",
+      "construct": "LDLR_MPRA (4,647 bp, 211-bp element forward)",
+      "bam_raw": "HepG2/replicate_2/source_bams/PS01569.m84046_260321_101439_s2.bc2089.ft.bam",
+      "bam_aligned": "HepG2/replicate_2/source_bams/LDLR_HepG2_rep_2.ft.aligned.bam",
+      "plasmid_contig": "LDLR",
+      "aligned_includes_unmapped": false,
+      "reaction_min": 10,
+      "hia5_ul": 1.5,
+      "cells_per_reaction": 2000000,
+      "reaction_source": "docs/condition_comparison_20261014.md (user-confirmed 2026-10-14)",
+      "bam_realigned": "HepG2/replicate_2/reanalysis_2026-10/aligned/rep2.hg38_LDLR.ft.aligned.bam",
+      "plasmid_contig_realigned": "LDLR_MPRA_NotI",
+      "realigned_note": "Oct 2026 realignment with the replicate-3 pipeline (hg38 + NotI-rotated plasmid, --unmapped); use for A2 onward."
+    },
+    {
+      "id": "HepG2_run3",
+      "cell": "HepG2",
+      "construct": "LDLR_MPRA (4,647 bp, 211-bp element forward)",
+      "bam_raw": null,
+      "bam_aligned": "HepG2/replicate_3/aligned/PS01898.hg38_LDLR.ft.aligned.bam",
+      "plasmid_contig": "LDLR_MPRA_NotI",
+      "aligned_includes_unmapped": true,
+      "reaction_min": 5,
+      "hia5_ul": 3.0,
+      "cells_per_reaction": 2000000,
+      "reaction_source": "docs/condition_comparison_20261014.md (user-confirmed 2026-10-14)"
+    },
+    {
+      "id": "HEK293T_run1",
+      "cell": "HEK293T",
+      "construct": "LDLR (4,718 bp, 211-bp element in a 318-bp mutable region, reversed)",
+      "bam_raw": null,
+      "bam_aligned": "HEK293T/LDLR_MPRA_HEK293T_aligned_ft.bam",
+      "plasmid_contig": "LDLR",
+      "aligned_includes_unmapped": false,
+      "reaction_min": 10,
+      "hia5_ul": null,
+      "cells_per_reaction": null,
+      "reaction_source": "user statement in session 2026-10-28 (10 min); volume and cell number not recorded"
+    }
+  ],
+  "activity": {
+    "source": "Kircher et al. 2019 Nat Commun 10:3583, HepG2 (mpra_published/README.md)",
+    "files": [
+      "../mpra_published/GRCh38_LDLR.tsv",
+      "../mpra_published/GRCh38_LDLR.2.csv"
+    ]
+  }
+}

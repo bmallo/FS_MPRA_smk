@@ -1,0 +1,79 @@
+{
+  "schema_version": "fsmpra.footprint_sizes_config.v1",
+  "base_config": "config/ldlr_footprints.json",
+  "calls": {
+    "min_llr": 5,
+    "drawdown": 25,
+    "length_range": [
+      10,
+      90
+    ]
+  },
+  "split": {
+    "seed": 20261030,
+    "rule": "WT barcode clusters are assigned to two halves by a seeded random permutation: half 0 discovers the features, half 1 is the WT reference for every variant test and for the pseudo-variants."
+  },
+  "map": {
+    "smoothing_sigma_bp": {
+      "midpoint": 1.5,
+      "length": 2.0
+    },
+    "peak_neighbourhood_bp": {
+      "midpoint": 5,
+      "length": 6
+    },
+    "background_neighbourhood_bp": {
+      "midpoint": 20,
+      "length": 20
+    },
+    "box_half_max": true,
+    "box_midpoint_halfwidth_bp": [
+      2,
+      8
+    ],
+    "box_length_halfwidth_bp": [
+      3,
+      15
+    ],
+    "min_box_occupancy_C_std": 0.001,
+    "max_box_overlap": 0.5,
+    "near_naked_ratio_flag": 2.0,
+    "rule": "Peaks are local maxima of the smoothed C_std density (calls per chromatin molecule per bp midpoint per bp length, standardized over the 10 WT labeling strata). Background = median of the smoothed density within +-20 bp midpoint and +-20 bp length; peaks not above it are ignored. Box = extent above half the height over background along midpoint (at the peak length) and along length (at the peak midpoint), clipped to the half-widths above. A box is kept if its unsmoothed C_std mass above background (fraction of chromatin molecules with such a call beyond the local spurious-call level, approximately) is >= min_box_occupancy_C_std; boxes are visited by mass and one overlapping a kept box by more than max_box_overlap of its own area is dropped. Near-naked (M) mass in the same box is reported, and a box whose C/M ratio is below near_naked_ratio_flag is flagged 'shared_with_near_naked' rather than dropped, because WT M molecules already show TF-sized calls up to 10% per base (wt_profile.tsv) and may include bound plasmids."
+  },
+  "effects": {
+    "endpoints": {
+      "occupancy": "fraction of molecules with a call whose midpoint and length fall in the feature box",
+      "size": "mean length of 10-90 bp calls whose midpoint falls in the feature midpoint window, among molecules with one"
+    },
+    "measures": "C_std (chromatin, standardized over WT strata) and M (near-naked), as site_effects.measures",
+    "correction": "occupancy residual = dC_std - b_f * dM, b_f = OLS slope (with intercept) of dC_std on dM across tested SNVs for that feature, clipped to [0, 1]; the same rule as variant_classes.observability_residual but per feature. SE from the same barcode-bootstrap replicates, so the C/M covariance is included.",
+    "size_measure": "C_raw (pooled chromatin molecules) with >= 10 chromatin molecules carrying a window call; amended from C_std (amendment 3).",
+    "occupancy_se_floor": "SE >= binomial SE of WT C_std occupancy at the cohort's chromatin depth (amendment 3).",
+    "size_correction": "none; size is secondary and descriptive, reported with an in-box / A-T-change flag because a substitution inside the box can move a call edge.",
+    "primary_family": "occupancy residual over all SNV x feature pairs, BH; each row carries expected_events = WT chromatin occupancy x the SNV's chromatin molecules (a full loss is detectable at |z| ~ 3 only when >= 10)",
+    "pooled_test": "per feature, SNVs whose position lies inside the footprint span (mid_peak +- len_peak/2): mean occupancy residual, SE = sqrt(sum se^2)/k, two-sided normal p, BH across features; the same for SNVs outside the span as a control",
+    "secondary_family": "size C_std over all SNV x feature pairs, BH",
+    "min_molecules": 300,
+    "bootstrap": 200,
+    "aa_draws": 1000,
+    "seed": 20261030,
+    "gate": "z SD 0.85-1.20 and upper exact 95% bound of the |z| > 1.96 rate <= 0.10 over WT pseudo-variants (whole reference-half clusters, median SNV cohort size)"
+  },
+  "sensitivity": {
+    "drawdown": [
+      10
+    ],
+    "wt_subset_molecules": 100000,
+    "rule": "Re-call a random subset of discovery-half WT molecules at drawdown 10 and redo the map on the same molecules at 25 and 10; a long feature that splits into two shorter peaks at 10 is reported as possibly two adjacent footprints."
+  },
+  "output_dir": "results/footprint_sizes_20261028",
+  "amendments": [
+    "2026-10-28, before any real map: mass and half-maximum measured above a local median background, after the synthetic unit test showed flat background alone passing the 1% mass threshold.",
+    "2026-10-28, after the WT discovery map and before any variant test (post hoc to the WT map only): min_box_occupancy 1% -> 0.1%. The 1% value was set without knowing the scale; chromatin molecules carry 0.235 calls of 10-90 bp across the whole element and only 2 of 62 peaks reached 1%. Masses replicate between WT halves (e.g. 3.19 vs 3.35%, 0.97 vs 1.03%). Added the pooled within-footprint test and expected_events because per-SNV power needs >= 0.72% occupancy at the median 1,392 chromatin molecules.",
+    "2026-10-28, after the WT pseudo-variant calibration and before any variant effect was read: rare features gave near-zero bootstrap SE when a resample had no chromatin events (occupancy_resid z SD 277, F09-F18), so the occupancy SE is floored at the binomial SE of WT occupancy at the cohort depth; size C_std was estimable in 7 of ~18,000 draws (strata without a call), so size uses C_raw with >= 10 called chromatin molecules."
+  ],
+  "interpretation": "Exploratory (third footprint definition), fixed 2026-10-28 before the size map or any per-feature variant result was viewed. The prespecified 5-20 / 21-40 bp windows (config/ldlr_footprints.json) remain the reference analysis. Calls are plasmid-LLR assay annotations; call edges snap to A/T positions (about +-3 bp).",
+  "post_hoc_analyses": [
+    "2026-10-28, after the per-SNV effects had been read (post hoc): A/T-retaining primary family (tools/footprint_sizes/at_retained.py). Same estimates, SEs, slopes and gate; primary = A/T-retaining SNVs anywhere plus A/T-changing SNVs outside the feature's call reach [mid_lo - len_hi/2, mid_hi + len_hi/2]; A/T-changing SNVs inside the call reach form a separately BH-corrected secondary family. Motivated by inside-span residuals of -0.26 / -0.08 / +0.05 pp for A/T loss / retained / gain with near-naked molecules moving the same way (WT emissions; the substituted base is dropped by the caller). Pooled within-span test repeated on A/T-retaining SNVs only."
+  ]
+}

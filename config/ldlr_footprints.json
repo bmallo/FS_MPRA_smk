@@ -1,0 +1,139 @@
+{
+  "schema_version": "fsmpra.footprint_config.v1",
+  "published_activity": {
+    "LDLR": "docs/evidence/20261020/published_GRCh38_LDLR.tsv",
+    "LDLR_2": "docs/evidence/20261020/published_GRCh38_LDLR.2.csv"
+  },
+  "analysis": {
+    "cohort": "eligible",
+    "baseq_min": 20,
+    "ml_min": 128,
+    "unmethylated_max_distal_m6a": 0.01,
+    "methylated_min_distal_m6a": 0.6,
+    "sensitivity_thresholds": [
+      [
+        0.02,
+        0.7
+      ],
+      [
+        0.005,
+        0.5
+      ]
+    ],
+    "labeling_strata": 10,
+    "min_class_molecules": 30,
+    "min_stratum_molecules": 10,
+    "bootstrap": 200,
+    "aa_draws": 1000,
+    "seed": 20261028,
+    "mask_radius": 4,
+    "windows": {
+      "near": [
+        1,
+        4
+      ],
+      "local": [
+        5,
+        10
+      ],
+      "flank": [
+        11,
+        30
+      ]
+    },
+    "regions0": {
+      "WT_P1": [
+        31,
+        51
+      ],
+      "WT_P2": [
+        53,
+        73
+      ],
+      "WT_P3": [
+        93,
+        113
+      ],
+      "WT_P4": [
+        128,
+        148
+      ],
+      "adjacent_143_150": [
+        122,
+        130
+      ],
+      "P1_core": [
+        33,
+        42
+      ],
+      "Repeat1_Sp1": [
+        68,
+        84
+      ],
+      "Repeat2_SRE1": [
+        103,
+        119
+      ],
+      "Repeat3_Sp1": [
+        119,
+        135
+      ]
+    },
+    "primary_endpoints": [
+      "local:A_norm",
+      "flank:A_norm",
+      "msp_C_std",
+      "nuc_85_250_C_std"
+    ],
+    "kernel_max_offset": 40,
+    "figures": true,
+    "interpretation": "Cross-cell per-variant effects, fixed 2026-10-28 before any variant result: same windows, mask 4, 10 labeling strata, proxy thresholds 0.01/0.60 and primary family as the 21 Oct mask-4 HepG2 run. Footprint scalars (msp, nuc_85_250, tf_small) now come from plasmid-LLR (min_llr 5, drawdown 25, each cell's own fold-A table) in both cells.",
+    "min_association_molecules": 300
+  },
+  "footprints": {
+    "tracks": [
+      "tf",
+      "nuc"
+    ],
+    "windows": {
+      "fp_local": [
+        5,
+        20
+      ],
+      "fp_flank": [
+        21,
+        40
+      ]
+    },
+    "primary_endpoints": [
+      "tf:fp_local:net",
+      "tf:fp_flank:net",
+      "nuc:fp_local:net"
+    ],
+    "min_molecules": 300,
+    "aa_draws": 1000,
+    "seed": 20261029,
+    "interpretation": "Fixed 2026-10-28 before any footprint-effect result. Plasmid-LLR coverage (min_llr 5, drawdown 25). Windows exclude +-4 bp (mask_radius) where the observability kernel is strongest; net = C_std - M removes the remaining change also seen on near-naked molecules. TF = calls 10-60 bp; nuc = calls 85-250 bp."
+  },
+  "functional": {
+    "sources": [
+      "LDLR",
+      "LDLR_2"
+    ],
+    "effect": "mean of the two published log2 values (r = 0.97 between sources; not independent)",
+    "hit": "BH q < 0.05 in both sources with the same sign"
+  },
+  "classification": {
+    "chromatin_q": 0.05,
+    "rules": {
+      "activator_footprint": "TF footprint loss (tf:fp_local:net < 0, q<0.05) and activity down",
+      "repressor_footprint": "TF footprint loss and activity up",
+      "created_repressor_footprint": "TF footprint gain and activity down",
+      "created_activator_footprint": "TF footprint gain and activity up",
+      "activator_accessibility": "accessibility down (msp_C_std < 0, q<0.05) and activity down",
+      "repressor_accessibility": "accessibility up and activity up",
+      "discordant_accessibility": "accessibility and activity change in opposite directions"
+    },
+    "precedence": "footprint label first; accessibility label if no significant footprint change"
+  }
+}

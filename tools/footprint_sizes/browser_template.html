@@ -1,0 +1,514 @@
+<title>LDLR Element Track Browser</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600&display=swap">
+<style>
+/* Layout: one shared oligo axis; a label gutter on the left, stacked tracks to the right, a sticky readout above. */
+:root {
+  --bg: #F7F6F1; --panel: #FFFFFF; --ink: #1B2A41; --muted: #4A5568; --faint: #8A94A3; --grid: #DCDDD5; --light: #ECEAE2;
+  --blue: #2B6CB0; --blue-soft: #9CC3E6; --orange: #C8641E; --orange-soft: #EDB48A;
+  --cat-near: #2B6CB0; --cat-distal: #C8641E; --cat-elem: #8A94A3; --cat-overlap: #1B2A41;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --cond: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11151B; --panel: #171C24; --ink: #E4E7EC; --muted: #A7AFBC; --faint: #6E7786; --grid: #2A313C; --light: #1E242E;
+  --blue: #6FA8DE; --blue-soft: #2C4E72; --orange: #E38B4E; --orange-soft: #73452A;
+  --cat-near: #6FA8DE; --cat-distal: #E38B4E; --cat-elem: #6E7786; --cat-overlap: #E4E7EC; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #11151B; --panel: #171C24; --ink: #E4E7EC; --muted: #A7AFBC; --faint: #6E7786; --grid: #2A313C; --light: #1E242E;
+  --blue: #6FA8DE; --blue-soft: #2C4E72; --orange: #E38B4E; --orange-soft: #73452A;
+  --cat-near: #6FA8DE; --cat-distal: #E38B4E; --cat-elem: #6E7786; --cat-overlap: #E4E7EC; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 14px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 40px; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.wrap { max-width: 1680px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; }
+h1 { font-family: var(--cond); font-weight: 600; font-size: 24px; letter-spacing: .01em; margin: 0; text-wrap: balance; }
+.meta { color: var(--muted); font-size: 13px; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; font-size: 13px; color: var(--muted); }
+.seg { display: inline-flex; border: 1px solid var(--grid); border-radius: 6px; overflow: hidden; }
+.seg button, .btn { font: inherit; font-size: 12.5px; color: var(--muted); background: var(--panel); border: 0; padding: 5px 10px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--grid); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.btn { border: 1px solid var(--grid); border-radius: 6px; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.ctl-label { text-transform: uppercase; letter-spacing: .06em; font-size: 11px; color: var(--faint); }
+label.chk { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+.readout { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--panel); border: 1px solid var(--grid);
+  border-radius: 8px; padding: 10px 14px; min-height: 128px; font-size: 12.5px; box-shadow: 0 6px 16px -12px rgba(0,0,0,.35); }
+.readout .head { display: flex; flex-wrap: wrap; gap: 4px 16px; align-items: baseline; margin-bottom: 6px; }
+.readout .pos { font-family: var(--mono); font-weight: 500; font-size: 15px; }
+.readout .ctx { color: var(--muted); }
+.readout .hint { color: var(--faint); }
+.rtable-wrap { overflow-x: auto; }
+.rtable { border-collapse: collapse; font-variant-numeric: tabular-nums; width: 100%; min-width: 760px; }
+.rtable th { text-align: left; font-weight: 500; color: var(--faint); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; padding: 2px 10px 3px 0; border-bottom: 1px solid var(--grid); }
+.rtable td { padding: 3px 10px 3px 0; white-space: nowrap; }
+.rtable td.mono { font-family: var(--mono); }
+.sig { font-weight: 600; }
+.up { color: var(--blue); } .down { color: var(--orange); }
+.pill { display: inline-block; padding: 0 6px; border-radius: 999px; font-size: 11px; border: 1px solid var(--grid); color: var(--muted); }
+.pill.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.tracks { overflow-x: auto; background: var(--panel); border: 1px solid var(--grid); border-radius: 8px; padding: 6px 0 10px; }
+svg text { font-family: var(--sans); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12px; color: var(--muted); align-items: center; }
+.sw { display: inline-block; width: 11px; height: 11px; border-radius: 2px; vertical-align: -1px; margin-right: 5px; }
+.ramp { display: inline-block; width: 120px; height: 10px; border-radius: 2px; vertical-align: -1px; margin: 0 6px; }
+section h2 { font-family: var(--cond); font-weight: 600; font-size: 17px; margin: 6px 0 8px; }
+.ftable-wrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--grid); border-radius: 8px; }
+.ftable { border-collapse: collapse; font-size: 12.5px; font-variant-numeric: tabular-nums; width: 100%; min-width: 980px; }
+.ftable th { text-align: left; font-weight: 500; color: var(--faint); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; padding: 8px 10px; border-bottom: 1px solid var(--grid); position: sticky; top: 0; background: var(--panel); }
+.ftable td { padding: 6px 10px; border-bottom: 1px solid var(--light); white-space: nowrap; }
+.ftable td.wrapcell { white-space: normal; min-width: 220px; color: var(--muted); }
+.ftable tr:hover td { background: var(--light); cursor: pointer; }
+.notes { color: var(--muted); font-size: 13px; max-width: 78ch; display: grid; gap: 6px; }
+.notes p { margin: 0; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>LDLR promoter element · all layers</h1>
+    <span class="meta" id="meta"></span>
+  </header>
+
+  <div class="controls">
+    <span class="ctl-label">Cell line</span>
+    <span class="seg" id="cellSeg">
+      <button type="button" id="cell-HepG2" aria-pressed="true">HepG2</button>
+      <button type="button" id="cell-HEK293T" aria-pressed="false">HEK293T</button>
+    </span>
+    <span class="ctl-label">Size map</span>
+    <span class="seg" id="mapSeg">
+      <button type="button" id="map-C" aria-pressed="true">chromatin</button>
+      <button type="button" id="map-M" aria-pressed="false">near-naked</button>
+    </span>
+    <span class="ctl-label hep-only">Footprint effect</span>
+    <span class="seg hep-only" id="metricSeg">
+      <button type="button" id="metric-z" aria-pressed="true">z</button>
+      <button type="button" id="metric-d" aria-pressed="false">Δ pp</button>
+    </span>
+    <label class="chk hep-only"><input type="checkbox" id="showUngated"> show uncalibrated footprints</label>
+    <button type="button" class="btn" id="reset">Reset zoom</button>
+    <span class="hint" style="color:var(--faint)">Drag across any track to zoom · hover for values · click a footprint row to zoom to it</span>
+  </div>
+
+  <div class="readout" id="readout" aria-live="polite"></div>
+
+  <div class="tracks" id="tracks"></div>
+
+  <div class="legend" id="legend"></div>
+
+  <section>
+    <h2 id="ftitle">Size-resolved footprints</h2>
+    <div class="ftable-wrap"><table class="ftable" id="ftable"></table></div>
+  </section>
+
+  <section class="notes">
+    <h2>How to read it</h2>
+    <p>Each view shows one cell line only; nothing from the other cell is drawn, overlaid or used. Coordinates are the 211-bp element in oligo order (21–231; genomic = 11,089,264 + oligo, GRCh38, chr19). The activity track is the published MPRA (LDLR and LDLR.2), the only functional readout, and is the same in both views.</p>
+    <p>HEK293T view: footprints K01–K23 are HEK293T's own map peaks (no relation to the HepG2 F numbers). Per-SNV values exist for 105 SNVs, each a single plasmid clone tested against the WT clone null; only endpoints that pass HEK293T's own calibration get significance marks. No per-SNV footprint tests or bias checks were run in HEK293T.</p>
+    <p>HepG2 view, per-SNV tracks put the three substitutions at each position in three stacked rows or as three dots. Effects are SNV minus WT, standardized over the 10 WT labeling strata (C_std). A filled or outlined mark is q &lt; 0.05 in its own family.</p>
+    <p>Footprint rows: one per size-resolved footprint frozen from half of the WT barcodes. The pale bar is its span (centre ± length/2), shaded by WT occupancy. Cells are each SNV's occupancy change after the near-naked correction (ΔC_std − b·ΔM). Significance is post hoc on two families: A/T-retaining SNVs (plus A/T-changing SNVs too far away to touch a call) as the primary family, and A/T-changing SNVs within a footprint's call reach as a separate secondary family. Only the 12 footprints that pass the WT pseudo-variant calibration carry cells; the other six are drawn when "show uncalibrated" is on, without cells.</p>
+    <p>Bias check (table columns "obs / bias null"): for each footprint, molecules with no ≥ 60-bp call near it had the A/T bases within 20 bp of the span shuffled across molecules (same class and labeling stratum), then re-called. That keeps every per-base methylation rate, so enzyme sequence preference and labeling, and removes only same-molecule co-protection. A ratio near 1 means the calls are what per-base rates alone produce. Footprints ≥ 60 bp cannot be tested this way.</p>
+    <p>A substitution that removes an A/T inside a footprint also removes one methylatable base the caller reads, which by itself lowers short-call rates on near-naked molecules too. Rows tagged "A/T lost" should be read with that in mind.</p>
+    <p>Chromatin change location: for each SNV, the closest place any calibrated chromatin test changed at q &lt; 0.05 (one BH family over 18,205 tests): at the SNV, within 30 bp, more than 30 bp away, or only in the element-wide accessibility/nucleosome scalars.</p>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script id="data" type="application/json">/*DATA*/</script>
+<script>
+(() => {
+  const D = JSON.parse(document.getElementById('data').textContent);
+  const O0 = D.oligo0, N = D.seq.length, P0 = O0, P1 = O0 + N - 1, GEN = 11089264;
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  let C = {};
+  const readColors = () => { C = Object.fromEntries(['bg','panel','ink','muted','faint','grid','light','blue','blue-soft','orange','orange-soft','cat-near','cat-distal','cat-elem','cat-overlap'].map(k => [k, css('--' + k)])); };
+  readColors();
+
+  const state = { cell: 'HepG2', map: 'C', metric: 'z', ungated: false, domain: [P0, P1], hover: null };
+  const cur = () => D.cells[state.cell];
+  const val = (s, key) => key === 'act' ? s.act : (cur().vals[s.id]?.[key] ?? null);
+  const byPos = d3.group(D.snvs, d => d.pos);
+  const altOrder = (ref) => ['A','C','G','T'].filter(b => b !== ref);
+  D.snvs.forEach(s => { s.slot = altOrder(s.ref).indexOf(s.alt); });
+  const featIdx = new Map(D.snvs.map((s, i) => [s.id, i]));
+  const regionAt = p => D.regions.filter(r => p >= r[1] && p <= r[2]).map(r => r[0]);
+  const motifAt = p => D.motifs.filter(r => p >= r[0] && p <= r[1]).map(r => r[2]);
+  const spanOf = f => [f.mid - f.len / 2, f.mid + f.len / 2];
+
+  const nFunc = D.snvs.filter(s => s.func).length;
+  function meta() {
+    const c = cur(), n = Object.keys(c.vals).length;
+    document.getElementById('meta').textContent =
+      `${state.cell} · ${n} SNVs with chromatin data (${nFunc} of ${D.snvs.length} functional in the published MPRA) · ${c.features.length} size-resolved footprints · ${c.source}`;
+    document.querySelectorAll('.hep-only').forEach(el => { el.hidden = !c.effects; });
+    document.getElementById('ftitle').textContent = `Size-resolved footprints · ${state.cell}`;
+  }
+
+  // ---------- canvases for the size maps (built once per map and theme) ----------
+  const L0 = D.lengths[0], NL = D.lengths.length;
+  const mapCanvas = {};
+  function buildMaps() {
+    const ramp = d3.scaleLinear().domain([0, 0.35, 0.7, 1]).range([C.panel, C['blue-soft'], C.blue, C.ink]).interpolate(d3.interpolateRgb);
+    for (const [k, m] of Object.entries(D.cells).flatMap(([cell, c]) => Object.entries(c.maps).map(([mk, m]) => [cell + '_' + mk, m]))) {
+      const cv = document.createElement('canvas'); cv.width = N; cv.height = NL;
+      const ctx = cv.getContext('2d'); const img = ctx.createImageData(N, NL);
+      for (let li = 0; li < NL; li++) for (let j = 0; j < N; j++) {
+        const v = m.q[li * N + j] / 255; const c = d3.rgb(ramp(v)); const row = NL - 1 - li; const o = (row * N + j) * 4;
+        img.data[o] = c.r; img.data[o + 1] = c.g; img.data[o + 2] = c.b; img.data[o + 3] = 255;
+      }
+      ctx.putImageData(img, 0, 0); mapCanvas[k] = cv.toDataURL();
+    }
+  }
+  buildMaps();
+
+  // ---------- layout ----------
+  const GUT = 200, PADR = 18;
+  const host = document.getElementById('tracks');
+  const fz = v => Math.max(-6, Math.min(6, v));
+  const div = (v, lim) => v == null ? null : d3.scaleLinear().domain([-lim, 0, lim]).range([C.orange, C.panel, C.blue]).clamp(true)(v);
+  const sym = (arr, floor) => { const m = d3.max(arr, v => Math.abs(v ?? 0)) || floor; return Math.max(m, floor); };
+
+  function featuresShown() { return cur().features.filter(f => !cur().effects || f.gate || state.ungated).sort((a, b) => a.mid - b.mid || a.len - b.len); }
+
+  // Legend item kinds: dot (fill or hollow), area, line, bar, shade, box (solid/dashed), cell, tick, ramp, text.
+  const ALT_NOTE = '3 marks per position = the 3 substitutions, in A→C→G→T order';
+  function dotKey(sigOk, sigText) {
+    return sigOk
+      ? [{ k: 'dot', c: 'blue', t: `increase, ${sigText}` }, { k: 'dot', c: 'orange', t: `decrease, ${sigText}` }, { k: 'dot', hollow: true, t: 'not significant' }, { k: 'text', t: ALT_NOTE }]
+      : [{ k: 'dot', hollow: true, t: 'change (no significance: endpoint failed this cell’s calibration)' }, { k: 'text', t: ALT_NOTE }];
+  }
+  function tracks() {
+    const fs = featuresShown(), c = cur(), g = c.gates, cell = state.cell;
+    const wtKey = (what) => [{ k: 'area', t: `chromatin molecules (C_std): ${what}` }, { k: 'line', c: 'orange', t: 'near-naked molecules (M), same measure' }];
+    const out = [
+      { header: true, label: 'Element', sub: 'sequence and annotated sites', h: 22 },
+      { id: 'annot', label: 'Annotated sites', sub: 'promoter repeats and the best-ranked motif in each region', h: 46, draw: drawAnnot,
+        leg: [{ k: 'bar', c: 'ink', t: 'promoter repeat / core' }, { k: 'bar', c: 'blue', t: 'best-ranked motif' }, { k: 'shade', t: 'grey column = repeat, carried down through every track' }] },
+      { id: 'seq', label: 'WT sequence', sub: 'oligo strand', h: 24, draw: drawSeq,
+        leg: [{ k: 'bar', c: 'ink', t: 'A or T (Hia5 can methylate)' }, { k: 'bar', c: 'faint', t: 'G or C (no signal)' }, { k: 'text', t: 'letters appear when zoomed in' }] },
+      { header: true, label: 'Function', sub: 'published MPRA (LDLR, LDLR.2), same in both views', h: 22 },
+      { id: 'act', label: 'Activity', sub: 'log2 (SNV / WT) expression', h: 96, unit: 'log2', draw: (gg, t) => drawDots(gg, t, 'act', s => s.func, '', 1),
+        leg: [{ k: 'dot', c: 'blue', t: 'functional hit, more active' }, { k: 'dot', c: 'orange', t: 'functional hit, less active' }, { k: 'dot', hollow: true, t: 'not a functional hit' }, { k: 'text', t: ALT_NOTE }] },
+      { header: true, label: `Wild-type chromatin · ${cell}`, sub: 'WT molecules only, % of molecules covered at each base', h: 22 },
+      { id: 'wtmsp', label: 'Accessibility', sub: '% of molecules accessible (MSP) at each base', h: 62, unit: '%', draw: (gg, t) => drawArea(gg, t, c.wt.msp, c.wt.msp_m, [0, 100], '%'), leg: wtKey('% accessible') },
+      { id: 'wtnuc', label: 'Nucleosomes', sub: '% of molecules with an 85–250 bp protected call over the base', h: 56, unit: '%', draw: (gg, t) => drawArea(gg, t, c.wt.nuc, c.wt.nuc_m, null, '%'), leg: wtKey('% nucleosome-protected') },
+      { id: 'wttf', label: 'TF-sized protection', sub: '% of molecules with a 10–60 bp protected call over the base', h: 56, unit: '%', draw: (gg, t) => drawArea(gg, t, c.wt.tf, c.wt.tf_m, null, '%'), leg: wtKey('% TF-size protected') },
+      { header: true, label: `Variant effects · ${cell}`, sub: cell === 'HepG2' ? 'each SNV minus WT, labeling-standardized' : 'each SNV (one plasmid clone) minus WT, against the WT clone-to-clone spread', h: 22 },
+      { id: 'msp', label: 'Δ accessibility', sub: 'element-wide change in % accessible, percentage points', h: 74, unit: 'pp', draw: (gg, t) => drawDots(gg, t, 'msp', s => g.msp && val(s, 'msp_q') < .05, 'pp', 1), leg: dotKey(g.msp, 'q < 0.05') },
+      { id: 'nuc', label: 'Δ nucleosomes', sub: 'element-wide change in % nucleosome-protected, pp', h: 66, unit: 'pp', draw: (gg, t) => drawDots(gg, t, 'nuc', s => g.nuc && val(s, 'nuc_q') < .05, 'pp', 1), leg: dotKey(g.nuc, 'q < 0.05') },
+      { id: 'loc', label: 'Δ methylation near SNV', sub: 'm6A at A/Ts 5–10 bp from the SNV, z-score (blue = more methylated = more open)', h: 66, unit: 'z', draw: (gg, t) => drawDots(gg, t, 'loc_z', s => g.loc_z && val(s, 'loc_q') < .05, '', 2), leg: dotKey(g.loc_z, 'q < 0.05') },
+      { header: true, label: `Footprint sizes · ${cell} WT`, sub: 'where protected stretches of each length sit', h: 22 },
+      { id: 'map', label: state.map === 'C' ? 'Size map, chromatin' : 'Size map, near-naked', sub: 'x = centre of each protected call; y = its length (bp); colour = how often', h: 210, draw: drawMap,
+        leg: [{ k: 'ramp', grad: 'seqRamp', t: 'calls per molecule (light = rare, dark = common)' }, { k: 'box', c: 'orange', t: 'footprint mostly on chromatin (C/M ≥ 2)' }, { k: 'box', c: 'ink', dash: true, t: 'footprint also common on near-naked (C/M < 2)' }] },
+      { header: true, label: `Size-resolved footprints · ${cell}`, sub: c.effects ? 'one row per footprint; left: name centre/length, right: WT occupancy and primary hits' : 'one row per footprint; left: name centre/length, right: WT occupancy', h: 22,
+        leg: c.effects
+          ? [{ k: 'span', t: 'footprint span (orange = chromatin footprint, blue = also near-naked; darker = more occupied in WT)' }, { k: 'tick', t: 'centre' }, { k: 'ramp', grad: 'divRamp', t: `SNV effect on occupancy (${state.metric === 'z' ? 'z' : 'pp'}; orange = lost, blue = gained)` }, { k: 'cell', t: 'q < 0.05' }, { k: 'cell', dash: true, t: 'q < 0.05, A/T-changing SNV' }, { k: 'text', t: '3 stacked cells = the 3 substitutions, A→C→G→T top to bottom; cells drawn only where |z| ≥ 2' }]
+          : [{ k: 'span', t: 'footprint span (orange = chromatin footprint, blue = also near-naked; darker = more occupied in WT)' }, { k: 'tick', t: 'centre' }, { k: 'text', t: 'no per-SNV footprint tests in this cell' }] },
+      ...fs.map(f => ({ id: 'f-' + f.id, h: 21, feat: f, draw: gg => drawFeature(gg, f) })),
+    ];
+    if (c.effects) out.push(
+      { header: true, label: 'Where each SNV changed chromatin · HepG2', sub: 'closest calibrated change at q < 0.05, any test', h: 22 },
+      { id: 'near', label: 'Closest change', sub: '3 stacked cells = the 3 substitutions', h: 26, draw: drawNear,
+        leg: [{ k: 'cell', fill: 'cat-overlap', t: 'at the SNV' }, { k: 'cell', fill: 'cat-near', t: '≤ 30 bp away' }, { k: 'cell', fill: 'cat-distal', t: '> 30 bp away' }, { k: 'cell', fill: 'cat-elem', t: 'element-wide only' }, { k: 'text', t: 'faded = not a functional hit; blank = no change' }] });
+    return out;
+  }
+
+  function drawKey(g, items, maxW) {
+    let x0 = 0, row = 0;
+    const put = (w, fn) => { if (x0 + w > maxW && x0 > 0) { x0 = 0; row++; } fn(x0, row * 15); x0 += w + 14; };
+    items.forEach(it => {
+      const tw = it.t.length * 5.9 + 4;
+      const sw = it.k === 'text' ? 0 : it.k === 'ramp' ? 46 : 16;
+      put(sw + tw, (x1, y1) => {
+        const gg = g.append('g').attr('transform', `translate(${x1},${y1})`);
+        const col = C[it.c] ?? C.ink;
+        if (it.k === 'dot') gg.append('circle').attr('cx', 5).attr('cy', 6).attr('r', 4).attr('fill', it.hollow ? C.panel : col).attr('stroke', it.hollow ? C.faint : C.panel);
+        if (it.k === 'area') { gg.append('rect').attr('y', 2).attr('width', 12).attr('height', 9).attr('fill', C['blue-soft']); gg.append('line').attr('x2', 12).attr('y1', 2).attr('y2', 2).attr('stroke', C.blue).attr('stroke-width', 2); }
+        if (it.k === 'line') gg.append('line').attr('x2', 12).attr('y1', 6).attr('y2', 6).attr('stroke', col).attr('stroke-width', 2);
+        if (it.k === 'bar') gg.append('rect').attr('y', 3).attr('width', 12).attr('height', 7).attr('rx', 1.5).attr('fill', col);
+        if (it.k === 'shade') gg.append('rect').attr('y', 1).attr('width', 12).attr('height', 11).attr('fill', C.light).attr('stroke', C.grid);
+        if (it.k === 'box') gg.append('rect').attr('x', 1).attr('y', 2).attr('width', 10).attr('height', 9).attr('fill', 'none').attr('stroke', col).attr('stroke-width', 1.4).attr('stroke-dasharray', it.dash ? '3 2' : null);
+        if (it.k === 'span') gg.append('rect').attr('y', 1).attr('width', 12).attr('height', 11).attr('fill', C['orange-soft']);
+        if (it.k === 'tick') gg.append('line').attr('x1', 6).attr('x2', 6).attr('y1', 1).attr('y2', 12).attr('stroke', C.ink);
+        if (it.k === 'cell') gg.append('rect').attr('x', 1).attr('y', 2).attr('width', 10).attr('height', 9).attr('fill', it.fill ? C[it.fill] : C.orange)
+          .attr('stroke', it.fill ? 'none' : C.ink).attr('stroke-width', 1.1).attr('stroke-dasharray', it.dash ? '1.5 1.5' : null);
+        if (it.k === 'ramp') gg.append('rect').attr('y', 2).attr('width', 40).attr('height', 9).attr('fill', `url(#${it.grad})`).attr('stroke', C.grid);
+        gg.append('text').attr('x', sw).attr('y', 10).attr('font-size', 11).attr('fill', C.muted).text(it.t);
+      });
+    });
+    return (row + 1) * 15;
+  }
+
+  let svg, x, W, overlay, cross, T;
+  function render() {
+    const width = Math.max(900, host.clientWidth);
+    W = width - GUT - PADR;
+    T = tracks();
+    // pre-measure key heights with a throwaway svg so tracks can sit under their keys
+    const probe = d3.select(document.body).append('svg').attr('width', 0).attr('height', 0).style('position', 'absolute');
+    T.forEach(t => { t.keyH = t.leg ? drawKey(probe.append('g'), t.leg, W) + 4 : 0; });
+    probe.remove();
+    let y = 4;
+    T.forEach(t => {
+      t.y = y;
+      if (t.header) { t.top = y + t.h + (t.keyH ? 4 : 0); y = t.top + t.keyH + 6; return; }
+      t.top = y + t.keyH; y = t.top + t.h + (t.feat ? 1 : 14);
+    });
+    const H = y + 40;
+    host.innerHTML = '';
+    svg = d3.select(host).append('svg').attr('width', width).attr('height', H).attr('role', 'img')
+      .attr('aria-label', 'Stacked tracks along the LDLR element');
+    x = d3.scaleLinear().domain([state.domain[0] - .5, state.domain[1] + .5]).range([0, W]);
+    const defs = svg.append('defs');
+    defs.append('clipPath').attr('id', 'clip').append('rect').attr('width', W).attr('height', H);
+    const grad = (id, stops) => { const lg = defs.append('linearGradient').attr('id', id); stops.forEach((s, i) => lg.append('stop').attr('offset', i / (stops.length - 1)).attr('stop-color', s)); };
+    grad('seqRamp', [C.panel, C['blue-soft'], C.blue, C.ink]);
+    grad('divRamp', [C.orange, C.panel, C.blue]);
+    const plot = svg.append('g').attr('transform', `translate(${GUT},0)`);
+    const bandG = plot.append('g').attr('clip-path', 'url(#clip)');
+    D.regions.forEach(r => bandG.append('rect').attr('x', x(r[1] - .5)).attr('width', x(r[2] + .5) - x(r[1] - .5))
+      .attr('y', 0).attr('height', H - 40).attr('fill', C.light).attr('opacity', .7));
+    T.forEach(t => {
+      if (t.header) {
+        const hg = svg.append('g').attr('transform', `translate(0,${t.y})`);
+        hg.append('rect').attr('x', 0).attr('width', width).attr('height', t.h).attr('fill', C.ink);
+        const tx = hg.append('text').attr('x', 10).attr('y', 15).attr('font-size', 12).attr('fill', C.bg);
+        tx.append('tspan').attr('font-weight', 600).text(t.label);
+        tx.append('tspan').attr('fill', C.bg).attr('opacity', .75).text('   ' + t.sub);
+        if (t.leg) drawKey(plot.append('g').attr('transform', `translate(0,${t.top})`), t.leg, W);
+        return;
+      }
+      if (t.leg) drawKey(plot.append('g').attr('transform', `translate(0,${t.y})`), t.leg, W);
+      const lg = svg.append('g').attr('transform', `translate(0,${t.top})`);
+      if (t.feat) {
+        const f = t.feat;
+        lg.append('text').attr('x', 10).attr('y', t.h / 2 + 4).attr('font-size', 11.5).attr('font-family', 'IBM Plex Mono, monospace')
+          .attr('fill', f.gate || !cur().effects ? C.ink : C.faint).text(`${f.id} ${f.mid}/${f.len} bp`);
+        lg.append('text').attr('x', GUT - 10).attr('y', t.h / 2 + 4).attr('text-anchor', 'end').attr('font-size', 11).attr('fill', C.faint)
+          .text(`WT ${f.occ.toFixed(2)}%${f.hits ? ' · ' + f.hits + ' hit' + (f.hits > 1 ? 's' : '') : ''}${cur().effects && !f.gate ? ' · not tested' : ''}`);
+        lg.append('rect').attr('x', 0).attr('width', GUT + W).attr('height', t.h).attr('fill', 'transparent').style('cursor', 'pointer')
+          .on('click', () => zoomTo(spanOf(f)[0] - 15, spanOf(f)[1] + 15)).append('title').text(`Zoom to ${f.id}`);
+      } else {
+        lg.append('text').attr('x', 10).attr('y', 12).attr('font-size', 12.5).attr('font-weight', 600).attr('fill', C.ink).text(t.label);
+        lg.append('foreignObject').attr('x', 10).attr('y', 16).attr('width', GUT - 50).attr('height', Math.max(t.h - 14, 14))
+          .append('xhtml:div').style('font-size', '11px').style('line-height', '1.25').style('color', C.faint).text(t.sub);
+      }
+      const g = plot.append('g').attr('transform', `translate(0,${t.top})`);
+      if (!t.feat && t.id !== 'annot' && t.id !== 'seq') g.append('line').attr('x1', 0).attr('x2', W).attr('y1', t.h + 5).attr('y2', t.h + 5).attr('stroke', C.grid);
+      t.draw(g.append('g'), t);
+    });
+    // x axis + title
+    const ax = plot.append('g').attr('transform', `translate(0,${H - 40})`).call(d3.axisBottom(x).ticks(Math.min(20, Math.round(W / 70))).tickSize(4).tickFormat(d3.format('d')));
+    ax.selectAll('text').attr('fill', C.muted).attr('font-size', 11); ax.selectAll('line,path').attr('stroke', C.grid);
+    plot.append('text').attr('x', W / 2).attr('y', H - 8).attr('text-anchor', 'middle').attr('font-size', 11.5).attr('fill', C.muted)
+      .text('Position in the element, oligo coordinates (genomic chr19 = 11,089,264 + oligo)');
+    // crosshair + interaction
+    cross = plot.append('rect').attr('y', 0).attr('height', H - 40).attr('fill', C.ink).attr('opacity', .08).attr('pointer-events', 'none').attr('visibility', 'hidden');
+    const brush = d3.brushX().extent([[0, 0], [W, H - 40]]).on('end', ev => {
+      if (!ev.selection) return;
+      const [a, b] = ev.selection.map(x.invert);
+      plot.select('.brush').call(brush.move, null);
+      if (b - a >= 4) zoomTo(Math.round(a), Math.round(b));
+    });
+    plot.append('g').attr('class', 'brush').call(brush).selectAll('.selection').attr('fill', C.blue).attr('fill-opacity', .12).attr('stroke', C.blue);
+    svg.on('pointermove', ev => {
+      const [mx] = d3.pointer(ev, plot.node());
+      if (mx < 0 || mx > W) return;
+      setHover(Math.max(state.domain[0], Math.min(state.domain[1], Math.round(x.invert(mx)))));
+    });
+    if (state.hover != null) setHover(state.hover);
+  }
+
+  function zoomTo(a, b) { state.domain = [Math.max(P0, Math.floor(a)), Math.min(P1, Math.ceil(b))]; render(); }
+
+  // ---------- track painters ----------
+  function drawAnnot(g, t) {
+    const cg = g.attr('clip-path', 'url(#clip)');
+    D.regions.forEach(r => {
+      cg.append('rect').attr('x', x(r[1] - .5)).attr('width', x(r[2] + .5) - x(r[1] - .5)).attr('y', 4).attr('height', 12).attr('rx', 2).attr('fill', C.ink);
+      cg.append('text').attr('x', (x(r[1] - .5) + x(r[2] + .5)) / 2).attr('y', 13.5).attr('text-anchor', 'middle').attr('font-size', 10).attr('fill', C.bg).text(r[0]);
+    });
+    D.motifs.forEach(m => {
+      cg.append('rect').attr('x', x(m[0] - .5)).attr('width', x(m[1] + .5) - x(m[0] - .5)).attr('y', 24).attr('height', 6).attr('rx', 2).attr('fill', C.blue);
+      cg.append('text').attr('x', x(m[0] - .5)).attr('y', 44).attr('font-size', 11).attr('fill', C.blue).text(m[2]);
+    });
+  }
+  function drawSeq(g) {
+    const span = state.domain[1] - state.domain[0] + 1, cw = W / span;
+    for (let p = state.domain[0]; p <= state.domain[1]; p++) {
+      const b = D.seq[p - O0], at = b === 'A' || b === 'T';
+      if (cw >= 9) g.append('text').attr('x', x(p)).attr('y', 16).attr('text-anchor', 'middle').attr('font-family', 'IBM Plex Mono, monospace')
+        .attr('font-size', Math.min(14, cw * .95)).attr('font-weight', at ? 500 : 400).attr('fill', at ? C.ink : C.faint).text(b);
+      else g.append('rect').attr('x', x(p - .5)).attr('width', Math.max(cw - .3, .6)).attr('y', at ? 4 : 9).attr('height', at ? 14 : 4).attr('fill', at ? C.ink : C.faint);
+    }
+  }
+  function drawDots(g, t, key, sigFn, unit, floor) {
+    const vis = D.snvs.filter(s => s.pos >= state.domain[0] && s.pos <= state.domain[1] && val(s, key) != null);
+    const lim = sym(D.snvs.map(s => val(s, key)), floor) * 1.05;
+    const y = d3.scaleLinear().domain([-lim, lim]).range([t.h, 2]);
+    g.append('line').attr('x1', 0).attr('x2', W).attr('y1', y(0)).attr('y2', y(0)).attr('stroke', C.faint).attr('stroke-dasharray', '2 3');
+    g.append('text').attr('x', W - 2).attr('y', y(0) - 3).attr('text-anchor', 'end').attr('font-size', 10).attr('fill', C.faint).text(key === 'act' ? '0 = same as WT' : '0 = no change from WT');
+    const ax = g.append('g').call(d3.axisLeft(y).ticks(3).tickSize(3).tickFormat(d => d3.format('~g')(d) + (d === 0 ? '' : ' ' + unit)));
+    ax.selectAll('text').attr('fill', C.faint).attr('font-size', 10); ax.selectAll('line,path').attr('stroke', C.grid);
+    const cw = W / (state.domain[1] - state.domain[0] + 1), r = Math.max(2.2, Math.min(4, cw / 3));
+    const cg = g.append('g').attr('clip-path', 'url(#clip)');
+    vis.forEach(s => {
+      const v = val(s, key), sig = sigFn(s), col = v >= 0 ? C.blue : C.orange;
+      cg.append('circle').attr('cx', x(s.pos) + (s.slot - 1) * Math.min(cw / 3.2, 4)).attr('cy', y(v)).attr('r', r)
+        .attr('fill', sig ? col : C.panel).attr('stroke', sig ? C.panel : C.faint).attr('stroke-width', sig ? 1 : 1);
+    });
+  }
+  function drawArea(g, t, main, line, dom, unit) {
+    const vals = main.concat(line || []).filter(v => v != null);
+    const y = d3.scaleLinear().domain(dom || [0, d3.max(vals) * 1.08]).range([t.h, 2]);
+    const pts = main.map((v, i) => [i + O0, v]).filter(d => d[1] != null);
+    const cg = g.append('g').attr('clip-path', 'url(#clip)');
+    cg.append('path').attr('d', d3.area().x(d => x(d[0])).y0(t.h).y1(d => y(d[1])).curve(d3.curveStep)(pts)).attr('fill', C['blue-soft']).attr('opacity', .85);
+    cg.append('path').attr('d', d3.line().x(d => x(d[0])).y(d => y(d[1])).curve(d3.curveStep)(pts)).attr('fill', 'none').attr('stroke', C.blue).attr('stroke-width', 1.5);
+    if (line) {
+      const lp = line.map((v, i) => [i + O0, v]).filter(d => d[1] != null);
+      cg.append('path').attr('d', d3.line().x(d => x(d[0])).y(d => y(d[1])).curve(d3.curveStep)(lp)).attr('fill', 'none').attr('stroke', C.orange).attr('stroke-width', 1.5);
+    }
+    const ax = g.append('g').call(d3.axisLeft(y).ticks(3).tickSize(3).tickFormat(d => d3.format('~g')(d) + '%'));
+    ax.selectAll('text').attr('fill', C.faint).attr('font-size', 10); ax.selectAll('line,path').attr('stroke', C.grid);
+  }
+  function drawMap(g, t) {
+    const y = d3.scaleLinear().domain([L0 - .5, L0 + NL - .5]).range([t.h, 0]);
+    g.append('image').attr('href', mapCanvas[state.cell + '_' + state.map]).attr('preserveAspectRatio', 'none').style('image-rendering', 'pixelated')
+      .attr('x', x(O0 - .5)).attr('width', x(O0 + N - .5) - x(O0 - .5)).attr('y', 0).attr('height', t.h).attr('clip-path', 'url(#clip)');
+    const cg = g.append('g').attr('clip-path', 'url(#clip)');
+    featuresShown().forEach(f => {
+      const chrom = f.flag === 'chromatin';
+      cg.append('rect').attr('x', x(f.mid_lo - .5)).attr('width', x(f.mid_hi + .5) - x(f.mid_lo - .5))
+        .attr('y', y(f.len_hi + .5)).attr('height', y(f.len_lo - .5) - y(f.len_hi + .5)).attr('fill', 'none')
+        .attr('stroke', chrom ? C.orange : C.ink).attr('stroke-width', 1.4).attr('stroke-dasharray', chrom ? null : '3 2');
+      cg.append('text').attr('x', x(f.mid_hi + .5) + 2).attr('y', y(f.len_hi + .5) + 9).attr('font-size', 10).attr('fill', chrom ? C.orange : C.ink).text(f.id);
+    });
+    g.append('text').attr('transform', `translate(-30,${t.h / 2}) rotate(-90)`).attr('text-anchor', 'middle').attr('font-size', 10.5).attr('fill', C.faint).text('call length (bp)');
+    const ax = g.append('g').call(d3.axisLeft(y).tickValues([10, 20, 40, 60, 80]).tickSize(3));
+    ax.selectAll('text').attr('fill', C.faint).attr('font-size', 10); ax.selectAll('line,path').attr('stroke', C.grid);
+  }
+  function drawFeature(g, f) {
+    const t = T.find(tt => tt.feat === f), h = t.h - 2;
+    const maxOcc = d3.max(cur().features, d => d.occ);
+    const [a, b] = spanOf(f);
+    g.append('rect').attr('x', 0).attr('width', W).attr('height', h).attr('fill', 'none').attr('stroke', C.light);
+    const cg = g.append('g').attr('clip-path', 'url(#clip)');
+    cg.append('rect').attr('x', x(a)).attr('width', Math.max(2, x(b) - x(a))).attr('y', 0).attr('height', h)
+      .attr('fill', f.flag === 'chromatin' ? C['orange-soft'] : C['blue-soft']).attr('opacity', .25 + .75 * Math.sqrt(f.occ / maxOcc));
+    cg.append('line').attr('x1', x(f.mid)).attr('x2', x(f.mid)).attr('y1', 0).attr('y2', h).attr('stroke', C.ink).attr('stroke-width', 1);
+    if (!f.gate || !f.z) return;
+    const cw = x(1) - x(0), rh = h / 3;
+    const arr = state.metric === 'z' ? f.z : f.d;
+    const lim = state.metric === 'z' ? 6 : 3;
+    D.snvs.forEach((s, i) => {
+      const v = arr[i]; if (v == null || s.pos < state.domain[0] || s.pos > state.domain[1]) return;
+      const sig = f.q[i] != null && f.q[i] < .05, sec = f.sec[i] === 1;
+      if (!sig && Math.abs(f.z[i] ?? 0) < 2) return;
+      cg.append('rect').attr('x', x(s.pos - .5) + .2).attr('width', Math.max(cw - .4, .8)).attr('y', s.slot * rh + .3).attr('height', rh - .6)
+        .attr('fill', div(v, lim)).attr('stroke', sig ? C.ink : 'none').attr('stroke-width', sig ? 1.1 : 0)
+        .attr('stroke-dasharray', sig && sec ? '1.5 1.5' : null);
+    });
+  }
+  function drawNear(g, t) {
+    const col = { overlap: C['cat-overlap'], near: C['cat-near'], distal: C['cat-distal'], 'element-wide': C['cat-elem'] };
+    const cw = x(1) - x(0), rh = (t.h - 2) / 3;
+    const cg = g.append('g').attr('clip-path', 'url(#clip)');
+    D.snvs.forEach(s => {
+      const nr = val(s, 'near');
+      if (!nr || nr === 'none' || s.pos < state.domain[0] || s.pos > state.domain[1]) return;
+      cg.append('rect').attr('x', x(s.pos - .5) + .2).attr('width', Math.max(cw - .4, .8)).attr('y', s.slot * rh + .3).attr('height', rh - .6)
+        .attr('fill', col[nr]).attr('opacity', s.func ? 1 : .35);
+    });
+  }
+
+  // ---------- readout ----------
+  const ro = document.getElementById('readout');
+  const fmt = (v, d = 2) => v == null ? '–' : (v > 0 ? '+' : '') + v.toFixed(d);
+  const cls = (v, sig) => `${sig ? 'sig ' : ''}${v == null ? '' : v > 0 ? 'up' : v < 0 ? 'down' : ''}`;
+  const nearLabel = { overlap: 'at SNV', near: '≤ 30 bp', distal: '> 30 bp', 'element-wide': 'element-wide only', none: 'none' };
+  function setHover(p) {
+    state.hover = p;
+    if (cross) cross.attr('visibility', 'visible').attr('x', x(p - .5)).attr('width', Math.max(2, x(p + .5) - x(p - .5)));
+    const b = D.seq[p - O0];
+    const regs = regionAt(p).concat(motifAt(p).map(m => 'motif ' + m));
+    const c = cur(), gt = c.gates;
+    const spans = c.features.filter(f => { const [a, e] = spanOf(f); return p >= a && p <= e; }).map(f => `${f.id} ${f.mid}/${f.len}`);
+    const rows = (byPos.get(p) || []).slice().sort((a, e) => a.slot - e.slot).map(s => {
+      const i = featIdx.get(s.id), v = c.vals[s.id] || {};
+      const fh = c.features.filter(f => f.q && f.q[i] != null && f.q[i] < .05).map(f => `<span class="${cls(f.d[i], true)}">${f.id} ${fmt(f.d[i])} pp${f.sec[i] ? ' <span style="color:var(--faint);font-weight:400">(A/T-changing)</span>' : ''}</span>`).join(' ');
+      const atTag = s.at === 'loss' ? ' <span class="pill">A/T lost</span>' : s.at === 'gain' ? ' <span class="pill">A/T gained</span>' : '';
+      return `<tr><td class="mono">${s.ref}&gt;${s.alt}${atTag}</td>
+        <td class="${cls(s.act, s.func)}">${fmt(s.act)}</td><td>${s.func ? '<span class="pill on">functional</span>' : '<span class="pill">n.s.</span>'}</td>
+        <td class="${cls(v.msp, gt.msp && v.msp_q < .05)}">${fmt(v.msp)}${gt.msp && v.msp_q != null ? ` <span style="color:var(--faint)">q ${v.msp_q < .001 ? '<.001' : v.msp_q.toFixed(3)}</span>` : ''}</td>
+        <td class="${cls(v.nuc, gt.nuc && v.nuc_q < .05)}">${fmt(v.nuc)}</td>
+        <td class="${cls(v.loc_z, gt.loc_z && v.loc_q < .05)}">${fmt(v.loc_z)}</td>
+        ${c.effects ? `<td>${fh || '<span style="color:var(--faint)">–</span>'}</td><td>${nearLabel[v.near] ?? '–'}</td>` : `<td>${v.clones ?? '–'}</td>`}
+        <td style="color:var(--faint)">${v.mol ? v.mol.toLocaleString() : '–'}</td></tr>`;
+    }).join('');
+    ro.innerHTML = `<div class="head"><span class="pos">oligo ${p} · ${b}</span><span class="ctx">chr19:${(GEN + p).toLocaleString()}</span>
+      <span class="ctx">${regs.length ? regs.join(' · ') : 'no annotated site'}</span>
+      <span class="ctx">${spans.length ? 'inside ' + spans.join(', ') : 'outside every footprint span'}</span></div>
+      <div class="rtable-wrap"><table class="rtable"><thead><tr><th>SNV</th><th>Activity log2</th><th>Function</th><th>Δ access pp</th><th>Δ nuc pp</th><th>Site m6A z</th>${c.effects ? '<th>Footprint changes q&lt;0.05</th><th>Closest change</th>' : '<th>Clones</th>'}<th>Molecules</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="9" style="color:var(--faint)">No SNV measured here.</td></tr>'}</tbody></table></div>`;
+  }
+  ro.innerHTML = '<div class="hint">Hover over the tracks to read every layer at one position.</div>';
+
+  // ---------- legend + table ----------
+  function legend() { document.getElementById('legend').innerHTML = ''; }
+  function table() {
+    const c = cur(), t = document.getElementById('ftable');
+    if (!c.effects) {
+      t.innerHTML = `<thead><tr>${['Footprint', 'Centre', 'Length', 'WT chromatin %', 'WT near-naked %', 'C / M', 'Flag'].map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${
+        c.features.slice().sort((a, b) => a.mid - b.mid || a.len - b.len).map(f => `<tr data-f="${f.id}"><td class="mono">${f.id}</td><td>${f.mid}</td>
+        <td>${f.len} <span style="color:var(--faint)">(${f.len_lo}–${f.len_hi})</span></td><td>${f.occ.toFixed(2)}</td><td>${f.occ_m.toFixed(2)}</td>
+        <td>${f.c_over_m.toFixed(2)}</td><td>${f.flag === 'chromatin' ? 'chromatin' : 'also near-naked'}</td></tr>`).join('')}</tbody>`;
+      t.querySelectorAll('tr[data-f]').forEach(tr => tr.addEventListener('click', () => {
+        const [a, b] = spanOf(c.features.find(d => d.id === tr.dataset.f)); zoomTo(a - 15, b + 15); host.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }));
+      return;
+    }
+    const hasShuf = c.features.some(f => f.shuf_c != null);
+    const head = ['Footprint', 'Centre', 'Length', 'WT chromatin %', 'C / M', ...(hasShuf ? ['Chromatin obs / bias null', 'Near-naked obs / bias null'] : []), 'Calibrated', 'Pooled z (inside)', 'Primary SNV hits', 'Overlapping motifs'];
+    const fold = v => v == null ? '<span style="color:var(--faint)">no null calls</span>' : `<span class="${v >= 2 ? 'sig' : ''}">${v.toFixed(1)}×</span>`;
+    const rows = c.features.slice().sort((a, b) => a.mid - b.mid).map(f => `<tr data-f="${f.id}">
+      <td class="mono">${f.id}</td><td>${f.mid}</td><td>${f.len} <span style="color:var(--faint)">(${f.len_lo}–${f.len_hi})</span></td>
+      <td>${f.occ.toFixed(2)}</td><td>${f.c_over_m.toFixed(2)}</td>
+      ${hasShuf ? `<td>${fold(f.shuf_c)}</td><td>${fold(f.shuf_m)}</td>` : ''}
+      <td>${f.gate ? 'yes' : '<span style="color:var(--faint)">no</span>'}</td>
+      <td class="${cls(f.pooled_z, f.pooled_q < .05)}">${f.gate && f.pooled_z != null ? fmt(f.pooled_z, 1) : '–'}</td><td>${f.hits || '–'}</td>
+      <td class="wrapcell">${f.motifs || '–'}</td></tr>`).join('');
+    t.innerHTML = `<thead><tr>${head.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${rows}</tbody>`;
+    t.querySelectorAll('tr[data-f]').forEach(tr => tr.addEventListener('click', () => {
+      const f = c.features.find(d => d.id === tr.dataset.f); if (!f.gate) { state.ungated = true; document.getElementById('showUngated').checked = true; }
+      const [a, b] = spanOf(f); zoomTo(a - 15, b + 15); host.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }));
+  }
+
+  // ---------- controls ----------
+  const seg = (id, key, prefix) => document.querySelectorAll(`#${id} button`).forEach(bt => bt.addEventListener('click', () => {
+    state[key] = bt.id.slice(prefix.length);
+    document.querySelectorAll(`#${id} button`).forEach(o => o.setAttribute('aria-pressed', o === bt));
+    render(); legend();
+  }));
+  seg('mapSeg', 'map', 'map-'); seg('metricSeg', 'metric', 'metric-');
+  document.querySelectorAll('#cellSeg button').forEach(bt => bt.addEventListener('click', () => {
+    state.cell = bt.id.slice(5);
+    document.querySelectorAll('#cellSeg button').forEach(o => o.setAttribute('aria-pressed', o === bt));
+    meta(); table(); render(); legend();
+  }));
+  document.getElementById('showUngated').addEventListener('change', e => { state.ungated = e.target.checked; render(); });
+  document.getElementById('reset').addEventListener('click', () => { state.domain = [P0, P1]; render(); });
+  let rt; new ResizeObserver(() => { clearTimeout(rt); rt = setTimeout(render, 120); }).observe(host);
+  const reTheme = () => { readColors(); buildMaps(); render(); legend(); };
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', reTheme);
+  new MutationObserver(reTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  meta(); legend(); table(); render(); setHover(124);
+})();
+</script>

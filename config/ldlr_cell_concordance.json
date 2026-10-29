@@ -1,0 +1,120 @@
+{
+  "schema_version": "fsmpra.cell_concordance_config.v1",
+  "published_activity": {
+    "LDLR": "docs/evidence/20261020/published_GRCh38_LDLR.tsv",
+    "LDLR_2": "docs/evidence/20261020/published_GRCh38_LDLR.2.csv"
+  },
+  "cells": {
+    "HepG2": {
+      "extract": "results/variant_effects_20261028/hepg2/extract_llr",
+      "effects": "results/variant_effects_20261028/hepg2/effects",
+      "method": "site_effects (barcode-cluster bootstrap)"
+    },
+    "HEK293T": {
+      "extract": "results/variant_effects_20261028/hek293t/extract_llr",
+      "effects": "results/variant_effects_20261028/hek293t/effects",
+      "method": "site_effects_clone (WT clone-level null)"
+    }
+  },
+  "analysis": {
+    "cohort": "eligible",
+    "baseq_min": 20,
+    "ml_min": 128,
+    "unmethylated_max_distal_m6a": 0.01,
+    "methylated_min_distal_m6a": 0.6,
+    "sensitivity_thresholds": [
+      [
+        0.02,
+        0.7
+      ],
+      [
+        0.005,
+        0.5
+      ]
+    ],
+    "labeling_strata": 10,
+    "min_class_molecules": 30,
+    "min_stratum_molecules": 10,
+    "bootstrap": 200,
+    "aa_draws": 1000,
+    "seed": 20261028,
+    "mask_radius": 4,
+    "windows": {
+      "near": [
+        1,
+        4
+      ],
+      "local": [
+        5,
+        10
+      ],
+      "flank": [
+        11,
+        30
+      ]
+    },
+    "regions0": {
+      "WT_P1": [
+        31,
+        51
+      ],
+      "WT_P2": [
+        53,
+        73
+      ],
+      "WT_P3": [
+        93,
+        113
+      ],
+      "WT_P4": [
+        128,
+        148
+      ],
+      "adjacent_143_150": [
+        122,
+        130
+      ],
+      "P1_core": [
+        33,
+        42
+      ],
+      "Repeat1_Sp1": [
+        68,
+        84
+      ],
+      "Repeat2_SRE1": [
+        103,
+        119
+      ],
+      "Repeat3_Sp1": [
+        119,
+        135
+      ]
+    },
+    "primary_endpoints": [
+      "local:A_norm",
+      "flank:A_norm",
+      "msp_C_std",
+      "nuc_85_250_C_std"
+    ],
+    "kernel_max_offset": 40,
+    "figures": true,
+    "interpretation": "Cross-cell per-variant effects, fixed 2026-10-28 before any variant result: same windows, mask 4, 10 labeling strata, proxy thresholds 0.01/0.60 and primary family as the 21 Oct mask-4 HepG2 run. Footprint scalars (msp, nuc_85_250, tf_small) now come from plasmid-LLR (min_llr 5, drawdown 25, each cell's own fold-A table) in both cells.",
+    "min_association_molecules": 300
+  },
+  "clone_null": {
+    "min_wt_clone_molecules": 300,
+    "min_variant_molecules": 300,
+    "within_bootstrap": 200,
+    "calibration_positions": 8
+  },
+  "concordance": {
+    "min_molecules": 300,
+    "permutations": 10000,
+    "rotations": "all",
+    "seed": 20261028,
+    "replicability": "partial conjunction: p_rep = max(p_HepG2, p_HEK293T) when signs agree, else 1; BH across SNVs per endpoint and across the primary family",
+    "gate": "an endpoint enters concordance only if it passes the calibration gate in both cells"
+  },
+  "output_dir": "results/variant_effects_20261028/concordance"
+}

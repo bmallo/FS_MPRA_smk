@@ -19,6 +19,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--workdir', required=True)
     ap.add_argument('--bam', required=True)
+    ap.add_argument('--contig', default=CONTIG)
     a = ap.parse_args()
     wd = Path(a.workdir)
     (wd / 'data').mkdir(exist_ok=True)
@@ -31,7 +32,7 @@ def main():
     clean = {s: pysam.AlignmentFile(str(wd / 'data' / f'{s}.tmp.bam'), 'wb', template=src) for s in SETS}
     orig = {s: pysam.AlignmentFile(str(wd / 'data' / f'{s}.orig.tmp.bam'), 'wb', template=src) for s in SETS}
     found = dict.fromkeys(SETS, 0)
-    for i, rec in enumerate(src.fetch(CONTIG), 1):
+    for i, rec in enumerate(src.fetch(a.contig), 1):
         if rec.is_secondary or rec.is_supplementary:
             continue
         s = owner.get(rec.query_name)
