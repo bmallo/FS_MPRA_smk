@@ -2,7 +2,12 @@
   "description": "Analysis v2 read, genotype and clone rules. Fixed from read properties only (steps A2-A3, 2026-10-28), before any chromatin or variant-effect result was examined. Later steps read this file.",
   "molecules": {
     "genotype": "exact match of the 211-bp element to one of 1,417 designed sequences (fsmpra ledger extract)",
-    "classes": ["WT", "SNV", "DEL", "INS"],
+    "classes": [
+      "WT",
+      "SNV",
+      "DEL",
+      "INS"
+    ],
     "min_passes": 10,
     "min_read_quality": 0.99,
     "min_mapq": 20,
@@ -16,14 +21,292 @@
   },
   "clones": {
     "unit": "exact N15 barcode (no error correction)",
-    "accept": {"min_full_length_qualified_reads": 2, "min_majority_fraction": 0.9},
+    "accept": {
+      "min_full_length_qualified_reads": 2,
+      "min_majority_fraction": 0.9
+    },
     "singleton_barcodes": "kept; each is its own clone",
     "unreadable_barcode": "kept; each molecule is its own clone",
-    "drop_read_if": {"contradicts_clone_with_min_reads": 3, "clone_majority_fraction": 0.9},
+    "drop_read_if": {
+      "contradicts_clone_with_min_reads": 3,
+      "clone_majority_fraction": 0.9
+    },
     "basis": "A3: exact rule accepts 41% of run-1 molecules (deep clones rejected by one stray read) vs 92% with the majority rule"
   },
   "indel_checks": {
-    "wt_misread_rates_run3": {"to_INS": 0.0079, "to_DEL": 0.0053, "to_SNV": 0.0028},
+    "wt_misread_rates_run3": {
+      "to_INS": 0.0079,
+      "to_DEL": 0.0053,
+      "to_SNV": 0.0028
+    },
     "required": "per-variant estimate of WT misread contamination for designed indels, and a sensitivity analysis at >= 20 passes, before indel effects are reported (A10)"
+  },
+  "informative_bases": {
+    "fixed": "A4, 2026-10-29, from sequence, the HepG2 LLR emission table and the naked pEF-GFP control; before any variant effect is examined",
+    "variant_annotations": {
+      "source": "results/analysis_v2_20261028/a4_informative/visibility/variants_visibility.tsv",
+      "at_count_change": "-1, 0 or +1 from the designed sequence",
+      "caller_drops_at": "plasmid-LLR keeps only reference A/T where read base == reference base: true for any SNV or deletion at an A/T (A<->T swaps included); gained or inserted adenines are never used",
+      "delta_visible": "predicted change in visible adenines from naked-DNA marking by (run length, position in run); a prediction from another plasmid, to be replaced by A7 measurements and B1"
+    },
+    "superseded": "count-based A/T classes (retained_count) and the post hoc at_retained.py test: A<->T swaps lose their base for the LLR caller",
+    "footprint_reporting": "every footprint reports its summed visibility (adenines weighted by marking rate); footprints over A/T runs (oligo 60-64, 124-127) rest on flanking adenines",
+    "variant_comparison": {
+      "fixed": "2026-10-29, agreed with the user after A4, before any variant effect is examined",
+      "primary": "symmetric masking: for each variant, remove the same reference positions from its molecules and from the WT molecules it is compared with, then call and compare. Masked set = the edited base when the caller sees it in WT but not in the variant (A/T loss, A<->T swap, deletion of an A/T) plus every adenine (either strand) whose (run length, position in run) class differs between WT and variant. Gained or inserted adenines need no mask (absent in WT, never read in the variant). The pseudo-variant null uses the same mask",
+      "endpoints": "primary: per shared adenine, fraction of molecules unmethylated; secondary: footprint calls by position and size on the masked molecules",
+      "sensitivity": [
+        "mask every adenine within +/-5 bp of the edited base (the emission 11-mer) instead of only context-changed adenines",
+        "A<->T swaps: read the bottom-strand (T-a) call at the swapped base, with an emission estimated from WT adenines of the same strand and run class in the run's own table"
+      ],
+      "report": "for each variant, the smallest callable footprint at the variant after masking, so nulls can be read as no effect or not visible",
+      "deferred_to_B1": "score variant molecules on their own sequence with measured emissions for swapped, gained and re-contexted adenines (secondary, higher power)",
+      "dropped": "simulating gained adenines as methylated or unmethylated (the caller never reads them and WT has none, so the comparison is already symmetric)"
+    }
+  },
+  "m6a_calls": {
+    "fixed": "A5, 2026-10-29, from WT and backbone m6A calls only (results/analysis_v2_20261028/a5_m6a_qc); before any variant effect is examined",
+    "call": "a listed A+a / T-a call with ML >= 128 at an aligned reference A/T where read == reference. Not load-bearing: every stored call has ML >= 204 (>= 250 outside HepG2 run 3)",
+    "zero_call_molecules": "a read whose MM tag lists the m6A channel with no calls is an unlabeled molecule and is kept (1.4-3.5% of HepG2 reads). Reads with no m6A channel are excluded (HepG2 run 3: 340 of 1.05M; HEK293T: 0.5%, where zero-call molecules cannot be told from uncalled ones)",
+    "false_positive_proxy": "U molecules (distal m6A <= 0.01): 0.16-0.31% of element adenines called; per position median 0.1-0.15%, max 3.0% (oligo 189). An upper bound: U molecules may carry light labeling. Position pattern repeats across runs and cells (Spearman 0.83-0.90), so it is absorbed by position-specific emissions",
+    "passes": "m6A calls do not degrade at 10-14 passes (U 0.36-0.48% vs 0.25-0.30% at 30+; M 65-67% vs 66-69%), so min_passes stays 10 (set by genotype errors). Unlabeled molecules carry more passes (U fraction 3-4% below 10 passes, 12-30% at 30+): pass count is a labeling covariate. Pass-filtered sensitivity analyses (e.g. indels at >= 20 passes) must compare WT and variant at the same pass filter and report the class mix",
+    "dam": "no m6A excess at backbone GATC (U: 0.20-0.26% vs 0.43-0.53% at the same 3-mer outside GATC; M equal), consistent with the dam-/dcm- prep. Distal labeling strata keep GATC adenines",
+    "read_orientation": "forward- and reverse-aligned reads agree overall (Pearson 0.98-0.995) but differ by up to 17-28 points at a few CpG-adjacent adenines. Orientation is a per-molecule covariate: A9 checks WT/variant balance (overall 45/55 forward/reverse in HepG2)",
+    "strands": "isolated top- and bottom-strand adenines are marked equally in M (ratio 0.99-1.01), supporting the A<->T swap sensitivity rule in informative_bases.variant_comparison"
+  },
+  "m_u_proxies": {
+    "fixed": "A6 settings, 2026-10-29, written before any A6 result was computed",
+    "question": "the LLR emissions use WT M molecules as 'accessible' (p_a) and WT U molecules as 'protected' (p_p). Is M protein-free over the element, or does it carry footprints that the emissions then absorb?",
+    "molecules": "WT molecules (exact element/wt-region), full length, >= 10 passes, MAPQ >= 20, rq >= 0.99, same CRC32 subsample fractions as A5; one m6A call = ML >= 128 at a reference A/T where read == reference",
+    "labeling": "distal m6A fraction (A5 definition); strata of width 0.05; classes U <= 0.01, C, M >= 0.60",
+    "tests": {
+      "continuum": "distribution of distal m6A fraction among WT molecules per run: is M a separate population or a slice of a continuum",
+      "profile_by_labeling": "per element adenine, m6A rate in distal bins 0.01-0.2, 0.2-0.4, 0.4-0.6, 0.6-0.8, 0.8-1.0, and that rate divided by the molecules' mean distal rate",
+      "clustering": "caller-free. An m6A-free span is the stretch between two consecutive methylated adenines on a molecule (spans touching a read end are not counted). For each A/T position, observed = fraction of molecules where it is unmethylated and inside a span >= 20 bp. Null = the same after permuting each position's calls among molecules of the same labeling stratum (keeps every position's rate per stratum, removes linkage within a molecule); 5 permutations, mean. Excess = observed - null. Reported per class (M, C; strata weighted by molecules) for every position and for 211-bp tiles across the whole plasmid, so the element is compared with the backbone of the same molecules. Secondary: spans >= 80 bp",
+      "naked_reference": "the same clustering statistic on the naked Hia5-methylated pEF-GFP control (projects/plasmidLLR naked_meth), all molecules as one class stratified the same way. Different plasmid and m6A caller (ft predict-m6a 0.5.4, ML >= 128, unlisted = unmethylated), so it shows the size of caller- and enzyme-driven clustering on naked DNA, not an exact baseline",
+      "llr_weight": "per element adenine in the HepG2 run-3 emission table: the LLR weight of one unmethylated call, log((1 - p_p) / (1 - p_a)), and how it shrinks if a fraction f of M molecules is bound there (p_a -> (1 - f) p_a)",
+      "existing_m_calls": "secondary, HepG2 run 3 only: per element position, fraction of held-out M molecules covered by an existing LLR call of 20-80 bp at min_llr 5 (results/llr_vs_fiberhmm_20261026, fold A emissions), next to the same for C molecules"
+    },
+    "reading": "excess in M element tiles near the backbone tiles and the naked reference = no sign that M carries element footprints beyond the background. Excess in M element tiles above both = M carries footprints there, and LLR calls at those positions are relative to M (weaker). Numbers are reported, not conclusions; cells are kept separate",
+    "results": {
+      "source": "results/analysis_v2_20261028/a6_proxies (2026-10-29)",
+      "continuum": "WT molecules spread continuously over distal 0-0.75 with no separate naked peak; M is the top slice (HepG2 run 3: U 7.5%, C 70.9%, M 21.6%; run 1: 7.7/63.9/28.3%; HEK293T: 19.9/64.0/16.1%). Naked pEF-GFP peaks at 0.55-0.75, where M sits",
+      "clustering_M": "spans >= 80 bp: element excess 2.0/1.4/1.9% (run 3/run 1/HEK293T), other tiles median 1.3/1.0/1.4%, max 9.4/7.3/13.9%; naked 0.01%. Spans >= 20 bp: element 3.7/2.3/3.1%, other tiles median 2.5/1.5/2.1%; naked 1.5%. Element ranks 5th-10th of 21-22 tiles",
+      "clustering_C": "element excess 18/20/16% (>= 20 bp) and 38/36/28% (>= 80 bp)",
+      "element_spot": "oligo 60-86 (across the 60-64 A/T run): 10.9/5.6/7.1% of M molecules m6A-free vs 0.1% shuffled; existing LLR 20-80 bp calls cover 6.8-7.7% of held-out M there vs 3-4.8% of C (HepG2 run 3)",
+      "post_hoc": "added after seeing the oligo 60-86 spot: near A/T runs >= 4, M excess (>= 20 bp) median 5.5% vs 1.7% elsewhere (run 3), 6.6% vs 1.8% (HEK293T); naked 1.6% vs 0.7% (other caller). Protein vs A-run calling is unresolved until B1",
+      "llr_weight": "HepG2 run-3 table, element: median weight of one unmethylated adenine 1.87; 1.01 if 25% of M were bound there, 0.55 if 50%"
+    },
+    "decisions": [
+      "describe footprint calls as relative to in-cell M molecules, never as above naked DNA",
+      "report no absolute occupancy until B1",
+      "flag oligo 60-86 as a low-power region for every variant",
+      "keep the M/U emissions for variant vs WT contrasts (same emissions on both sides)",
+      "treat distal labeling as a continuous covariate in A9, not only as U/C/M classes"
+    ]
+  },
+  "snv_edits": {
+    "fixed": "A7 settings, 2026-10-29, written before any A7 result was computed",
+    "question": "how much does a designed variant change plasmid-LLR footprint calls by itself, through the evidence the caller sees, with no change in protein binding? And how much does the agreed symmetric mask change the WT reference that variants are compared with?",
+    "molecules": "A6 WT molecules (same filters), classes C and M (U excluded: it is the protected proxy). HepG2 run 3 and HEK293T separately, each with its own fold-A emission table (results/llr_vs_fiberhmm_20261026, results/hek293t_llr_20261028). M molecules include the emission-fitting half (A6 kept no read names); the artifact is a within-molecule difference, so this is stated, not corrected",
+    "caller": "plasmid-LLR global mode as in v1: llr/kadane.py scan from the first to the last observed A/T of each molecule, min_llr 5, drawdown 25, min_opps 3, no clip, no p_p floor; step llr_hit at a methylated and llr_miss at an unmethylated observed reference A/T",
+    "edits": {
+      "drop": "for every element A/T position: remove its observation (step 0, not informative). This is exactly what the caller does to a variant molecule for any SNV at that base (to G/C or the A<->T swap) and for its deletion",
+      "primary_mask": "for every designed variant: remove informative_bases.variant_comparison's masked set (the edited base when the caller drops it, plus adenines whose (run length, position in run) class changes). Indels: gap at the designed index (aligner placement within runs may differ)",
+      "pm5_mask": "sensitivity rule: for every element position, remove every A/T within +/-5 bp",
+      "context_model": "secondary, model-based (A4 naked pEF-GFP lookup: another plasmid and caller). SNVs only: drop as above when the caller drops the base, and at each re-contexted adenine rescale its methylation by the naked relative-rate ratio (variant class / WT class) within 0.05 distal strata: methylated calls removed with probability 1 - ratio when ratio < 1; unmethylated calls set with probability (min(0.999, ratio p) - p) / (1 - p) when ratio > 1 (p = the position's rate in the stratum). Seed 20261029. Estimates what a drop-only rule (v1 at_retained) leaves at re-contexted adenines"
+    },
+    "endpoints": {
+      "coverage": "per element position, class (C, M) and size bin (sub_TF 10-19, TF 20-40, PIC 41-80, NUC 81+ bp, as in common.py): fraction of molecules with a call covering the position. Artifact = edited - unedited, same molecules",
+      "summaries": "per edit and class: largest |artifact| over positions and bins; summed artifact over all bins and positions (called bp per molecule); and the largest |artifact| more than 5 bp from the edit (how far the effect reaches)",
+      "v1_features": "HepG2 only. Per (SNV, v1 WT feature in results/footprint_sizes_20261028/hepg2_map/features.tsv): artifact in occupancy (a call with midpoint in the feature window and length in its range) in C and M, and v1's residual endpoint dC - b dM with v1's per-feature slope b. C here is raw C, not v1's stratum-standardised C_std"
+    },
+    "checks": {
+      "unedited_calls": "unedited 20-80 bp call coverage of element positions in C and M next to the existing run-3 calls (A6 m_calls.tsv). Different molecule sets, so agreement in level and shape is expected, not identity",
+      "v1_offset": "the plan's verification. Over v1 (SNV, feature) pairs with the SNV inside the feature: mean A7 artifact (drop; drop + context model) next to the mean v1 observed residual, by caller class (drops its base / gains an A/T / neither). Uses v1 variant effects already reported (results/footprint_sizes_20261028/at_retained/tests.tsv.gz); no A7 setting or decision depends on them"
+    },
+    "by_construction": "symmetric masking applies the same removal to WT, so masked WT molecules are the in-silico edited WT molecules: under the primary mask the caller artifact is zero by construction. A7 therefore measures (1) the artifact in an unmasked comparison, as in v1; (2) how much each mask changes the WT reference (the power cost); (3) model-based, what a drop-only rule leaves at re-contexted adenines",
+    "reading": "numbers reported per cell and class, not conclusions. A large drop artifact confirms that v1-style unmasked comparisons were biased at A/T-changing SNVs; the mask cost says where masked comparisons lose sensitivity",
+    "results": {
+      "source": "results/analysis_v2_20261028/a7_snv_edits (2026-10-29)",
+      "molecules": "HepG2 run 3: C 106,397, M 32,373; HEK293T: C 34,320, M 8,632",
+      "unedited_calls": "20-80 bp coverage over the element: C 1.65% (existing 1.66%), M 1.46% (existing 1.43%); profiles r = 0.999 (C), 1.000 (M)",
+      "drop": "101 element A/T. Largest |change| per edit in C: median 0.9% (HepG2) / 1.0% (HEK293T) of molecules, p90 2.2/2.4%, max 4.2/5.0%; in M median 0.2/0.3%. Beyond +/-5 bp: median 0.4%, max 3.1/2.5%. Net called bp per molecule median -0.006/-0.017: calls are reshaped (boundaries, size class) more than added or removed",
+      "primary_mask": "93 distinct sets. Largest |change| in C: median 1.4/1.5%, max 4.5% (HepG2, 61A>T, 7 adenines of the 59-65 A/T run) / 5.0% (HEK293T, oligo 130); M median 0.4/0.6%",
+      "pm5_mask": "Largest |change| in C: median 2.6/2.8%, max 6.7% (HepG2, oligo 181) / 8.0% (HEK293T, oligo 115-132); M median 0.8/1.1%",
+      "context_model": "276 SNVs. Largest |change| in C: median 1.3/1.3%, max 11.5/8.5%",
+      "v1_offset": "677 v1 pairs with the SNV inside the feature. Drops its base (382): v1 observed -0.21 points (SE about 0.03, pairs not independent), A7 drop -0.03 (15%), drop + context model -0.06 (29%); per-pair r = 0.47. Gains an A/T (196): v1 +0.05, context model +0.04, r = 0.25. Neither (99): v1 -0.04, A7 0. The plan's A7 verification (the caller artifact reproduces the A/T-loss offset) is not met"
+    },
+    "decisions": [
+      "keep symmetric masking (edited base + re-contexted adenines) as the primary variant comparison; the +/-5 bp mask stays a sensitivity analysis (about twice the cost)",
+      "compare each variant only with WT masked the same way, never with unmasked WT",
+      "keep A/T-changing SNVs flagged in A10 and test them apart from the rest until B1, since about 70% of the v1 A/T-loss offset is not explained by the caller",
+      "use each variant's masked WT reference when computing its power (MDE) in A9",
+      "record the plan's A7 verification as not met"
+    ]
+  },
+  "call_confidence": {
+    "fixed": "A8 settings, 2026-10-29, written before any A8 result was computed",
+    "question": "(1) How reliably does plasmid-LLR recover a footprint of known size and position on our molecules, and how does that depend on position, size and labeling? (2) Are WT footprint profiles reproducible between independent clone halves of one run, and between HepG2 runs 1 and 3 (same cells, different reaction)?",
+    "molecules": "A6 WT molecules (same filters and subsample). A sidecar pass over the same reads records each molecule's read-name CRC32 (emission fold) and exact barcode (reference-strand bases aligned to the barcode interval with no indel; HEK293T: the 17-23 bp between 12-bp reference flanks, the fsmpra/site_extract_hek.py rule, because its reference holds a 14-N placeholder for a 20-bp barcode, amended before any reproducibility result; unreadable = own clone); its molecule count and order must equal A6's",
+    "spike_ins": {
+      "cells": "HepG2 run 3 and HEK293T, each with its own fold-A emission table",
+      "molecules": "20,000 C molecules per cell (seeded random draw) and all M molecules; each molecule is its own control (spiked vs unspiked)",
+      "spike": "every observed A/T in [start, start + L) set unmarked (perfect protection). Sizes L = 10, 15, 20, 30, 40, 60, 80, 147 bp; centred on every element position (spikes may extend past the element). Secondary: leaky spike, each marked adenine inside kept marked with probability 0.25 (75% protection), sizes 20, 40, 147, every 5th position",
+      "callers": "plasmid-LLR global scan (min_llr 5, drawdown 25, min_opps 3) with (a) the cell's position-specific emissions and (b) FiberHMM's hia5_pacbio hexamer emissions in the same scan (call.py --emissions kmer). The full FiberHMM HMM is not re-run: v2 uses only LLR calls downstream, and (b) isolates the emission table as in plasmid-llr's benchmark",
+      "endpoints": "per spike: detection = fraction of molecules with a call covering the spike centre and overlapping >= 50% of the spike; net detection = spiked - unspiked (same molecules); size-correct = detected with the call length in the spike's size bin (10-19, 20-40, 41-80, 81+); length error = median (call length - L) among molecules newly detected; collateral = largest |coverage change| more than 10 bp outside the spike. Reported for C by labeling bin (0.01-0.2, 0.2-0.4, 0.4-0.6) and for M",
+      "floor_check": "HepG2: per element position, the smallest spike size with net detection >= 0.5 in C, next to A4's predicted smallest callable footprint (a4_informative/HepG2/positions.tsv min_fp_llr_bp)"
+    },
+    "reproducibility": {
+      "runs": "HepG2 run 3 and run 1 (run 2 has 2,813 WT molecules: excluded), HEK293T run 1; cells separate",
+      "emissions": "rebuilt the same way for each run from its own A6 WT molecules: fold A (CRC32(name) % 2 == 0) M and U, Jeffreys (k + 0.5) / (n + 1), as plasmid-llr build_emissions.py. Calls on C molecules (not used in the emissions)",
+      "endpoints": "(1) caller-free, the A4 primary endpoint: per element adenine, fraction of C molecules unmarked; (2) LLR call coverage per element position and size bin in C. Both standardised over 0.05 distal strata with fixed weights = HepG2 run 3's C stratum distribution (HEK293T: its own)",
+      "splits": "clone halves within each run: CRC32(barcode) % 2 (unreadable barcode: CRC32(name)); between runs: run 1 vs run 3",
+      "uncertainty": "Poisson bootstrap over clones, 200 draws, seed 20261029; z = difference / sqrt(se1^2 + se2^2) per position",
+      "metrics": "Pearson r across positions; SD of z and fraction |z| > 1.96 (about 1 and 5% if the halves differ only by clone sampling); mean difference"
+    },
+    "reading": "numbers reported per cell, not conclusions. A spike result is a best case (perfect or 75% protection on otherwise real molecules); false calls on naked DNA need B1. Run 1 vs run 3 differences mix reaction, Jasmine version and labeling-dependent effects beyond the strata",
+    "results": {
+      "source": "results/analysis_v2_20261028/a8_confidence (2026-10-29)",
+      "ids": "sidecar lines up with A6 in all runs. Readable barcodes: HepG2 run 3 99.6% (123,059 distinct WT barcodes at the 12% read subsample), run 1 99.0% (6,084), HEK293T 98.4% with the flank rule (512)",
+      "already_called": "before spiking, share of molecules with a call over a 20-bp spot (median over positions), HepG2/HEK293T: C 57/52%; C 0.01-0.2 86/82%; C 0.2-0.4 51/44%; C 0.4-0.6 23/14%; M 3/3%",
+      "net_detection": "perfect spikes 10-147 bp, position emissions, median over positions, HepG2/HEK293T: M 95-98/95-98%; C 0.4-0.6 72-79/81-90%; C 0.2-0.4 43-52/49-60%; C 0.01-0.2 11-15/14-19%; C all 39-45/43-50%",
+      "leaky": "75% protection: M 54-62% (HepG2), 53-59% (HEK293T); C 27-36/31-42%",
+      "kmer": "FiberHMM hexamer emissions: M 95-98% (same); C net 2-4 points lower; more molecules already called (HepG2 C 60% vs 57%)",
+      "floor_prespecified": "net detection >= 0.5 in C is reached at no position (C net is capped by the 55-58% already called): uninformative",
+      "floor_post_hoc": "smallest perfect spike with net >= 0.5 in M: 10 bp at 160/211 (HepG2) and 156/211 (HEK293T) positions, 15 bp at most others, 20 bp at 4-6; harder at oligo 56-65, 78-90, 120-129, 135-141, 149-152, 188-199, 205-211, where A4 predicted larger floors. 'Detection where nothing was called before' (net / (1 - before)) in C gives the same floor (10 bp at 166 positions)",
+      "size": "newly detected calls are 0-4 bp longer than spikes up to 80 bp, 6-14 bp at 147 bp; in-class share 62-66% for mid-class sizes (15, 30, 60), 17-43% at class edges (10, 20, 40, 80), 100% at 147",
+      "collateral": "calls more than 10 bp outside the spike change in a median 2-7% of C molecules, up to 12-15%",
+      "clone_halves": "all endpoints, 3 runs: r 0.956-1.000, SD(z) 0.36-1.18, |z| > 1.96 at 0-9% of positions",
+      "run1_vs_run3": "r 0.918-0.982, SD(z) 1.7-13.7, |z| > 1.96 at 45-87% of positions; unmarked differs by 2.4 points per adenine on average; 20-40 bp coverage 0.67% (run 1) vs 0.96% (run 3)"
+    },
+    "decisions": [
+      "call-based endpoints in A9/A10 use molecules with distal labeling >= 0.2 (C mid/high and M); low-labeled molecules (0.01-0.2) enter only the caller-free endpoint",
+      "A9 power (MDE) uses the spike-measured detection per position and size",
+      "report footprint length as a continuous value; do not read neighbouring size classes as different proteins",
+      "compare variant with WT within a run; combine HepG2 runs only at the effect level with a run term",
+      "keep the clone bootstrap as the uncertainty model",
+      "keep the position-specific emissions"
+    ],
+    "post_hoc": "added after seeing results: 'detection where nothing was called before' and the M-based floor (the prespecified C floor is capped); both labelled post hoc on the slides"
+  },
+  "statistics": {
+    "fixed": "A9, 2026-10-29, before any A9 output exists. A9 reads WT chromatin data and variant metadata (molecule and clone counts, labeling, passes, strand) only; no variant chromatin endpoint is computed until A10",
+    "question": "Which variant-vs-WT test keeps its stated error rate on these data, are variant and WT molecules comparable, and how large an effect can each variant detect?",
+    "molecules": {
+      "HepG2_run3": "fsmpra ledger (results/rep3_ledger_20261016): genotype_status exact_design, sequence_qc, length_qc and methylation_qc all 1; classes WT and SNV. Designed 1-bp indels are not in A9/A10 (the plan tests SNVs). m6A calls and distal labeling from the A6 read filters (a6_extract.molecule) on the same reads, joined by read name. WT: all molecules of 25% of WT clones (crc32(clone key) % 4 == 0), so WT clone structure is kept; every SNV molecule",
+      "HEK293T_run1": "fsmpra site_extract_hek molecules (results/variant_effects_20261028/hek293t/extract/molecules.tsv.gz): exact WT 318-bp promoter or one substitution inside the shared element, every base >= Q20; barcode by the flank rule. All WT and SNV molecules, m6A calls and labeling from the A6 read filters",
+      "runs": "HepG2 run 1 is not used in A9 (A8: runs differ beyond sampling; run 1 enters A10 only through a run term, if at all)"
+    },
+    "clones": "rules.clones: clone key = barcode + genotype; a read is dropped if its barcode has >= 3 full-length qualified reads with a majority genotype >= 0.9 that the read contradicts; unreadable barcode = its own clone. HEK293T: the same with its flank-read barcode and its molecule table as the read set",
+    "endpoints": {
+      "E1_unmarked": "per element adenine: molecule unmarked (no m6A call) where observed; molecules with distal labeling > 0.01 (C and M)",
+      "E2_calls": "per element position and size bin (10-19, 20-40, 41-80, 81+ bp): covered by a plasmid-LLR call (fold-A emissions of the run, min_llr 5, drawdown 25, min_opps 3); molecules with distal labeling >= 0.2 (call_confidence decision)"
+    },
+    "test": {
+      "estimate": "D = mean over variant molecules of (y - p_WT(stratum)), where p_WT is the WT rate in the molecule's labeling stratum (width 0.05): the variant-minus-WT difference standardised to the variant's own labeling mix",
+      "clone_model": "cluster-robust (sandwich) variance with the clone as cluster: Var = C/(C-1) * sum_c (sum_{m in c} (r_m - D))^2 / n^2, plus the WT term sum_s (n_s/n)^2 Var_WT,s with Var_WT,s the clone-robust variance of the WT stratum rate; z = D / SE, two-sided p from t with C-1 df (Liang & Zeger 1986 GEE, independence working correlation) [superseded by amendment_1]",
+      "naive_comparator": "the same D with binomial variance (molecules independent), to show what ignoring clones does",
+      "min_data": "a test needs >= 10 variant molecules and >= 3 clones at that adenine or position",
+      "multiplicity": "BH at q = 0.05 within each variant across its positions (per endpoint); A10 adds the across-variant layer"
+    },
+    "pseudo_variants": {
+      "draw": "per real SNV and run, 4 draws. Each SNV clone of size k is replaced by a random WT clone of the smallest available size >= k, its molecules subsampled to k (without replacement within a draw). The reference is all other WT molecules",
+      "seed": 20261029,
+      "calibration_targets": "clone-level test on pseudo-variants: share of p < 0.05 within 0.04-0.06 and genomic-control lambda (median chi-square / 0.455) within 0.9-1.1, per endpoint and run; share of pseudo-variants with >= 1 BH discovery <= 0.05 (all nulls true, so this is its FDR)",
+      "fallback": "if a target fails, A10 uses empirical p-values: each statistic ranked against the pseudo-variant statistics at the same position, endpoint and clone-count tier (1-2, 3-9, 10-29, 30+ clones)"
+    },
+    "balance": {
+      "covariates": "distal labeling, passes, strand (HepG2 also read quality from the ledger)",
+      "measure": "standardised mean difference (SMD) between each SNV's molecules and WT; the same for its pseudo-variants gives the chance range",
+      "flag": "|SMD| above the 99th percentile of pseudo-variant |SMD| for that covariate and clone-count tier. Labeling is also handled by the standardisation; flagged passes or strand imbalance is reported in A10, not corrected"
+    },
+    "mde": {
+      "definition": "MDE = (t_{1-alpha/2, C-1} + z_0.8) * SE, with SE the median clone-robust SE over the SNV's pseudo-variants: the smallest true difference found with 80% power",
+      "alpha": "0.05 per position, and 0.05 / m with m the SNV's tested positions (Bonferroni, an upper bound on the BH threshold)",
+      "units": "E1: difference in fraction unmarked. E2: difference in call coverage, and as occupancy = coverage MDE / net spike detection at that position and size (A8 perfect spikes, sizes 15/30/60/147 for the four bins, detection averaged over C 0.2-0.4, C 0.4-0.6 and M weighted by their molecule shares)",
+      "masking": "MDE uses unmasked WT. Amends the A7 decision to use each variant's masked WT: masking moves WT coverage by a median of 1.4% of molecules at its most-affected position (A7), which changes sqrt(p(1-p)) by about 1-2%; recorded before any MDE result"
+    },
+    "checks": "unit tests: the clone-robust variance equals a direct sandwich computation; with one molecule per clone it reduces to the binomial-like residual variance; pseudo-variant draws reproduce the target clone sizes; standardisation removes a pure labeling difference",
+    "amendment_1": {
+      "when": "2026-10-29, after the first HEK293T pseudo-variant calibration (WT data only; no variant chromatin endpoint computed). Post hoc with respect to that calibration",
+      "observed": "prespecified clone sandwich test on HEK293T pseudo-variants, E1: 57% of p < 0.05, lambda 11.3; E2: 60%, lambda 12.9. Its SE is ~0.17x the binomial SE and z spreads 6-11x wider than chance, worst at 3 clones. Naive binomial: 5.4% and 4.6%, lambda 0.94 and 1.02",
+      "reason": "the sandwich estimates clone-to-clone spread from the variant's own clones; when one or two clones carry most molecules (HEK293T; the clone sizes are matched to real SNVs) it is biased far low (few, unbalanced clusters: Cameron & Miller 2015; MacKinnon & Webb 2017). The prespecified empirical-p fallback cannot reach BH thresholds with 4 draws per SNV (p resolution ~1/300 per tier)",
+      "change": "primary test: random-effects variance = binomial (both sides) + tau2 * sum_c (n_c/n)^2 for the variant and tau2 * sum_c (n_c/N_s)^2 per WT stratum; tau2 per feature from WT clones (one-way random-effects moment estimator on stratum-centred residuals, truncated at 0); normal p. The sandwich and naive tests stay reported. MDE uses the random-effects SE with normal quantiles. Calibration targets unchanged and applied to the new test in both cells"
+    },
+    "amendment_2": {
+      "when": "2026-10-29, after the first HepG2 run-3 calibration with the random-effects test (WT data only). Post hoc",
+      "observed": "random-effects test, HepG2 run 3: share p < 0.05 4.9% (E1) and 4.5% (E2), lambda 0.96 and 0.97, but >= 1 BH discovery in 8.3% (E1) and 6.8% (E2) of pseudo-variants. E1 excess at oligo 61-62 (A run 59-65, WT unmarked rate 1.0; z down to -19.7); E2 excess near the element's 3' end where calls are rare. |z| 99.99th percentile 6.6 (E1) and 4.4 (E2) vs 3.9 for a normal",
+      "reason": "the normal approximation fails when the expected count of the rarer outcome is tiny: binomial variance ~0, so one or two events give extreme z",
+      "change": "a feature is tested only when the expected minority count under WT, sum over the variant's molecules of min(p, 1 - p), is >= 5 (the usual rule for a normal approximation to a binomial). Applied to every test and to the MDE"
+    },
+    "results": {
+      "molecules": "HepG2 run 3: 1,661,762 molecules (311,485 WT in 121,306 clones, the 25% clone sample; 1,350,277 SNV), 633 SNVs, median 775 clones per SNV; 365 reads dropped as contradicting their clone. HEK293T: 307,123 (162,393 WT in 3,599 clones; 144,730 SNV), 197 SNVs, median 4 clones per SNV (78 with 1-2 clones); 555 reads dropped. Every table read was found in the BAM and passed the A6 read filters",
+      "calibration_all_tiers": {
+        "HepG2_run3": "random effects: E1 4.97% p<0.05, lambda 1.00, >=1 BH discovery in 4.9% of 2,532 pseudo-variants; E2 4.5%, 0.97, 4.2%. Naive: E1 5.0%, 1.00, 5.0%; E2 4.7%, 0.99, 4.5%. Sandwich: E1 5.1%, 1.00, 9.2%; E2 6.5%, 1.00, 53.6%",
+        "HEK293T_run1": "random effects: E1 4.4%, lambda 0.87, BH 2.7%; E2 2.3%, 0.37, 0.5% (788 pseudo-variants). Naive: E1 5.4%, 0.97, 4.6%; E2 4.6%, 0.96, 3.4%. Sandwich: E1 56.5%, 11.1, 49.7%; E2 54.9%, 10.5, 44.4%. Tier 30+ (7 SNVs, 28 draws): random effects 7.3% (E1) and 5.7% (E2) p<0.05, BH 18% and 14%",
+        "targets": "HepG2 run 3 random effects meets every target. HEK293T random effects meets the share target on E1 only; lambda below 0.9 on both endpoints (conservative)"
+      },
+      "balance": "HepG2 run 3: median |SMD| real SNVs 0.015-0.018 vs pseudo-variants 0.015-0.016 (labeling, passes, strand, read quality); above the pseudo-variant 99th percentile: labeling 10, passes 14, strand 9, read quality 7 of 632 SNVs (about 6 expected each). HEK293T: 2, 3, 1 of 152",
+      "mde": "HepG2 run 3, median over SNVs (10th-90th percentile), alpha 0.05 per feature: E1 2.5 pp (2.0-3.1; Bonferroni 3.9) on a WT level of ~68% unmarked; E2 20-40 bp coverage 0.72 pp (0.58-0.89; occupancy 0.94) on a WT level of ~0.75%; 10-19 bp 0.60 pp (WT ~0.50%); 41-80 bp 0.65 pp (WT ~0.64%); 81+ bp 3.0 pp (WT ~55%). HEK293T (103 SNVs testable on E1, 96 on E2): E1 3.6 pp (2.4-5.7); 20-40 bp 2.3 pp (1.8-3.0; occupancy 2.9). WT levels from A8 repro (run-3 halves)"
+    },
+    "decisions": [
+      "HepG2 A10 uses the random-effects test (amendments 1-2); the clone sandwich is dropped; the naive test is reported only as a comparison",
+      "HEK293T A10 stays motif-level (plan) with empirical p-values from >= 50 pseudo-variant draws per SNV (the prespecified fallback, with enough draws for its resolution), because the random-effects test is conservative there and the 30+ tier runs hot under every test; SNVs with < 3 clones (78 of 197) are not testable",
+      "features with an expected minority count < 5 are 'not testable' (amendment 2), reported like low-visibility positions (the A run at oligo 59-65 and rare-call positions)",
+      "no covariate adjustment beyond the labeling standardisation; SNVs flagged for imbalance are marked in A10 tables",
+      "every A10 null is reported with its MDE (mde.parquet); a null with an MDE above the effect of interest is 'not detectable', not 'no effect'",
+      "A10 global test per SNV: max |z| over its features against the pseudo-variants' max |z| in its clone tier (the plan's max-statistic null)",
+      "for variant tests the random-effects variance replaces A8's clone bootstrap: resampling clones has the sandwich's weakness when one or two clones carry most of a variant's molecules"
+    ],
+    "post_hoc": "amendments 1 and 2 were made after seeing WT-only calibration results; no variant chromatin endpoint had been computed",
+    "amendment_3": {
+      "when": "2026-10-29, before any A10 output (no variant chromatin endpoint computed yet)",
+      "change": "the A10 global test per SNV is the Simes combination of its calibrated per-feature p-values instead of max |z| against pseudo-variants; max |z| is reported as a secondary check against the A9 pseudo-variants of the same clone tier",
+      "reason": "with 2,520 pseudo-variants in the 30+ tier the empirical max-|z| p-value cannot go below ~4e-4, while BH across ~300 SNVs needs ~1.7e-4 for the first call. Simes is the family p-value Benjamini & Bogomolov (2014) use, valid under positive dependence, and its error rate on pseudo-variants is exactly A9's 'BH any' check (4.9% E1, 4.2% E2 in HepG2 run 3)"
+    }
+  },
+  "variant_effects": {
+    "fixed": "A10, 2026-10-29, before any variant chromatin endpoint was computed",
+    "question": "Which SNVs change protection or footprint calls in the element, where, and by how much, in each cell separately?",
+    "HepG2_run3": {
+      "molecules": "A9 extraction: every SNV molecule; WT reference = the A9 WT sample (25% of WT clones)",
+      "test": "A9 random-effects test per SNV and feature (labeling-standardised D; tau2 from WT clones; n >= 10, >= 3 clones, >= 5 expected rare events)",
+      "masking": "A7 primary mask per SNV (edited base when the caller drops it + re-contexted adenines). E1: masked adenines are not tested. E2: masked adenines set unobserved before calling, in the SNV's molecules and in the WT reference alike; tau2 and clone weights taken from the unmasked WT reference",
+      "endpoints": "E1 (primary): adenine unmarked, labeling > 0.01. E2 (secondary): coverage by calls of 10-19, 20-40, 41-80, 81+ bp, labeling >= 0.2",
+      "groups": "A7 caller classes: 'drops its base' (the SNV removes an A/T the caller reads, 303 SNVs) is tested apart from the rest ('gains an A/T' + 'neither', 330), because ~70% of the v1 A/T-loss offset was not explained by the caller (A7)",
+      "multiplicity": "per group and endpoint: Benjamini-Bogomolov hierarchical FDR at q = 0.05: BH on the SNVs' Simes p-values selects R of N SNVs; within each selected SNV, BH across its features at q * R / N",
+      "reporting": "per selected SNV: number of significant features, their positions relative to the SNV, direction and D with SE; the MDE (A9) for every feature; not-testable features counted. Effects described as relative to in-cell WT molecules (A6), never as absolute occupancy"
+    },
+    "HEK293T_run1": {
+      "level": "motif-level only (A9): five motif windows (oligo, inclusive): ZNF652-like 52-62, SP4 82-102, SREBF1/2 127-136, SP1/SP3/KLF 140-156, CREB1/CREM 182-192. Source: JASPAR/HOCOMOCO matches at HepG2 v1 top hits (tools/footprint_sizes/browser_data.py MOTIFS), so chosen without HEK293T data",
+      "pools": "per motif, the SNVs at a position inside the window, split by A7 caller class: 'drops its base' apart from the rest (as HepG2). All SNVs enter, whatever their clone count; the pool's clones are the units",
+      "statistic": "per molecule, mean over the motif's testable positions of (y - p_WT(stratum, position)), each SNV's mask removed (E1: adenines, labeling > 0.01; E2: positions covered by a 10-80 bp call, masked calls, labeling >= 0.2); D = mean over the pool's molecules",
+      "null": "1,000 pseudo-pools: for every SNV in the pool, WT clones drawn to its clone sizes (A9 rule) and scored with its mask; two-sided empirical p = (1 + #|D_null| >= |D|) / 1001",
+      "multiplicity": "BH at q = 0.05 across the motif x pool tests within each endpoint",
+      "amendment_1": {
+        "when": "2026-10-29, after the first HEK293T motif output (variant results seen). Post hoc",
+        "observed": "the prespecified pseudo-pool null was too narrow and off-centre (e.g. SP1/SP3/KLF rest E1: null 95% range 0.0020-0.0032, not around 0; 19 of 20 tests at the minimum p 0.001). Each HEK293T SNV is one clone (median 99% of its molecules in its largest clone; up to 3,128 molecules), and only 4-95 WT clones are that large, so the 1,000 pseudo-pools reuse the same few WT clones. A pool with 0 molecules (CREB1/CREM rest) was also given p 0.001 (bug)",
+        "change": "clone-mean test: units are clones with >= 100 scoring molecules. Statistic = mean over the pool's SNV clones of each clone's mean residual score (the SNV's mask applied). Null = the same number of WT clones with >= 100 scoring molecules, drawn without replacement, scored with each SNV's mask; 10,000 draws. Effect = statistic - mean of the null; two-sided p = (1 + #|null - mean| >= |effect|) / 10,001. Pools without a qualifying clone are not tested. The prespecified table is kept, marked invalid",
+        "basis": "the plan's 'clone as the unit'; the v1 HEK293T analysis also compared single clones with a WT clone null"
+      }
+    },
+    "plan_deviation": "the plan's 'A7 artifact effect is subtracted' is replaced by symmetric masking (A7 decision)",
+    "sensitivity_post_hoc": "empirical null (Efron 2004), added after seeing A10 results: real SNVs' z values more than 50 bp from the SNV spread wider than on A9 pseudo-variants (E1 9.7% p<0.05, robust SD 1.13; E2 6.6%, 1.05; pseudo-variants 5.0%/1.00 and 4.5%/0.98). Every z divided by that robust SD and the hierarchical FDR rerun (tools/analysis_v2/a10_sensitivity.py). Reported next to the prespecified results, not instead of them",
+    "results": {
+      "HepG2_run3_A7_mask": "E1: 602 of 633 SNVs selected (drops its base 286/303, rest 316/330), 5,633 hit adenines, 61% with more unmarked. Hit share of tested adenines by distance from the SNV: 0-5 bp 59.8%, 6-10 35.1%, 11-20 15.8%, 21-50 8.6%, >50 3.3%. All 224 hits above 15 points lie within 10 bp (179 within 5; up to 53 points, e.g. 25C>A at oligo 24). E2: 209 SNVs selected (93/303, 116/330); 20-40 bp hit share 12.5%, 9.7%, 4.5%, 0.2%, 0.1% by the same bands",
+      "HepG2_run3_pm5_mask": "prespecified sensitivity. E1: 467 of 633 selected (232/303, 235/330), 3,664 hit adenines; hit share 6-10 bp 32.3%, 11-20 13.9%, 21-50 7.4%, >50 2.7%. All 45 hits above 15 points lie 6-10 bp away (e.g. all three alleles at 73 raise oligo 65 by 35-37 points). E2: 123 selected (56/303, 67/330)",
+      "HepG2_empirical_null": "A7 mask: E1 594 selected, E2 184. +/-5 bp mask: E1 432 (216/303, 216/330), E2 106 (47/303, 59/330)",
+      "HepG2_element_wide": "+/-5 bp mask: 29 SNVs have >= 20 hit adenines more than 30 bp away; 17 of them sit at oligo 143-151 (inside the SP1/SP3/KLF window 140-156) and all 17 raise the unmarked fraction across the element (all three alleles at 146, 148 and 149; two alleles each at 143, 145 and 150). The other 12: 54A>T, 62A>G, 94C>A, 98C>A raise it; 80G>C, 110G>C, 115A>C, 117A>C, 117A>T, 126A>T, 157A>G, 209G>C lower it. Their labeling, passes and strand match WT (|SMD| <= 0.09)",
+      "HepG2_example": "79C>A (largest max |z| in group rest, +/-5 bp mask; 865 clones, 2,193 molecules): E1 hits at oligo 65, 71, 73, 85, 86 (-3.4 to -24.3 points; 86 is 7 bp away); E2 20-40 bp coverage -4.7 points over oligo 59-90",
+      "HEK293T_clone_mean": "18 testable motif x pool x endpoint tests (CREB1/CREM rest has no qualifying clone). E1: 7 of 9 BH; 'drops its base' pools lower the unmarked fraction in all 5 motifs (-0.5 to -7.4 points; SP4 not significant); the other pools raise it at ZNF652-like (+1.6), SP4 (+3.7), SREBF1/2 (+3.8), SP1/SP3/KLF +0.4 (n.s.). E2 (10-80 bp calls): 6 of 9 BH, -3.9 to +0.9 points. The prespecified pseudo-pool table (19 of 20 at p = 0.001) is invalid (amendment_1)"
+    },
+    "decisions": [
+      "HepG2 SNV effects are reported with the A7 mask (prespecified primary) next to the +/-5 bp mask and the empirical null; any change within 10 bp of its SNV is labelled 'possible Hia5 sequence effect until B1', since every change above 15 points is within 10 bp",
+      "A11 uses changes at least 11 bp from the SNV that survive the +/-5 bp mask, with the empirical-null result as its robustness check",
+      "the 17 SNVs at oligo 143-151 that raise the unmarked fraction across the element are carried to A11 as one candidate region effect (SP1/SP3/KLF window)",
+      "HEK293T is reported with the clone-mean test only; its 'drops its base' pools, negative in all five motifs, are not interpreted before B1",
+      "B1 should include variant sequences for the SNVs with the largest near-SNV changes (e.g. 25C>A, 211G>T, 113G>T, 73T>A/C/G), to measure Hia5 sequence effects directly"
+    ]
   }
 }
