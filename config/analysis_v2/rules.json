@@ -308,5 +308,45 @@
       "HEK293T is reported with the clone-mean test only; its 'drops its base' pools, negative in all five motifs, are not interpreted before B1",
       "B1 should include variant sequences for the SNVs with the largest near-SNV changes (e.g. 25C>A, 211G>T, 113G>T, 73T>A/C/G), to measure Hia5 sequence effects directly"
     ]
+  },
+  "motifs_function": {
+    "fixed": "A11, 2026-10-30, before any A11 output. Inputs: A10 HepG2 run 3 per-feature effects (effects.parquet) and the published MPRA; no new chromatin extraction",
+    "question": "Within a motif, does protection change scale with how much an SNV disrupts the motif? Within a position, do SNVs that change chromatin more also change expression more?",
+    "cell": "HepG2 run 3 only. HEK293T has no per-SNV estimates (A10, motif pools only) and the published MPRA is HepG2",
+    "motifs": {
+      "primary": "LDLR promoter elements from the literature (Sudhof et al. 1987; Smith et al. 1990), chosen without these data: Repeat 1 (Sp1) oligo 89-104 with JASPAR MA0079.5 SP1; Repeat 2 (SRE-1) 124-139 with MA0596.1 SREBF2; Repeat 3 (Sp1) 140-155 with MA0079.5 SP1",
+      "secondary": "windows from the HepG2 v1 top-hit motif analysis (data-derived, flagged): ZNF652-like 52-62 (JASPAR ZNF652), SP4 82-102 (MA0685.2), CREB1/CREM 182-192 (MA0018.5 CREB1)",
+      "site": "the WT best-scoring placement of the PWM (either strand) starting within the window extended by 5 bp each side; SNVs inside the window or the site enter, delta PWM = variant - WT log2-odds at that same placement (0 outside the site)",
+      "pwm": "count matrices to log2-odds with pseudocount 0.8 and uniform background (extras/fs_mpra_tf_annotate.load_pwms)"
+    },
+    "dose_response": {
+      "endpoint_primary": "mean over the site's positions of the change in 10-40 bp call coverage (D of the 10-19 plus the 20-40 bin), +/-5 bp mask run",
+      "endpoint_secondary": "mean change in unmarked fraction (E1) over testable adenines within the site +/-10 bp, +/-5 bp mask run (so every adenine is >= 6 bp from the SNV)",
+      "model": "per motif: endpoint ~ delta PWM + indicator(drops its base); OLS with HC3 standard errors; slope in points per log2-odds unit. BH across motifs within primary and within secondary sets, per endpoint",
+      "caveat": "the site lies within 10 bp of most of its SNVs, where A10 labels changes 'possible Hia5 sequence effect until B1'"
+    },
+    "function": {
+      "activity": "Kircher et al. 2019 log2 expression effect per SNV: element LDLR (primary) and LDLR.2 (replication), kept separate; all 633 SNVs measured in both",
+      "chromatin": {
+        "C1_shift": "element-wide shift: mean E1 change (unmarked fraction) over testable adenines > 50 bp from the SNV, +/-5 bp mask run",
+        "C2_local": "local change: mean E1 change over testable adenines 11-50 bp from the SNV, +/-5 bp mask run; and its root mean square for the magnitude model"
+      },
+      "models": "F1 (primary): activity ~ C1 + position fixed effect. F2: activity ~ C2 + position fixed effect. F3: |activity| ~ RMS(C2) + position fixed effect. OLS, standard errors clustered by position. The position fixed effect compares only alleles at the same position, so neither motif clustering nor the A7 caller group (constant within a position) can drive the association. Without fixed effects reported as description",
+      "region": "the 17 SNVs at oligo 143-151 with element-wide raised protection (A10): their activity next to all other SNVs, described only"
+    },
+    "results": {
+      "dose_response_calls": "primary set: Repeat 3 (SP1 site 143-151, WT score 13.6): slope +0.26 points of 10-40 bp coverage per log2-odds unit (95% CI 0.08-0.44), q 0.017, 17 SNVs (7 in the site); SNVs breaking the site (-8 to -10 log2-odds) lower coverage by 0.2-2.3 points, so the fit is mostly site-broken vs intact. Repeat 1 (SP1 best site 92-100, weak WT score 3.9): +0.09 (-0.02 to 0.19), q 0.15. Repeat 2 (SREBF2 127-136, WT 15.7): -0.05 (-0.18 to 0.08), q 0.46. Secondary (v1-derived) windows: q 0.13-0.61",
+      "dose_response_unmarked": "no motif with q < 0.05 (primary q 0.29-0.69; secondary 0.20-0.55)",
+      "function": "F1 (activity ~ element-wide shift, within position): LDLR -0.35 log2 per point (-0.50 to -0.20), p 3e-6; LDLR.2 -0.37 (-0.53 to -0.21). Without the position term -0.67 and -0.75; Spearman -0.50 and -0.51. F2 (local 11-50 bp): -0.19 (-0.29 to -0.09) and -0.20, p 2e-4. F3 (|activity| ~ local RMS): +0.11 (0.01 to 0.22), p 0.04, and +0.13, p 0.03. Shift spread: IQR -0.29 to 0.47 points; activity IQR -0.66 to 0.09 log2",
+      "function_robustness_post_hoc": "F1 within position after removing the 17 region SNVs -0.32 (-0.46 to -0.18); the 29 element-wide SNVs -0.32 (-0.47 to -0.17); positions 140-156 -0.28 (-0.42 to -0.14); all p <= 8e-5",
+      "region": "the 17 SNVs at 143-151 (all inside the Repeat 3 SP1 site): median activity -2.59 log2 (LDLR) and -3.23 (LDLR.2) vs -0.10 and -0.10 for the other SNVs"
+    },
+    "decisions": [
+      "carry the element-wide shift (mean unmarked change > 50 bp from the SNV) as a named chromatin endpoint: it tracks nucleosome-size call coverage (r 0.87, A10 follow-up) and expression within positions in both published measurements",
+      "Repeat 3 is the one motif with a dose-response: breaking its SP1 site lowers TF-size coverage at the site, raises protection across the element, and goes with ~6-fold lower published expression. Reported as an association in separate experiments, not a mechanism",
+      "no motif-level claim for Repeat 1 (weak SP1 match), Repeat 2 (SRE-1, no dose-response) or the v1-derived windows",
+      "the published MPRA comes from a different experiment; all function links are correlations across SNVs, confirmed within position to rule out motif clustering",
+      "Phase A ends here; B1 (naked controls, including the variant sequences flagged in A10) and B2 (time course) wait for data"
+    ]
   }
 }

@@ -1,0 +1,547 @@
+<title>LDLR Promoter Explorer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
+<style>
+/* Layout: a genome-browser column of tracks on oligo 21-231 (sequence, activity, WT, variant, WT - variant),
+   a variant bar above it, then the variant card and comparisons. */
+:root {
+  --bg: #F6F5F1; --panel: #FFFFFF; --ink: #1B2430; --body: #4A5568; --muted: #7A8494; --rule: #DCE0E5;
+  --blue: #2F6DB5; --orange: #D9772B; --grey: #A7AFBA; --violet: #6B4FA0; --teal: #23877C; --mid: #E4E6EA;
+  --nuc: #8C96A3; --mark: #1B2430; --motif: rgba(47,109,181,.09); --motif2: rgba(217,119,43,.09); --near: rgba(122,132,148,.13);
+  --f-display: 'Source Serif 4', Georgia, serif; --f-body: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+  --f-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #12161C; --panel: #1A2029; --ink: #E7EAEE; --body: #B6BDC8; --muted: #8B94A2; --rule: #2C3440;
+  --blue: #6FA3E0; --orange: #E8955A; --grey: #5E6773; --violet: #A58BD6; --teal: #4DB3A6; --mid: #2A313B;
+  --nuc: #6E7887; --mark: #E7EAEE; --motif: rgba(111,163,224,.12); --motif2: rgba(232,149,90,.12); --near: rgba(139,148,162,.14);
+  color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #12161C; --panel: #1A2029; --ink: #E7EAEE; --body: #B6BDC8; --muted: #8B94A2; --rule: #2C3440;
+  --blue: #6FA3E0; --orange: #E8955A; --grey: #5E6773; --violet: #A58BD6; --teal: #4DB3A6; --mid: #2A313B;
+  --nuc: #6E7887; --mark: #E7EAEE; --motif: rgba(111,163,224,.12); --motif2: rgba(232,149,90,.12); --near: rgba(139,148,162,.14);
+  color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.wrap { max-width: 1360px; margin: 0 auto; padding-block: 24px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 22px; }
+.view { display: flex; flex-direction: column; gap: 22px; }
+header { display: flex; flex-wrap: wrap; gap: 14px 32px; align-items: end; justify-content: space-between; }
+h1 { font-family: var(--f-display); font-weight: 600; font-size: clamp(28px, 4vw, 38px); margin: 0; text-wrap: balance; }
+.sub { color: var(--body); margin: 6px 0 0; max-width: 72ch; line-height: 1.5; }
+h2 { font-family: var(--f-display); font-weight: 600; font-size: 21px; margin: 0; text-wrap: balance; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--blue); font-weight: 600; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; background: var(--panel); }
+.seg button { font: inherit; font-size: 14px; border: 0; background: transparent; color: var(--body); padding: 7px 14px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.seg button:disabled { opacity: .35; cursor: default; }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+label.ctl { display: inline-flex; gap: 7px; align-items: center; font-size: 13px; color: var(--muted); }
+select, input[type="text"] { font: inherit; font-size: 14px; color: var(--ink); background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 6px 8px; }
+.btn { font: inherit; font-size: 14px; color: var(--ink); background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 6px 11px; cursor: pointer; }
+section.block { background: var(--panel); border: 1px solid var(--rule); border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.head { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: center; justify-content: space-between; }
+.vbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--panel); border: 1px solid var(--rule); border-radius: 12px;
+  padding: 12px 16px; display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
+.vname { font-family: var(--f-mono); font-size: 24px; font-weight: 500; min-width: 7ch; }
+.facts { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.facts b { color: var(--ink); font-weight: 500; font-family: var(--f-mono); font-size: 13px; }
+.chip { font-size: 12px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--rule); color: var(--body); }
+.chip.on { border-color: var(--orange); color: var(--orange); }
+.chip.warn { border-color: var(--violet); color: var(--violet); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.note { color: var(--muted); font-size: 13px; line-height: 1.5; max-width: 100ch; margin: 0; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--body); align-items: center; }
+.sw { display: inline-block; width: 18px; height: 5px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+.dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; vertical-align: middle; margin-right: 5px; background: var(--mark); }
+.plot { width: 100%; min-width: 0; }
+.cb { display: inline-flex; gap: 5px; align-items: center; font-size: 13px; color: var(--body); }
+table.t { border-collapse: collapse; font-size: 13.5px; width: 100%; }
+table.t th, table.t td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--rule); font-variant-numeric: tabular-nums; }
+table.t th { color: var(--muted); font-weight: 500; }
+.scroll { overflow-x: auto; }
+.status { color: var(--muted); margin: 0; }
+footer { color: var(--muted); font-size: 13px; line-height: 1.6; display: flex; flex-direction: column; gap: 4px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">Fiber-seq MPRA · analysis v2, Phase A</div>
+      <h1>LDLR Promoter Explorer</h1>
+      <p class="sub">The 211-bp promoter element: every variant's effects stacked along the sequence, then a track view of one variant's molecules and footprints against WT, with WT − variant.</p>
+    </div>
+    <div class="seg" role="group" aria-label="Cell line">
+      <button id="cell-hepg2" aria-pressed="true">HepG2 run 3</button>
+      <button id="cell-hek" aria-pressed="false">HEK293T</button>
+    </div>
+  </header>
+  <p id="status" class="status">Loading data…</p>
+
+  <div id="view-hepg2" class="view" hidden>
+    <section class="block">
+      <div class="head">
+        <h2>All variant effects along the element</h2>
+        <div class="controls">
+          <label class="ctl" for="l-color">Color
+            <select id="l-color"><option value="allele">Alternate base</option><option value="caller">Caller class</option><option value="region">Repeat 3 element-wide</option></select></label>
+          <label class="ctl" for="l-sign">Chromatin difference
+            <select id="l-sign"><option value="wt">WT − variant</option><option value="var">Variant − WT</option></select></label>
+          <span class="cb"><input type="checkbox" id="l-trend" checked><label for="l-trend">Trend (9-bp mean)</label></span>
+        </div>
+      </div>
+      <div class="controls" id="l-panels" role="group" aria-label="Panels to show"></div>
+      <div id="lolli" class="plot"></div>
+      <p class="note" id="l-note"></p>
+    </section>
+
+    <div class="vbar">
+      <div class="controls">
+        <button class="btn" id="prev" aria-label="Previous variant">←</button>
+        <span class="vname" id="vname">—</span>
+        <button class="btn" id="next" aria-label="Next variant">→</button>
+      </div>
+      <div class="seg" role="group" aria-label="Allele at this position" id="alleles"></div>
+      <input type="text" id="find" list="snv-list" placeholder="Find, e.g. 146C>T" aria-label="Find a variant" size="13">
+      <datalist id="snv-list"></datalist>
+      <div class="facts" id="facts"></div>
+    </div>
+
+    <section class="block">
+      <div class="head">
+        <div class="legend">
+          <span><span class="sw" style="background:var(--teal)"></span>10-19 bp</span>
+          <span><span class="sw" style="background:var(--blue)"></span>20-40 bp</span>
+          <span><span class="sw" style="background:var(--violet)"></span>41-80 bp</span>
+          <span><span class="sw" style="background:var(--nuc)"></span>81+ bp</span>
+          <span><span class="dot"></span>m6A</span>
+          <span><span class="sw" style="background:var(--orange);height:8px;width:8px;border-radius:50%"></span>significant (FDR 5%)</span>
+        </div>
+        <div class="controls">
+          <label class="ctl" for="act-src">Activity
+            <select id="act-src"><option value="act">LDLR</option><option value="act2">LDLR.2</option></select></label>
+          <label class="ctl" for="mask">Test mask
+            <select id="mask"><option value="pm5">±5 bp</option><option value="A7">A7</option></select></label>
+          <label class="ctl" for="fpd">Footprint difference
+            <select id="fpd"><option value="test">Test (masked, ±1.96 SE)</option><option value="raw">As read (no mask)</option></select></label>
+          <span class="cb"><input type="checkbox" id="lock" checked><label for="lock">Same axes for every variant</label></span>
+          <span class="cb"><input type="checkbox" id="b-sub_TF" checked><label for="b-sub_TF">10-19</label></span>
+          <span class="cb"><input type="checkbox" id="b-TF" checked><label for="b-TF">20-40</label></span>
+          <span class="cb"><input type="checkbox" id="b-PIC" checked><label for="b-PIC">41-80</label></span>
+          <span class="cb"><input type="checkbox" id="b-NUC"><label for="b-NUC">81+</label></span>
+        </div>
+      </div>
+      <div id="tracks" class="plot"></div>
+      <p class="note">Molecules: 40 sampled per track (labeling ≥ 0.2), lowest labeling at the bottom; bars are footprint calls clipped to the element, dots are m6A-marked adenines. Coverage: share of molecules with labeling ≥ 0.2 covered by a call of that size. Unmarked: share of molecules (labeling &gt; 0.01) where the adenine has no m6A. WT tracks are weighted to the variant's labeling mix, so WT − variant is exactly the difference of the two tracks. The footprint difference defaults to the A10 test with the chosen mask (bands ±1.96 SE): "as read" shows the unmasked difference, which still contains caller artifacts where a variant removes an A/T (e.g. a one-position spike at 86 for 86T&gt;X). Unmarked differences and all significance markers come from the same masked test. With "same axes" on, values beyond ±8 (footprints) or ±25 points (unmarked) run off the panel; turn it off to rescale. The grey band marks ±10 bp around the variant, where changes may be Hia5 sequence preference until naked controls. Activity: Kircher et al. 2019, log2 variant/WT, HepG2; click a cell to open that variant.</p>
+    </section>
+
+    <section class="block">
+      <div class="head">
+        <h2>Compare variants</h2>
+        <div class="controls">
+          <label class="ctl" for="sx">x <select id="sx"></select></label>
+          <label class="ctl" for="sy">y <select id="sy"></select></label>
+          <label class="ctl" for="sc">color <select id="sc">
+            <option value="caller">Caller class</option><option value="region">Repeat 3 element-wide</option>
+            <option value="sel">Changes protection (±5 bp)</option></select></label>
+        </div>
+      </div>
+      <div id="scatter" class="plot"></div>
+      <p class="note" id="scatter-note"></p>
+    </section>
+  </div>
+
+  <div id="view-hek" class="view" hidden>
+    <section class="block">
+      <div class="head">
+        <h2>HEK293T WT along the element</h2>
+        <label class="ctl" for="act-src-hek">Activity (HepG2 MPRA)
+          <select id="act-src-hek"><option value="act">LDLR</option><option value="act2">LDLR.2</option></select></label>
+      </div>
+      <div id="tracks-hek" class="plot"></div>
+      <p class="note">HEK293T WT molecules. HEK293T variants are single clones, so there are no per-variant tracks; motif-level results are below. K01-K23: the v1 HEK293T footprint map (teal: chromatin, grey: also in near-naked molecules). Activity rows are the published HepG2 MPRA, for orientation only.</p>
+    </section>
+    <section class="block">
+      <div class="head"><h2>Motif-level tests</h2><span class="note">SNV clones minus WT clones of similar depth (A10), ±1.96 null SD; * BH 5%.</span></div>
+      <div id="hek-motifs" class="plot"></div>
+      <div class="scroll"><table class="t" id="hek-table"></table></div>
+    </section>
+  </div>
+
+  <footer>
+    <span>Sources: results/analysis_v2_20261028 (A9 extraction, A10 effects, A11 function) via tools/analysis_v2/explorer_data.py; settings in config/analysis_v2/rules.json.</span>
+    <span>Changes are relative to in-cell WT molecules, not absolute occupancy. HepG2 and HEK293T are kept separate. Keys: ← → step through variants.</span>
+  </footer>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const BASES = ['A', 'C', 'G', 'T'], NB = 4, W = 211, X0 = 21;
+  const BINS = ['sub_TF', 'TF', 'PIC', 'NUC'], BINL = { sub_TF: '10-19 bp', TF: '20-40 bp', PIC: '41-80 bp', NUC: '81+ bp' };
+  const METRICS = { act: 'Activity LDLR (log2)', act2: 'Activity LDLR.2 (log2)', shift: 'Element-wide shift (points)',
+    local: 'Local change 11-50 bp (points)', local_rms: 'Local change size, RMS (points)', hits_pm5_E1: 'Adenine hits, ±5 bp',
+    hits_A7_E1: 'Adenine hits, A7', hits_pm5_E2: 'Call hits, ±5 bp', logp_pm5_E1: 'Global test −log10 p, ±5 bp', clones: 'Clones',
+    molecules: 'Molecules', mde_e1: 'MDE per adenine (points)', smd_labeling: 'SMD labeling', smd_passes: 'SMD passes', pos: 'Position (oligo)' };
+  let B = null, cell = 'hepg2', sel = null, chunk = null;
+  const cache = {}, byId = {};
+  const st = { act: 'act', mask: 'pm5', fpd: 'test', lock: true, sx: 'shift', sy: 'act', sc: 'caller', bins: { sub_TF: true, TF: true, PIC: true, NUC: false }, sel: '146C>T' };
+  try { Object.assign(st, JSON.parse(localStorage.getItem('ldlr-explorer-2') || '{}')); } catch (e) {}
+  const save = () => { try { localStorage.setItem('ldlr-explorer-2', JSON.stringify(st)); } catch (e) {} };
+
+  const T = () => ({ bg: css('--panel'), ink: css('--ink'), body: css('--body'), muted: css('--muted'), rule: css('--rule'), blue: css('--blue'),
+    orange: css('--orange'), grey: css('--grey'), violet: css('--violet'), teal: css('--teal'), mid: css('--mid'), nuc: css('--nuc'),
+    mark: css('--mark'), motif: css('--motif'), motif2: css('--motif2'), near: css('--near') });
+  const binColor = t => ({ sub_TF: t.teal, TF: t.blue, PIC: t.violet, NUC: t.nuc });
+  const rgba = (hex, a) => { const h = hex.replace('#', ''); const n = parseInt(h.length === 3 ? h.split('').map(c => c + c).join('') : h, 16);
+    return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`; };
+  const LOCK = { cov: [0, 10], nuc: [0, 45], dcov: [-8, 8], dunm: [-25, 25] };
+  const cfg = { displaylogo: false, responsive: true, modeBarButtonsToRemove: ['lasso2d', 'select2d', 'autoScale2d'] };
+  const ax = (t, o) => Object.assign({ gridcolor: t.rule, zerolinecolor: t.rule, linecolor: t.rule, tickcolor: t.rule,
+    tickfont: { color: t.muted, size: 10.5 }, title: { font: { color: t.body, size: 11.5 } } }, o);
+  const dec = (v, s) => v === null || v === undefined ? null : v / s;
+
+  // Builds one stacked figure from a list of rows; each row {key, h, label, kind, ...}.
+  function stack(t, rows, height, extraShapes) {
+    const gap = 0.014, tot = rows.reduce((a, r) => a + r.h, 0) + gap * (rows.length - 1);
+    let top = 1; const L = { height, paper_bgcolor: t.bg, plot_bgcolor: t.bg, margin: { l: 118, r: 70, t: 8, b: 40 }, showlegend: false,
+      font: { family: "'IBM Plex Sans', Arial, sans-serif", size: 11.5, color: t.body }, hoverlabel: { bgcolor: t.bg, bordercolor: t.rule, font: { color: t.ink } },
+      shapes: [], annotations: [] };
+    const traces = [];
+    rows.forEach((r, i) => {
+      const h = r.h / tot, dom = [Math.max(0, top - h), top]; top -= h + gap / tot;
+      const id = i === 0 ? 'y' : 'y' + (i + 1), key = i === 0 ? 'yaxis' : 'yaxis' + (i + 1);
+      L[key] = ax(t, Object.assign({ domain: dom, title: { text: r.label, font: { color: t.body, size: 11.5 } } }, r.axis || {}));
+      r.traces.forEach(tr => { tr.yaxis = id; tr.xaxis = 'x'; traces.push(tr); });
+      (r.shapes || []).forEach(s => L.shapes.push(Object.assign({ xref: 'x', yref: id + ' domain' }, s)));
+      (r.annotations || []).forEach(a => L.annotations.push(Object.assign({ xref: 'x', yref: id }, a)));
+      if (r.colorbar) r.traces.forEach(tr => { if (tr.type === 'heatmap') tr.colorbar = { len: dom[1] - dom[0], y: (dom[0] + dom[1]) / 2, thickness: 9, x: 1.005,
+        tickfont: { color: t.muted, size: 9.5 }, outlinewidth: 0 }; });
+      r.y = id;
+    });
+    L.xaxis = ax(t, { range: [X0 - .5, X0 + W - .5], anchor: rows.length === 1 ? 'y' : 'y' + rows.length, title: { text: 'oligo position' }, showgrid: false });
+    L.shapes.push(...(extraShapes || []));
+    return { traces, layout: L };
+  }
+  const bands = t => [...B.motifs.literature.map(([, a, b]) => ({ type: 'rect', x0: a - .5, x1: b + .5, y0: 0, y1: 1, fillcolor: t.motif, line: { width: 0 }, layer: 'below' })),
+    ...B.motifs.v1.map(([, a, b]) => ({ type: 'rect', x0: a - .5, x1: b + .5, y0: 0, y1: 1, fillcolor: t.motif2, line: { width: 0 }, layer: 'below' }))];
+
+  // ---- row builders ----
+  function motifRow(t, footprints) {
+    const ann = [], shapes = bands(t);
+    if (footprints) {
+      footprints.forEach((f, i) => shapes.push({ type: 'rect', x0: f.mid - f.len / 2, x1: f.mid + f.len / 2, y0: .08 + (i % 3) * .3, y1: .3 + (i % 3) * .3,
+        fillcolor: f.flag === 'chromatin' ? t.teal : t.grey, opacity: .6, line: { width: 0 } }));
+      return { h: .07, label: 'K footprints', axis: { range: [0, 1], showticklabels: false, showgrid: false, zeroline: false, fixedrange: true }, shapes,
+        traces: [{ x: footprints.map(f => f.mid), y: footprints.map((f, i) => .19 + (i % 3) * .3), mode: 'markers', marker: { size: 8, opacity: 0 },
+          text: footprints.map(f => `${f.id} · ${f.len} bp · ${f.flag.replace(/_/g, ' ')}`), hovertemplate: '%{text}<extra></extra>' }] };
+    }
+    B.motifs.literature.forEach(([n, a, b]) => ann.push({ x: (a + b) / 2, y: .72, text: n, showarrow: false, font: { size: 10.5, color: t.blue } }));
+    B.motifs.v1.forEach(([n, a, b], i) => ann.push({ x: (a + b) / 2, y: i % 2 ? .12 : .34, text: n, showarrow: false, font: { size: 10, color: t.orange } }));
+    return { h: .05, label: 'Motifs', axis: { range: [0, 1], showticklabels: false, showgrid: false, zeroline: false, fixedrange: true }, shapes, annotations: ann, traces: [{ x: [X0], y: [0], mode: 'markers', marker: { opacity: 0 }, hoverinfo: 'skip' }] };
+  }
+  function seqRow(t, v) {
+    const seq = B.sequence, x = Array.from({ length: W }, (_, i) => i + X0);
+    const tr = [{ x, y: x.map(() => .3), mode: 'text', text: seq.split(''), hoverinfo: 'skip',
+      textfont: { family: "'IBM Plex Mono', monospace", size: 10, color: seq.split('').map(b => 'AT'.includes(b) ? t.ink : t.muted) } }];
+    if (v) tr.push({ x: [v.pos], y: [.8], mode: 'text', text: [v.alt], hoverinfo: 'skip', textfont: { family: "'IBM Plex Mono', monospace", size: 12, color: t.orange } });
+    return { h: .04, label: v ? 'WT / variant' : 'Sequence', axis: { range: [0, 1.1], showticklabels: false, showgrid: false, zeroline: false, fixedrange: true }, traces: tr };
+  }
+  function activityRow(t, key, v) {
+    const z = BASES.map(() => new Array(W).fill(null)), ids = BASES.map(() => new Array(W).fill(''));
+    for (const r of B.activity) { const b = BASES.indexOf(r.alt); if (b >= 0) { z[b][r.pos - X0] = r[key]; ids[b][r.pos - X0] = r.id; } }
+    const shapes = v ? [{ type: 'rect', xref: 'x', x0: v.pos - .5, x1: v.pos + .5, y0: (3 - BASES.indexOf(v.alt)) / 4, y1: (4 - BASES.indexOf(v.alt)) / 4,
+      line: { color: t.ink, width: 1.6 }, fillcolor: 'rgba(0,0,0,0)' }] : [];
+    return { h: .1, label: 'Activity (log2)', colorbar: true, shapes,
+      axis: { autorange: 'reversed', showgrid: false, fixedrange: true, tickfont: { family: "'IBM Plex Mono', monospace", size: 10, color: t.muted } },
+      traces: [{ type: 'heatmap', x: Array.from({ length: W }, (_, i) => i + X0), y: BASES, z, customdata: ids, xgap: .4, ygap: 1, hoverongaps: false,
+        colorscale: [[0, t.violet], [.5, t.mid], [1, t.teal]], zmid: 0, zmin: -3, zmax: 3, hovertemplate: '%{customdata}: %{z:.2f} log2<extra></extra>' }] };
+  }
+  function pileupRow(t, mols, label) {
+    const tr = [], col = binColor(t);
+    const base = { x: [], y: [] };
+    mols.forEach((m, i) => { base.x.push(X0 - .5, X0 + W - .5, null); base.y.push(i, i, null); });
+    tr.push({ x: base.x, y: base.y, mode: 'lines', line: { color: t.rule, width: 1 }, hoverinfo: 'skip' });
+    BINS.forEach((b, k) => {
+      const x = [], y = [];
+      mols.forEach((m, i) => m.s.forEach(([a, e, kk]) => { if (kk === k) { x.push(a - .5, e + .5, null); y.push(i, i, null); } }));
+      if (x.length) tr.push({ x, y, mode: 'lines', line: { color: col[b], width: 4.2 }, hoverinfo: 'skip' });
+    });
+    const mx = [], my = [];
+    mols.forEach((m, i) => m.m.forEach(j => { mx.push(cur.adenines[j]); my.push(i); }));
+    tr.push({ x: mx, y: my, mode: 'markers', marker: { size: 2.6, color: t.mark }, hoverinfo: 'skip' });
+    tr.push({ x: mols.map(() => X0 + W - 1), y: mols.map((_, i) => i), mode: 'markers', marker: { opacity: 0, size: 6 },
+      text: mols.map(m => `labeling ${m.l} · ${m.s.length} footprints · ${m.m.length} m6A`), hovertemplate: '%{text}<extra></extra>' });
+    return { h: .15, label, axis: { range: [-1, Math.max(mols.length, 1)], showticklabels: false, showgrid: false, zeroline: false, fixedrange: true }, traces: tr, shapes: bands(t) };
+  }
+  function coverageRow(t, cov, label) {
+    const col = binColor(t), x = Array.from({ length: W }, (_, i) => i + X0), tr = [];
+    BINS.forEach(b => { if (st.bins[b]) tr.push({ x, y: cov[b].map(v => v === null ? null : 100 * v), mode: 'lines', line: { color: col[b], width: 1.7 },
+      hovertemplate: `oligo %{x}: %{y:.2f}% (${BINL[b]})<extra></extra>` }); });
+    const axis = st.lock ? { range: st.bins.NUC ? LOCK.nuc : LOCK.cov, ticksuffix: '%' } : { rangemode: 'tozero', ticksuffix: '%' };
+    return { h: .08, label, axis, traces: tr, shapes: bands(t) };
+  }
+  function unmarkedRow(t, wt, v, adenines, label) {
+    const tr = [{ x: adenines, y: wt.map(x => x === null ? null : 100 * x), mode: 'lines+markers', line: { color: t.grey, width: 1.6 }, marker: { size: 3.5 },
+      hovertemplate: 'WT at %{x}: %{y:.1f}%<extra></extra>' }];
+    if (v) tr.push({ x: adenines, y: v.map(x => x === null ? null : 100 * x), mode: 'lines+markers', line: { color: t.orange, width: 1.5 }, marker: { size: 3.5 },
+      hovertemplate: 'variant at %{x}: %{y:.1f}%<extra></extra>' });
+    return { h: .09, label, axis: { range: [0, 102], ticksuffix: '%' }, traces: tr, shapes: bands(t) };
+  }
+
+  // ---- WT at a variant's labeling mix ----
+  function matched(strata, ncol, w) {
+    const s = B.scale, out = new Array(ncol).fill(null);
+    for (let j = 0; j < ncol; j++) { let num = 0, den = 0;
+      for (let k = 0; k < B.n_strata; k++) { const p = strata[k * ncol + j]; if (p !== null && w[k] > 0) { num += w[k] * p / s; den += w[k]; } }
+      out[j] = den > 0 ? num / den : null; }
+    return out;
+  }
+  const byBin = flat => Object.fromEntries(BINS.map((b, k) => [b, flat.slice(k * W, (k + 1) * W)]));
+
+  let cur = null;   // current cell block (for adenine coordinates in the pileup)
+  function renderTracks() {
+    if (!sel || !chunk) return;
+    const t = T(), H = B.HepG2; cur = H;
+    const c = chunk[sel.id], s = B.scale, na = H.adenines.length;
+    const wtU = matched(H.strata_unmarked, na, c.w1), wtC = byBin(matched(H.strata_coverage, NB * W, c.w2));
+    const vU = c.unmarked.map(v => dec(v, s)), vC = byBin(c.coverage.map(v => dec(v, s)));
+    const near = { type: 'rect', x0: sel.pos - 10, x1: sel.pos + 10, y0: 0, y1: 1, fillcolor: t.near, line: { width: 0 }, layer: 'below' };
+    const snvLine = { type: 'line', x0: sel.pos, x1: sel.pos, y0: 0, y1: 1, line: { color: t.orange, width: 1, dash: 'dot' } };
+    // footprint difference (WT - variant): the A10 test with the chosen mask (default), or as read
+    const col = binColor(t), x = Array.from({ length: W }, (_, i) => i + X0), dcov = [];
+    const e2 = c['e2_' + st.mask];
+    BINS.forEach(b => { if (!st.bins[b]) return;
+      let d;
+      if (st.fpd === 'raw') d = wtC[b].map((w, i) => w === null || vC[b][i] === null ? null : 100 * (w - vC[b][i]));
+      else {
+        d = e2[b].D.map(v => v === null ? null : -100 * v / s);
+        const se = e2[b].se.map(v => v === null ? null : 196 * v / s);
+        dcov.push({ x, y: d.map((v, i) => v === null ? null : v - se[i]), mode: 'lines', line: { width: 0 }, hoverinfo: 'skip', connectgaps: false });
+        dcov.push({ x, y: d.map((v, i) => v === null ? null : v + se[i]), mode: 'lines', line: { width: 0 }, fill: 'tonexty', fillcolor: rgba(col[b], .16), hoverinfo: 'skip', connectgaps: false });
+      }
+      dcov.push({ x, y: d, mode: 'lines', line: { color: col[b], width: 1.7 }, connectgaps: false,
+        hovertemplate: `oligo %{x}: WT − variant %{y:.2f} pts (${BINL[b]}, ${st.fpd === 'raw' ? 'as read' : (st.mask === 'pm5' ? '±5 bp' : 'A7') + ' mask'})<extra></extra>` });
+      const h = e2[b].hit; if (h.length && st.fpd !== 'raw') dcov.push({ x: h.map(i => i + X0), y: h.map(i => d[i]), mode: 'markers',
+        marker: { color: t.orange, size: 7, line: { color: t.bg, width: 1 } }, hovertemplate: `significant at %{x} (${BINL[b]})<extra></extra>` }); });
+    // delta unmarked with SE and hits from the chosen test
+    const e = c['e1_' + st.mask], idx = H.adenines.map((_, i) => i).filter(i => e.D[i] !== null);
+    const du = [{ x: idx.map(i => H.adenines[i]), y: idx.map(i => -100 * e.D[i] / s), mode: 'markers', marker: { color: t.body, size: 4.5 },
+      error_y: { type: 'data', array: idx.map(i => 196 * e.se[i] / s), color: t.grey, thickness: 1, width: 0 }, hovertemplate: 'adenine %{x}: WT − variant %{y:.2f} pts<extra></extra>' },
+      { x: e.hit.map(i => H.adenines[i]), y: e.hit.map(i => -100 * e.D[i] / s), mode: 'markers', marker: { color: t.orange, size: 9 }, hovertemplate: 'significant at %{x}: %{y:.2f} pts<extra></extra>' },
+      { x: e.masked.map(i => H.adenines[i]), y: e.masked.map(() => 0), mode: 'markers', marker: { symbol: 'x-thin', size: 8, line: { width: 1.5, color: t.grey } }, hovertemplate: 'masked adenine %{x}<extra></extra>' }];
+    const rows = [motifRow(t), seqRow(t, sel), activityRow(t, st.act, sel),
+      pileupRow(t, H.pileup, 'WT molecules'), coverageRow(t, wtC, 'WT footprints<br>as read'),
+      pileupRow(t, c.pileup, sel.id + ' molecules'), coverageRow(t, vC, sel.id + ' footprints<br>as read'),
+      { h: .09, label: st.fpd === 'raw' ? 'Footprints WT − var<br>as read' : 'Footprints WT − var<br>' + (st.mask === 'pm5' ? '±5 bp' : 'A7') + ' mask',
+        axis: Object.assign({ zeroline: true, zerolinecolor: t.muted }, st.lock ? { range: LOCK.dcov } : {}), traces: dcov, shapes: [near, ...bands(t)] },
+      unmarkedRow(t, wtU, vU, H.adenines, 'Unmarked<br>WT, variant'),
+      { h: .1, label: 'Unmarked WT − var<br>' + (st.mask === 'pm5' ? '±5 bp' : 'A7') + ' mask', axis: Object.assign({ zeroline: true, zerolinecolor: t.muted }, st.lock ? { range: LOCK.dunm } : {}), traces: du, shapes: [near, ...bands(t)] }];
+    const f = stack(t, rows, 1460);
+    f.layout.shapes.push(Object.assign({ xref: 'x', yref: 'paper' }, snvLine));
+    Plotly.react('tracks', f.traces, f.layout, cfg);
+    const gd = $('tracks'); gd.removeAllListeners && gd.removeAllListeners('plotly_click');
+    gd.on('plotly_click', ev => { const p = ev.points[0]; if (p && typeof p.customdata === 'string' && p.customdata) select(p.customdata); });
+  }
+
+  function renderBar() {
+    const v = sel, c = chunk && chunk[v.id];
+    $('vname').textContent = v.id;
+    const same = B.HepG2.snvs.filter(r => r.pos === v.pos);
+    $('alleles').innerHTML = BASES.map(b => { const r = same.find(x => x.alt === b);
+      return `<button data-id="${r ? r.id : ''}" aria-pressed="${r && r.id === v.id}" ${r ? '' : 'disabled'} title="${r ? r.id : 'WT base'}">${b}</button>`; }).join('');
+    $('alleles').querySelectorAll('button[data-id]').forEach(btn => { if (btn.dataset.id) btn.onclick = () => select(btn.dataset.id); });
+    const f = (x, k = 2) => x === null || x === undefined ? '—' : (+x).toFixed(k);
+    const chips = [`<span class="chip">${v.caller}</span>`];
+    if (v.sel_pm5_E1) chips.push('<span class="chip on">changes protection (±5 bp)</span>');
+    if (v.region) chips.push('<span class="chip warn">Repeat 3 element-wide</span>');
+    if (v.pos >= 60 && v.pos <= 86) chips.push('<span class="chip warn">low-power region 60-86 (A6)</span>');
+    $('facts').innerHTML = `<span>activity <b>${f(v[st.act])}</b></span><span>shift <b>${f(v.shift)}</b> pts</span>
+      <span>adenine hits <b>${v.hits_pm5_E1 ?? '—'}</b> (±5) · <b>${v.hits_A7_E1 ?? '—'}</b> (A7)</span>
+      <span>clones <b>${v.clones}</b> · molecules <b>${v.molecules}</b></span><span>MDE <b>${f(v.mde_e1)}</b> pts</span>
+      <span class="chips">${chips.join('')}</span>`;
+  }
+
+  async function loadChunk(pos) {
+    const k = String(Math.floor((pos - X0) / B.chunk)).padStart(2, '0');
+    if (!cache[k]) cache[k] = fetch(`chunks/hepg2_${k}.json`).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
+    return cache[k];
+  }
+  async function select(id) {
+    if (!byId[id]) return;
+    sel = byId[id]; st.sel = id; save();
+    $('find').value = id;
+    try { chunk = await loadChunk(sel.pos); } catch (e) { $('status').hidden = false; $('status').textContent = 'Variant data did not load (' + e.message + '). Reload the page.'; return; }
+    if (sel.id !== id) return;
+    renderBar(); renderTracks(); renderScatter(); renderLolli();
+    const i = B.HepG2.snvs.indexOf(sel), nb = B.HepG2.snvs[(i + 1) % B.HepG2.snvs.length];
+    loadChunk(nb.pos).catch(() => {});
+  }
+  const step = d => { const L = B.HepG2.snvs, i = L.indexOf(sel); select(L[(i + d + L.length) % L.length].id); };
+
+  // ---- stacked lollipops ----
+  const OFF = { A: -.3, C: -.1, G: .1, T: .3 };
+  const PANELS = [
+    { key: 'act', label: 'Activity<br>LDLR (log2)', flip: false, sig: r => r.act_p !== null && r.act_p < .05, sigText: 'published p < 0.05', on: true },
+    { key: 'act2', label: 'Activity<br>LDLR.2 (log2)', flip: false, sig: r => r.act2_p !== null && r.act2_p < .05, sigText: 'published p < 0.05', on: false },
+    { key: 'shift', label: 'Element-wide<br>shift (pts)', flip: true, sig: r => r.sel_pm5_E1, sigText: 'changes protection (±5 bp test)', on: true },
+    { key: 'local', label: 'Local 11-50 bp<br>(pts)', flip: true, sig: r => r.sel_pm5_E1, sigText: 'changes protection (±5 bp test)', on: true },
+    { key: 'near_unmarked', label: 'Unmarked<br>6-10 bp (pts)', flip: true, sig: r => r.near_unmarked_hit, sigText: 'significant adenine within 10 bp', on: true },
+    { key: 'near_sub_TF', label: '10-19 bp calls<br>±10 bp (pts)', flip: true, sig: r => r.near_sub_TF_hit, sigText: 'significant position within 10 bp', on: false },
+    { key: 'near_TF', label: '20-40 bp calls<br>±10 bp (pts)', flip: true, sig: r => r.near_TF_hit, sigText: 'significant position within 10 bp', on: true },
+    { key: 'near_PIC', label: '41-80 bp calls<br>±10 bp (pts)', flip: true, sig: r => r.near_PIC_hit, sigText: 'significant position within 10 bp', on: false },
+    { key: 'near_NUC', label: '81+ bp calls<br>±10 bp (pts)', flip: true, sig: r => r.near_NUC_hit, sigText: 'significant position within 10 bp', on: true },
+    { key: 'hits_pm5_E1', label: 'Adenine hits<br>(±5 bp)', flip: false, sig: r => r.sel_pm5_E1, sigText: 'changes protection (±5 bp test)', on: true },
+    { key: 'logp_pm5_E1', label: 'Global test<br>−log10 p', flip: false, cap: 30, sig: r => r.sel_pm5_E1, sigText: 'changes protection (±5 bp test)', on: false }];
+  const lst = { color: 'allele', sign: 'wt', trend: true, panels: Object.fromEntries(PANELS.map(p => [p.key, p.on])) };
+  try { const v = JSON.parse(localStorage.getItem('ldlr-lolli') || '{}'); Object.assign(lst, v, { panels: Object.assign({}, lst.panels, v.panels || {}) }); } catch (e) {}
+  const lsave = () => { try { localStorage.setItem('ldlr-lolli', JSON.stringify(lst)); } catch (e) {} };
+
+  function lolliValue(r, p) {
+    let v = r[p.key];
+    if (v === null || v === undefined) return null;
+    if (p.flip && lst.sign === 'wt') v = -v;
+    if (p.cap) v = Math.min(v, p.cap);
+    return v;
+  }
+  function renderLolli() {
+    const t = T(), rows = B.HepG2.snvs, shown = PANELS.filter(p => lst.panels[p.key]);
+    const colorOf = lst.color === 'allele' ? (r => ({ A: t.teal, C: t.blue, G: t.ink, T: t.orange })[r.alt])
+      : lst.color === 'caller' ? (r => ({ 'drops its base': t.orange, 'gains an A/T': t.blue, neither: t.grey })[r.caller])
+      : (r => r.region ? t.orange : t.grey);
+    const out = shown.map(p => {
+      const sx = [], sy = [], tr = [];
+      const pts = rows.map(r => ({ r, v: lolliValue(r, p) })).filter(o => o.v !== null);
+      pts.forEach(({ r, v }) => { const x = r.pos + OFF[r.alt]; sx.push(x, x, null); sy.push(0, v, null); });
+      tr.push({ x: sx, y: sy, mode: 'lines', line: { color: t.rule, width: 1 }, hoverinfo: 'skip' });
+      for (const filled of [false, true]) {
+        const q = pts.filter(o => !!p.sig(o.r) === filled);
+        tr.push({ x: q.map(o => o.r.pos + OFF[o.r.alt]), y: q.map(o => o.v), mode: 'markers', customdata: q.map(o => o.r.id),
+          marker: { size: filled ? 6.5 : 5.5, symbol: filled ? 'circle' : 'circle-open', color: q.map(o => colorOf(o.r)), line: { width: 1.2, color: q.map(o => colorOf(o.r)) } },
+          hovertemplate: `%{customdata}: %{y:.2f}${filled ? ' · ' + p.sigText : ''}<extra></extra>` });
+      }
+      if (lst.trend) {
+        const byPos = {}; pts.forEach(({ r, v }) => (byPos[r.pos] = byPos[r.pos] || []).push(v));
+        const xs = [], ys = [];
+        for (let x = X0; x < X0 + W; x++) { let sum = 0, n = 0;
+          for (let k = x - 4; k <= x + 4; k++) (byPos[k] || []).forEach(v => { sum += v; n++; });
+          xs.push(x); ys.push(n >= 3 ? sum / n : null); }
+        tr.push({ x: xs, y: ys, mode: 'lines', line: { color: t.violet, width: 2 }, hovertemplate: 'mean around %{x}: %{y:.2f}<extra></extra>' });
+      }
+      const shapes = bands(t);
+      if (sel) shapes.push({ type: 'line', x0: sel.pos, x1: sel.pos, y0: 0, y1: 1, line: { color: t.ink, width: 1, dash: 'dot' } });
+      return { h: .1, label: p.label, axis: { zeroline: true, zerolinecolor: t.muted }, traces: tr, shapes };
+    });
+    const f = stack(t, [motifRow(t), ...out], 70 + 150 * shown.length);
+    f.layout.margin.l = 112;
+    Plotly.react('lolli', f.traces, f.layout, cfg);
+    const gd = $('lolli'); gd.removeAllListeners && gd.removeAllListeners('plotly_click');
+    gd.on('plotly_click', ev => { const p = ev.points[0]; if (p && typeof p.customdata === 'string' && byId[p.customdata]) {
+      select(p.customdata);
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      document.querySelector('.vbar').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); } });
+    $('l-note').textContent = `One lollipop per variant (${rows.length}); the alternate bases at a position sit side by side (A, C, G, T from left). ` +
+      `Filled heads: activity with published p < 0.05; chromatin panels with a significant change (A10, ±5 bp mask). Chromatin panels show ${lst.sign === 'wt' ? 'WT − variant (positive = less protected in the variant)' : 'variant − WT (positive = more protected in the variant)'}; activity is always log2 variant/WT. ` +
+      `"±10 bp" panels are the mean change within 10 bp of the variant, where Hia5 sequence preference is possible until naked controls. Click a lollipop to open it in the track view.`;
+  }
+
+  // ---- comparisons ----
+  function spearman(a, b) {
+    const rank = v => { const o = v.map((x, i) => [x, i]).sort((p, q) => p[0] - q[0]), r = new Array(v.length);
+      for (let i = 0; i < o.length;) { let j = i; while (j + 1 < o.length && o[j + 1][0] === o[i][0]) j++; for (let k = i; k <= j; k++) r[o[k][1]] = (i + j) / 2; i = j + 1; } return r; };
+    const ra = rank(a), rb = rank(b), n = a.length, m = (n - 1) / 2; let s = 0, da = 0, db = 0;
+    for (let i = 0; i < n; i++) { s += (ra[i] - m) * (rb[i] - m); da += (ra[i] - m) ** 2; db += (rb[i] - m) ** 2; } return s / Math.sqrt(da * db);
+  }
+  function renderScatter() {
+    const t = T(), rows = B.HepG2.snvs.filter(r => r[st.sx] != null && r[st.sy] != null);
+    const groups = st.sc === 'caller' ? [['drops its base', t.orange], ['gains an A/T', t.blue], ['neither', t.grey]].map(([g, c]) => [g, c, r => r.caller === g])
+      : st.sc === 'region' ? [['other variants', t.grey, r => !r.region], ['Repeat 3 element-wide', t.orange, r => r.region]]
+      : [['not selected', t.grey, r => !r.sel_pm5_E1], ['changes protection (±5 bp)', t.blue, r => r.sel_pm5_E1]];
+    const tr = groups.map(([name, c, f]) => { const g = rows.filter(f); return { x: g.map(r => r[st.sx]), y: g.map(r => r[st.sy]), customdata: g.map(r => r.id), mode: 'markers', name,
+      marker: { color: c, size: 7, opacity: .8 }, hovertemplate: `%{customdata}<br>${METRICS[st.sx]}: %{x}<br>${METRICS[st.sy]}: %{y}<extra></extra>` }; });
+    if (sel) tr.push({ x: [sel[st.sx]], y: [sel[st.sy]], mode: 'markers', name: sel.id, marker: { size: 16, color: 'rgba(0,0,0,0)', line: { color: t.ink, width: 2 } }, hoverinfo: 'skip' });
+    const L = { height: 440, paper_bgcolor: t.bg, plot_bgcolor: t.bg, margin: { l: 70, r: 20, t: 30, b: 50 }, font: { family: "'IBM Plex Sans', Arial, sans-serif", size: 12, color: t.body },
+      legend: { orientation: 'h', y: 1.1, font: { size: 11, color: t.body } }, hoverlabel: { bgcolor: t.bg, bordercolor: t.rule, font: { color: t.ink } },
+      xaxis: ax(t, { title: { text: METRICS[st.sx] } }), yaxis: ax(t, { title: { text: METRICS[st.sy] } }) };
+    Plotly.react('scatter', tr, L, cfg);
+    const gd = $('scatter'); gd.removeAllListeners && gd.removeAllListeners('plotly_click');
+    gd.on('plotly_click', ev => { const p = ev.points[0]; if (p && p.customdata) select(p.customdata); });
+    $('scatter-note').textContent = `Spearman ${spearman(rows.map(r => r[st.sx]), rows.map(r => r[st.sy])).toFixed(2)} over ${rows.length} variants. Click a point to open it above. Description only; A11's within-position model is the test of the activity link.`;
+  }
+
+  // ---- HEK293T ----
+  function renderHek() {
+    const t = T(), H = B.HEK293T, s = B.scale; cur = H;
+    const cov = byBin(BINS.flatMap(b => H.coverage[b].map(v => dec(v, s))));
+    const rows = [motifRow(t, H.footprints), seqRow(t, null), activityRow(t, $('act-src-hek').value, null),
+      pileupRow(t, H.pileup, 'WT molecules'), coverageRow(t, cov, 'WT footprints'), unmarkedRow(t, H.unmarked.map(v => dec(v, s)), null, H.adenines, 'Unmarked WT')];
+    const f = stack(t, rows, 900);
+    Plotly.react('tracks-hek', f.traces, f.layout, cfg);
+    const names = [...new Set(H.motif_tests.map(x => x.motif))], tests = H.motif_tests.filter(x => x.effect !== null), tr = [];
+    [['E1'], ['E2']].forEach(([ep], k) => [['rest', 'gains an A/T or neither', t.blue], ['drops its base', 'drops its base', t.orange]].forEach(([g, gl, c], j) => {
+      const q = tests.filter(x => x.endpoint === ep && x.group === g);
+      tr.push({ x: q.map(x => x.effect), y: q.map(x => names.indexOf(x.motif) + (j - .5) * .3), xaxis: k ? 'x2' : 'x', mode: 'markers+text', name: gl, showlegend: k === 0,
+        text: q.map(x => x.bh ? '*' : ''), textposition: 'top center', textfont: { color: t.ink, size: 15 },
+        error_x: { type: 'data', array: q.map(x => 1.96 * x.null_sd), color: c, thickness: 1.5, width: 0 }, marker: { color: c, size: 9 },
+        customdata: q.map(x => `${x.motif} · ${gl}<br>${x.snvs} variants, ${x.clones} clones · p ${x.p}`), hovertemplate: '%{customdata}<br>%{x:.2f} pts<extra></extra>' }); }));
+    const L = { height: 380, paper_bgcolor: t.bg, plot_bgcolor: t.bg, margin: { l: 110, r: 20, t: 10, b: 80 }, font: { family: "'IBM Plex Sans', Arial, sans-serif", size: 12, color: t.body },
+      legend: { orientation: 'h', y: -.28, font: { size: 11, color: t.body } }, hoverlabel: { bgcolor: t.bg, bordercolor: t.rule, font: { color: t.ink } },
+      xaxis: ax(t, { domain: [0, .47], title: { text: 'adenine unmarked Δ (pts)' }, zeroline: true }),
+      xaxis2: ax(t, { domain: [.53, 1], title: { text: '10-80 bp call coverage Δ (pts)' }, zeroline: true, anchor: 'y' }),
+      yaxis: ax(t, { tickvals: names.map((_, i) => i), ticktext: names, autorange: 'reversed', showgrid: false }) };
+    Plotly.react('hek-motifs', tr, L, cfg);
+    $('hek-table').innerHTML = '<tr><th>Motif</th><th>Variants</th><th>Endpoint</th><th>Clones</th><th>Effect (pts)</th><th>p</th><th>BH 5%</th></tr>' +
+      H.motif_tests.map(x => `<tr><td>${x.motif} (${x.start}-${x.end})</td><td>${x.group === 'rest' ? 'gains an A/T or neither' : 'drops its base'} · ${x.snvs}</td><td>${x.endpoint === 'E1' ? 'adenine unmarked' : '10-80 bp calls'}</td><td>${x.clones}</td><td>${x.effect === null ? 'not tested' : x.effect.toFixed(2)}</td><td>${x.p ?? '—'}</td><td>${x.bh ? 'yes' : ''}</td></tr>`).join('');
+  }
+
+  // ---- wiring ----
+  function setCell(c) {
+    cell = c;
+    $('cell-hepg2').setAttribute('aria-pressed', c === 'hepg2'); $('cell-hek').setAttribute('aria-pressed', c === 'hek293t');
+    $('view-hepg2').hidden = c !== 'hepg2'; $('view-hek').hidden = c !== 'hek293t';
+    try { history.replaceState(null, '', '#' + c); } catch (e) {}
+    renderAll();
+  }
+  function renderAll() { if (!B) return; if (cell === 'hepg2') { renderLolli(); if (sel && chunk) { renderBar(); renderTracks(); } renderScatter(); } else renderHek(); }
+  function init() {
+    const H = B.HepG2;
+    H.snvs.forEach(r => byId[r.id] = r);
+    $('snv-list').innerHTML = H.snvs.map(r => `<option value="${r.id}">`).join('');
+    ['sx', 'sy'].forEach(id => $(id).innerHTML = Object.entries(METRICS).map(([k, v]) => `<option value="${k}">${v}</option>`).join(''));
+    $('act-src').value = st.act; $('mask').value = st.mask; $('sx').value = st.sx; $('sy').value = st.sy; $('sc').value = st.sc;
+    BINS.forEach(b => { $('b-' + b).checked = !!st.bins[b]; $('b-' + b).onchange = e => { st.bins[b] = e.target.checked; save(); renderTracks(); }; });
+    $('act-src').onchange = e => { st.act = e.target.value; save(); renderBar(); renderTracks(); };
+    $('mask').onchange = e => { st.mask = e.target.value; save(); renderTracks(); };
+    $('fpd').value = st.fpd; $('lock').checked = st.lock;
+    $('fpd').onchange = e => { st.fpd = e.target.value; save(); renderTracks(); };
+    $('lock').onchange = e => { st.lock = e.target.checked; save(); renderTracks(); };
+    $('sx').onchange = e => { st.sx = e.target.value; save(); renderScatter(); };
+    $('sy').onchange = e => { st.sy = e.target.value; save(); renderScatter(); };
+    $('sc').onchange = e => { st.sc = e.target.value; save(); renderScatter(); };
+    $('act-src-hek').onchange = renderHek;
+    $('l-panels').innerHTML = PANELS.map(p => `<span class="cb"><input type="checkbox" id="lp-${p.key}" ${lst.panels[p.key] ? 'checked' : ''}><label for="lp-${p.key}">${p.label.replace('<br>', ' ')}</label></span>`).join('');
+    PANELS.forEach(p => $('lp-' + p.key).onchange = e => { lst.panels[p.key] = e.target.checked; lsave(); renderLolli(); });
+    $('l-color').value = lst.color; $('l-sign').value = lst.sign; $('l-trend').checked = lst.trend;
+    $('l-color').onchange = e => { lst.color = e.target.value; lsave(); renderLolli(); };
+    $('l-sign').onchange = e => { lst.sign = e.target.value; lsave(); renderLolli(); };
+    $('l-trend').onchange = e => { lst.trend = e.target.checked; lsave(); renderLolli(); };
+    $('find').onchange = e => { const v = e.target.value.trim(); if (byId[v]) select(v); };
+    $('prev').onclick = () => step(-1); $('next').onclick = () => step(1);
+    document.addEventListener('keydown', e => { if (cell !== 'hepg2' || /INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName)) return;
+      if (e.key === 'ArrowRight') { step(1); e.preventDefault(); } if (e.key === 'ArrowLeft') { step(-1); e.preventDefault(); } });
+    $('cell-hepg2').onclick = () => setCell('hepg2'); $('cell-hek').onclick = () => setCell('hek293t');
+    $('status').hidden = true;
+    setCell(location.hash === '#hek293t' ? 'hek293t' : 'hepg2');
+    select(byId[st.sel] ? st.sel : (byId['146C>T'] ? '146C>T' : H.snvs[0].id));
+    new MutationObserver(renderAll).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', renderAll);
+  }
+  fetch('base.json').then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(d => { B = d; init(); })
+    .catch(e => { $('status').textContent = 'The data did not load (' + e.message + '). Reload the page; if it persists, republish base.json next to the page.'; });
+})();
+</script>
