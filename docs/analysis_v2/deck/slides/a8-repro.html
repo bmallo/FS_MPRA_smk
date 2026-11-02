@@ -1,0 +1,15 @@
+<section id="a8-repro" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A8 · Repeatability of WT profiles</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">Clone halves agree within sampling; HepG2 runs 1 and 3 differ</h2>
+<div style="display:flex;gap:32px;align-items:flex-start">
+<img src="/_blob/f221e7698c13fa52e8ee24504f2e1917" alt="Scatter plots of WT C-molecule profiles: halves split by barcode clone within HepG2 run 3, run 1 and HEK293T lie on the diagonal for adenine unmarked fraction, 20-40 bp and 81+ bp call coverage (r 0.99-1.00, SD of z 0.36-1.05); run 1 versus run 3 scatter more (r 0.95-0.98, SD of z 2.2-13.7), with 20-40 bp coverage higher in run 3" style="width:1080px;height:770px;object-fit:contain">
+<div style="flex:1;display:flex;flex-direction:column;gap:14px">
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">z</b> = difference ÷ its expected sampling error (clone bootstrap). If two profiles differ only by sampling, SD(z) ≈ 1 and ~5% of positions have |z| &gt; 1.96.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">Clone halves</b> (all endpoints, 3 runs): SD(z) 0.36–1.18; 0–9% of positions beyond 1.96.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">Run 1 vs run 3:</b> SD(z) 1.7–13.7; 45–87% of positions beyond 1.96. Unmarked fraction differs by 2.4 points per adenine on average; 20–40 bp coverage is 0.67% in run 1 vs 0.96% in run 3.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568">Labeling was matched by strata, so the gap is the reaction (time, Hia5 dose), Jasmine version, or both.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a8_confidence/repro/summary.tsv, positions.tsv.gz · C molecules, standardised to run 3's labeling mix · each run's emissions rebuilt from its own WT M/U</p>
+<aside>Clones: HepG2 run 3 92,123 (12% read subsample, mostly one molecule each), run 1 5,698, HEK293T 989 (bottlenecked). With so few molecules per clone in run 3, its halves test molecule-level sampling more than clone effects; run 1 and HEK293T test clones more directly. Run 2 (2,813 WT molecules) was not tested.</aside>
+</section>

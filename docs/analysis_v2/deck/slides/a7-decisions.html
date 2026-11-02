@@ -1,0 +1,15 @@
+<section id="a7-decisions" data-transition="fade" style="background:#EDEFF2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:32px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A7 · Decisions</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">What carries forward</h2>
+<table style="font-size:25px;color:#1B2430">
+<tr><th style="width:46%">Decision</th><th style="width:54%">Basis</th></tr>
+<tr><td>Keep symmetric masking (edited base + re-contexted adenines) as the primary comparison</td><td>Caller artifact zero by construction; costs half as much as the ±5 bp mask</td></tr>
+<tr><td>Compare each variant with WT masked the same way, never with unmasked WT</td><td>An unmasked drop alone moves calls by up to 4–5% of molecules</td></tr>
+<tr><td>Keep A/T-changing SNVs flagged in A10, and test them apart from the rest, until B1</td><td>About 70% of the v1 A/T-loss offset is not explained by the caller</td></tr>
+<tr><td>Feed each variant's mask cost into the A9 power (MDE) estimate</td><td>Masks reshape the WT reference by a median 1.4–1.5% of C molecules</td></tr>
+<tr><td>Record the plan's A7 verification as not met</td><td>Caller drop: 15% of the offset; with the context model: 29%</td></tr>
+</table>
+<p style="font-size:26px;line-height:1.4;color:#4A5568;width:1664px">Next, A8: confidence in footprint calls (spike-ins of known footprints into WT molecules; reproducibility between runs).</p>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Fixed in config/analysis_v2/rules.json (snv_edits) · A7 looked at no new variant molecules; the v1 check used already-reported v1 effects</p>
+<aside>The A7 settings (molecules, caller, edits, endpoints, checks) were written to rules.json before any A7 result was computed. The context model is a prediction from another plasmid and caller (naked pEF-GFP, A4) and is reported as secondary.</aside>
+</section>

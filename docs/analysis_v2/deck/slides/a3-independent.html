@@ -1,0 +1,32 @@
+<section id="a3-independent" data-transition="fade" style="background:#EDEFF2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:32px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A3 · Independent checks</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">The same clone gets the same genotype in every run and by both genotypers</h2>
+<div style="display:flex;gap:48px">
+<div style="flex:1;display:flex;flex-direction:column;gap:14px">
+<h3 style="font-size:28px;font-weight:600">Same barcode, independent runs</h3>
+<table style="font-size:25px">
+<tr><th style="width:34%">Runs</th><th style="width:33%;text-align:right">Shared clones</th><th style="width:33%;text-align:right">Same genotype</th></tr>
+<tr><td>1 and 2</td><td style="text-align:right">4,401</td><td style="text-align:right">99.98%</td></tr>
+<tr><td>1 and 3</td><td style="text-align:right">7,381</td><td style="text-align:right">99.36%</td></tr>
+<tr><td>2 and 3</td><td style="text-align:right">1,927</td><td style="text-align:right">99.53%</td></tr>
+</table>
+<p style="font-size:24px;color:#4A5568">Clones with ≥ 90% agreement among ≥ 2 reads in each run.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:14px">
+<h3 style="font-size:28px;font-weight:600">Two genotypers, same reads</h3>
+<table style="font-size:25px">
+<tr><th style="width:24%">Run</th><th style="width:40%;text-align:right">Both call a design</th><th style="width:36%;text-align:right">Different call</th></tr>
+<tr><td>1</td><td style="text-align:right">583,048</td><td style="text-align:right">131 (0.02%)</td></tr>
+<tr><td>2</td><td style="text-align:right">385,677</td><td style="text-align:right">10 (0.003%)</td></tr>
+<tr><td>3</td><td style="text-align:right">5,034,399</td><td style="text-align:right">297 (0.006%)</td></tr>
+</table>
+<p style="font-size:24px;color:#4A5568">fsmpra ledger vs the October genotype_reads.py, written separately.</p>
+</div>
+</div>
+<div style="background:#F7F6F2;padding:32px;border-radius:16px;display:flex;flex-direction:column;gap:10px">
+<h3 style="font-size:28px;font-weight:600">Barcodes shared by two clones (run 3)</h3>
+<p style="font-size:25px;line-height:1.4;color:#4A5568">2,964 of 1.01 M barcodes with ≥ 2 reads (0.3%) hold two well-supported genotypes. Random sharing of 15-mers among 1.63 M barcodes predicts about 1,240, so most are chance, with some template switching.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a3_genotypes/cross_run_barcodes.tsv, second_genotyper.tsv, barcode_collisions.tsv</p>
+<aside>Cross-run disagreements split about evenly between one-edit differences and unrelated genotypes (run 1 vs 3: 23 and 24 of 7,381). The two genotypers compare element sequences, so differences in how they name homopolymer indels do not count as disagreements. The Illumina barcode-amplicon data could not serve as a third check: its read pairs rarely span both element and barcode (1,282 complete pairs).</aside>
+</section>

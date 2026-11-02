@@ -1,0 +1,21 @@
+<section id="a9-mde" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A9 · Power: the smallest effect each SNV can show</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">HepG2: ~2.5 points per adenine; calls of 20–40 bp only when they nearly vanish or double</h2>
+<div style="display:flex;gap:28px;align-items:flex-start">
+<img src="/_blob/03d26cfa8bdabee34a4c78dc3679d6cc" alt="Minimum detectable effect per SNV against its clone count, log scales. HepG2 run 3: MDE falls steadily with clones, from about 5 points at 200 clones to 1.6 at 2,500 for adenines, and from about 1.6 to 0.5 points of 20-40 bp call coverage; occupancy MDE is about 30% higher. HEK293T: most SNVs have 3-30 clones with adenine MDE 2-12 points and call MDE 1-6 points" style="width:1060px;height:700px;object-fit:contain">
+<table style="font-size:20px;color:#1B2430;flex:1">
+<tr><th>Endpoint</th><th>WT level</th><th>MDE (10–90%)</th></tr>
+<tr><td colspan="3"><b>HepG2 run 3</b> (631 SNVs)</td></tr>
+<tr><td>Adenine unmarked</td><td>~68%</td><td>2.5 (2.0–3.1)</td></tr>
+<tr><td>Calls 10–19 bp</td><td>~0.50%</td><td>0.60</td></tr>
+<tr><td>Calls 20–40 bp</td><td>~0.75%</td><td>0.72 (0.58–0.89)</td></tr>
+<tr><td>Calls 41–80 bp</td><td>~0.64%</td><td>0.65</td></tr>
+<tr><td>Calls 81+ bp</td><td>~55%</td><td>3.0</td></tr>
+<tr><td colspan="3"><b>HEK293T</b> (103 / 96 of 197 SNVs)</td></tr>
+<tr><td>Adenine unmarked</td><td>~67%</td><td>3.6 (2.4–5.7)</td></tr>
+<tr><td>Calls 20–40 bp</td><td>~1.05%</td><td>2.3 (1.8–3.0)</td></tr>
+</table>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a9_statistics/*/mde_summary.tsv, mde.parquet · percentage points, 80% power, p &lt; 0.05 per feature · WT levels from A8 (run-3 and HEK clone halves)</p>
+<aside>Requiring Bonferroni across an SNV's positions raises the MDE by ~1.5× (adenine 3.9 points in HepG2). Occupancy MDE (call MDE ÷ A8 spike detection) for 20–40 bp: 0.94 points in HepG2, 2.9 in HEK293T. These are per-position MDEs; A10 also runs one global test per SNV that pools its positions.</aside>
+</section>

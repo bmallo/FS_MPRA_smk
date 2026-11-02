@@ -1,0 +1,16 @@
+<section id="fp-86" data-transition="fade" style="background:#EDEFF2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Follow-up · 60-86 · The spike at 86 <span style="font-size:20px;color:#6B4FA0;border:1px solid #6B4FA0;border-radius:999px;padding:2px 12px;margin-left:14px;letter-spacing:1px">EXPLORATORY</span></p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:54px;font-weight:600;line-height:1.1">The 86T&gt;X spike is a caller artifact that the masked test removes</h2>
+<table style="font-size:23px;color:#1B2430">
+<tr><th>20-40 bp coverage, WT − variant at oligo 86 (points)</th><th>86T&gt;G</th><th>86T&gt;A</th><th>86T&gt;C</th></tr>
+<tr><td>Explorer as read (no mask)</td><td>3.87</td><td>3.67</td><td>4.08</td></tr>
+<tr><td>A7 prediction: drop 86 from WT molecules</td><td colspan="3">1.4 (C) · 5.0 (M), at 86 only</td></tr>
+<tr><td>A10 test, A7 mask (85-86 hidden on both sides)</td><td>0.33</td><td>0.13</td><td>0.82</td></tr>
+<tr><td>A10 test, ±5 bp mask</td><td>0.57</td><td>1.51</td><td>1.19</td></tr>
+<tr><td>Significant positions near 86 (either mask)</td><td>0</td><td>0</td><td>0</td></tr>
+</table>
+<p style="font-size:23px;line-height:1.4;color:#4A5568" style="width:1664px"><b style="color:#1B2430">Mechanism:</b> the variant base is never read, so a call that ended at 86 in WT now ends at 85: position 86 alone loses coverage. All three alleles drop the same base, hence the consistent spike.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568" style="width:1664px"><b style="color:#1B2430">Masking</b> hides the same adenines in WT and variant, so it cannot create a difference by itself; a real chromatin change survives it, minus the evidence those adenines carried. Here that cost is real: masking 85-86 in WT alone lowers coverage over 78-86 by 1.2-4.9 points.</p>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: explorer_v4 chunks, a7_snv_edits/HepG2_run3/artifacts.npz, a10_effects · the explorer now shows the masked test difference by default</p>
+<aside>The explorer's earlier "WT − variant" footprint track was the raw difference of the two coverage tracks, so it carried this artifact even though the statistics did not. That is fixed: the default is now the A10 test with the chosen mask, with ±1.96 SE bands, and "as read" is a labelled option.</aside>
+</section>

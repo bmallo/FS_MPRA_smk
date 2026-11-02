@@ -1,0 +1,11 @@
+<section id="a8-floor" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:20px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A8 · Smallest detectable footprint</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">A 10-bp footprint is visible at three quarters of the element, 20 bp everywhere</h2>
+<img src="/_blob/6d944235b1a9ed09d4e4d3c247ae480d" alt="Smallest spike size found in at least half of M molecules along the element, for HepG2 run 3 and HEK293T: 10 bp at most positions, 15 to 20 bp at oligo 56-65, 78-90, 120-129, 135-141, 149-152, 188-199 and 205-211; grey line shows the A4 prediction of 2 to 11 bp with peaks at the same places" style="width:1664px;height:560px;object-fit:contain">
+<div style="display:flex;gap:40px">
+<p style="font-size:23px;line-height:1.4;color:#4A5568">In M molecules, a fully protected 10-bp stretch is found at 160 of 211 positions (HepG2) and 156 (HEK293T); every position by 20 bp.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568">The harder spots (oligo 56–65, 78–90, 120–129, 135–141, 149–152, 188–199, 205–211) sit where A4 predicted larger floors: A/T-poor stretches and A-runs. 10 bp was the smallest size tested.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a8_confidence/spikes/*/spikes.tsv (M, perfect spikes) · A4: a4_informative/HepG2/positions.tsv · post hoc: the prespecified C version is never reached (next slide's reason)</p>
+<aside>The prespecified floor check used net detection ≥ 50% in C. Because 55–58% of C molecules are already called at any spot (HepG2), net cannot reach 50% in C, so that check is uninformative; this M version and the "nothing called before" C version (same positions: 10 bp at 166, 15 at 41, 20 at 4) were added after seeing it.</aside>
+</section>

@@ -1,0 +1,24 @@
+<section id="a8-approach" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:40px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A8 · Confidence in footprint calls</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1">Does the caller find a footprint we know is there, and do WT profiles repeat?</h2>
+<div style="display:flex;gap:32px;flex:1">
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<h3 style="font-size:32px;font-weight:600;color:#2F6DB5">Why</h3>
+<p style="font-size:26px;line-height:1.45;color:#4A5568">A variant test is only as good as the caller's sensitivity at that spot and the stability of the WT reference. Without naked controls we cannot measure false calls, but we can plant known footprints into real molecules and check repeatability.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<h3 style="font-size:32px;font-weight:600;color:#2F6DB5">What we did</h3>
+<p style="font-size:26px;line-height:1.45;color:#4A5568"><b style="color:#1B2430">Spike-ins:</b> on real WT molecules, made every adenine in a chosen stretch unmarked (8 sizes, 10–147 bp, centred at every element position), re-called, compared with the same molecule unspiked. <b style="color:#1B2430">Repeatability:</b> WT profiles in two halves split by barcode clone, and HepG2 run 1 vs run 3.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<h3 style="font-size:32px;font-weight:600;color:#2F6DB5">What we found</h3>
+<ul style="font-size:26px;line-height:1.45;color:#4A5568">
+<li>Well-labeled molecules: a fully protected 10-bp stretch is found 95% of the time; 20 bp at every position.</li>
+<li>Poorly labeled molecules are already "called" almost everywhere, so they carry little footprint information.</li>
+<li>Clone halves agree within sampling; runs 1 and 3 do not.</li>
+</ul>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: results/analysis_v2_20261028/a8_confidence (tools/analysis_v2/a8_ids.py, a8_spikes.py, a8_repro.py) · settings fixed in rules.json (call_confidence) before results</p>
+<aside>Spike-ins: 20,000 C molecules and all M molecules per cell (HepG2 run 3: 32,373 M; HEK293T: 8,632 M), each its own control. Caller as in A7 (min LLR 5, drawdown 25). A spike is a best case: perfect protection on otherwise real molecules (a 75%-protection version is also reported). Barcodes: exact N15 (HepG2); HEK293T 20-bp barcodes read between reference flanks, as in the earlier HEK extraction.</aside>
+</section>

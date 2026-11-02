@@ -1,0 +1,20 @@
+<section id="a5-fp" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A5 · False calls in the element</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">Unlabeled molecules carry few calls, at the same positions in every run</h2>
+<div style="display:flex;gap:40px;align-items:flex-start">
+<img src="/_blob/078e6342ea9d0106def58ae53edf3d74" alt="Per-position m6A call rate in U molecules over the element for HepG2 runs 1 to 3 and HEK293T; mostly below 1%, peaks of 2 to 3% at oligo 78, 135, 189 and 198" style="width:1170px;height:542px;object-fit:contain">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px">
+<table style="font-size:22px">
+<tr><th style="width:40%">Element</th><th style="width:30%;text-align:right">U</th><th style="width:30%;text-align:right">M</th></tr>
+<tr><td>HepG2 run 1</td><td style="text-align:right">0.30%</td><td style="text-align:right">68.5%</td></tr>
+<tr><td>HepG2 run 2</td><td style="text-align:right">0.16%</td><td style="text-align:right">68.9%</td></tr>
+<tr><td>HepG2 run 3</td><td style="text-align:right">0.31%</td><td style="text-align:right">68.4%</td></tr>
+<tr><td>HEK293T</td><td style="text-align:right">0.29%</td><td style="text-align:right">66.8%</td></tr>
+</table>
+<p style="font-size:23px;line-height:1.4;color:#4A5568">Median position 0.1–0.15%; highest 3.0% (oligo 189, run 3).</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568">Which positions run high repeats across runs 1, 3 and HEK293T (Spearman 0.83–0.90), so it is set by sequence. Position-specific emissions absorb it.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a5_m6a_qc/summary/runs.tsv, element_positions.tsv · WT molecules, ≥ 10 passes · U molecules: 3,424 / 415 / 11,321 / 10,646</p>
+<aside>Signal-to-noise is wide: a median adenine is called 200–520 times more often in M than in U. Run 2 is noisy (415 U molecules) because 97% of its plasmid reads are partial (A2). The HEK293T element sits on the opposite strand of its plasmid, so its base letters are complements of HepG2's at the same oligo position.</aside>
+</section>

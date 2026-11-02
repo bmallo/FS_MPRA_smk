@@ -1,0 +1,18 @@
+<section id="a9-terms" data-transition="fade" style="background:#EDEFF2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:28px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A9 · Terms used in this section</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">How one SNV is compared with WT</h2>
+<table style="font-size:23px;color:#1B2430">
+<tr><th style="width:24%">Term</th><th style="width:76%">Meaning</th></tr>
+<tr><td>Endpoint E1</td><td>At each element adenine: is it unmarked? No caller involved. Molecules with labeling &gt; 0.01.</td></tr>
+<tr><td>Endpoint E2</td><td>At each element position: is it covered by a footprint call of a given size (10–19, 20–40, 41–80, 81+ bp)? Molecules with labeling ≥ 0.2 (A8).</td></tr>
+<tr><td>Effect D</td><td>For the SNV's molecules: observed − expected, where "expected" is the WT rate among WT molecules of the same labeling (strata of 0.05). Labeling differences cancel by design.</td></tr>
+<tr><td>Clone variance τ²</td><td>How much clones differ from each other beyond molecule-to-molecule chance, learned from the many WT clones.</td></tr>
+<tr><td>Pseudo-variant</td><td>A fake SNV made of WT clones with the real SNV's clone sizes. No effect exists, so a good test calls ~5% of them at p &lt; 0.05.</td></tr>
+<tr><td>λ</td><td>Median test statistic ÷ its expected value with no effect. 1 = right; &gt; 1 = too many false calls; &lt; 1 = too cautious.</td></tr>
+<tr><td>BH false discovery</td><td>Share of pseudo-variants with ≥ 1 position called after Benjamini–Hochberg at 5% across that SNV's positions. Target ≤ 5%.</td></tr>
+<tr><td>SMD</td><td>Standardised mean difference between SNV and WT molecules in a covariate (labeling, passes, strand).</td></tr>
+<tr><td>MDE</td><td>Minimum detectable effect: the smallest true difference found 80% of the time at p &lt; 0.05.</td></tr>
+</table>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Settings: rules.json (statistics) · amendments 1–2 recorded there</p>
+<aside>Primary variance of D = binomial chance on both sides + τ² × Σ(clone share)² for the SNV and for WT. With one dominant clone, Σ(clone share)² ≈ 1, so the clone term carries the full clone-to-clone uncertainty instead of vanishing.</aside>
+</section>

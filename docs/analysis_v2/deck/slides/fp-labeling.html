@@ -1,0 +1,14 @@
+<section id="fp-labeling" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Follow-up · 60-86 · Labeling <span style="font-size:20px;color:#6B4FA0;border:1px solid #6B4FA0;border-radius:999px;padding:2px 12px;margin-left:14px;letter-spacing:1px">EXPLORATORY</span></p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:54px;font-weight:600;line-height:1.1">Coverage rises with labeling, as a real footprint should; naked DNA falls to zero</h2>
+<div style="display:flex;gap:28px;align-items:flex-start">
+<img src="/_blob/b4883f2759f3d38ccf962511d9db1db7" alt="20-40 bp coverage by molecule labeling. At oligo 73, WT rises from 2.3 percent at 0.2-0.3 to about 6 percent at 0.6-0.8, while simulated naked DNA falls from 6.1 percent to 0. At oligo 182, WT falls from 2.1 to 0.2 percent, following the naked simulation" style="width:1150px;height:440px;object-fit:contain">
+<div style="flex:1;display:flex;flex-direction:column;gap:14px">
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">Oligo 73:</b> WT 2.3% → 6.0-6.3% as labeling rises; simulated naked 6.1% → 0% by labeling 0.5.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">Why that matters:</b> more labeling means more marks; false calls from too few marks vanish, while a real footprint is seen more often (A8 spikes).</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">Contrast, oligo 182</b> (most-covered 20-40 bp spot elsewhere, CREB1/CREM window): falls with labeling like the simulation.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: fp60_86/labeling.tsv · naked molecules: marking = q × naked relative rate by A-run class (A4 lookup), q fitted per labeling bin to WT marking elsewhere in the element</p>
+<aside>The simulation is coarse (A-run class only, all adenines read) and overshoots WT at low labeling, so read its shape, not its level. A6 found the same signal another way: 5.6-10.9% of M molecules have no m6A across 60-86, against 0.1% when marks are shuffled. The fall-off at 182 is worth its own look.</aside>
+</section>

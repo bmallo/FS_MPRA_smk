@@ -1,0 +1,24 @@
+<section id="a9-approach" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:40px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A9 · Statistical framework</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1">Which variant-vs-WT test keeps its error rate, and how big an effect can each SNV show?</h2>
+<div style="display:flex;gap:32px;flex:1">
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<h3 style="font-size:32px;font-weight:600;color:#2F6DB5">Why</h3>
+<p style="font-size:26px;line-height:1.45;color:#4A5568">Molecules from one barcode clone are not independent, labeling differs between molecules, and an SNV's molecules can sit in a few clones. A test that ignores this calls effects that are not there; a test that over-corrects misses real ones.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<h3 style="font-size:32px;font-weight:600;color:#2F6DB5">What we did</h3>
+<p style="font-size:26px;line-height:1.45;color:#4A5568">Extracted every analysis-ready WT and SNV molecule with its clone and labeling. Built fake variants from WT clones with each real SNV's clone sizes (no effect exists) and tested them. Compared SNV and WT molecules on labeling, passes and strand. Computed each SNV's smallest detectable effect. <b style="color:#1B2430">No variant chromatin data were used.</b></p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<h3 style="font-size:32px;font-weight:600;color:#2F6DB5">What we found</h3>
+<ul style="font-size:26px;line-height:1.45;color:#4A5568">
+<li>The prespecified clone test fails; a random-effects test (clone variance learned from WT) keeps ~5% false positives in HepG2.</li>
+<li>SNV and WT molecules are as alike as chance allows (HepG2).</li>
+<li>HepG2: ~2.5 points per adenine detectable; HEK293T: half the SNVs untestable.</li>
+</ul>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: results/analysis_v2_20261028/a9_statistics (tools/analysis_v2/a9_extract.py, a9_framework.py) · settings in rules.json (statistics) before results; two amendments flagged post hoc</p>
+<aside>HepG2 run 3: 1,661,762 molecules (311,485 WT from a 25% sample of WT clones, 1,350,277 SNV; 633 SNVs, median 775 clones each). HEK293T: 307,123 molecules (162,393 WT in 3,599 clones; 197 SNVs, median 4 clones each). Designed indels are not in A9/A10. HepG2 run 1 is not used (A8).</aside>
+</section>

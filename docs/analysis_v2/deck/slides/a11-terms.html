@@ -1,0 +1,17 @@
+<section id="a11-terms" data-transition="fade" style="background:#EDEFF2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:28px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A11 · Terms used in this section</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">Motif scores, chromatin summaries and expression</h2>
+<table style="font-size:23px;color:#1B2430">
+<tr><th style="width:26%">Term</th><th style="width:74%">Meaning</th></tr>
+<tr><td>Motif score (log2-odds)</td><td>How well a stretch of DNA matches a factor's preferred sequence (JASPAR matrix). Δ score = variant − WT at the WT best site; −8 to −10 ≈ site broken, 0 = untouched.</td></tr>
+<tr><td>Site</td><td>The WT best match of the matrix in or next to the element region (e.g. Sp1 at oligo 143–151).</td></tr>
+<tr><td>Footprint change at a motif</td><td>Change in how often 10–40 bp calls cover the site (points), SNV vs WT, ±5 bp mask.</td></tr>
+<tr><td>Dose-response slope</td><td>Footprint change per unit of motif-score change, across the SNVs in that motif.</td></tr>
+<tr><td>Element-wide shift</td><td>Mean change in the unmarked fraction at adenines more than 50 bp from the SNV (points). It tracks nucleosome-size call coverage (r 0.87).</td></tr>
+<tr><td>Local change</td><td>Mean change in the unmarked fraction at adenines 11–50 bp from the SNV.</td></tr>
+<tr><td>Expression effect</td><td>Published MPRA: log2 (variant / WT) RNA output in HepG2; LDLR and LDLR.2 are two measurements (r 0.97).</td></tr>
+<tr><td>Within position</td><td>Comparing only the alleles at the same position (3 per position), so motif location cannot create the association.</td></tr>
+</table>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Settings: rules.json (motifs_function)</p>
+<aside>Repeat regions: Südhof et al. 1987 (Sp1 repeats 1 and 3), Smith et al. 1990 (SRE-1 in repeat 2). The v1-derived motif windows (ZNF652-like, SP4, CREB1/CREM) are shown as secondary because they were chosen from HepG2 v1 hits.</aside>
+</section>

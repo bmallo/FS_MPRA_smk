@@ -1,0 +1,24 @@
+<section id="a4-approach" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:40px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A4 · Informative bases</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1">What can the sequence let us see, and how does a variant change it?</h2>
+<div style="display:flex;gap:32px;flex:1">
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<h3 style="font-size:32px;font-weight:600;color:#2F6DB5">Why</h3>
+<p style="font-size:26px;line-height:1.45;color:#4A5568">Fiber-seq sees a protein only as a stretch of unmethylated adenines. Where the A/Ts sit, and how readily each is marked, sets what we can detect. A variant changes both, with no protein involved.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<h3 style="font-size:32px;font-weight:600;color:#2F6DB5">What we did</h3>
+<p style="font-size:26px;line-height:1.45;color:#4A5568">Mapped the element’s A/Ts on both strands and the smallest footprint the caller can detect at each position. Compared per-adenine marking with a truly naked plasmid. Classified all 1,416 designed variants by sequence change, by what the caller does with them and by their effect on neighbouring adenines.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<h3 style="font-size:32px;font-weight:600;color:#2F6DB5">What we found</h3>
+<ul style="font-size:26px;line-height:1.45;color:#4A5568">
+<li>A/T spacing never limits: footprints of 11 bp or more can be detected everywhere.</li>
+<li>Adenines in A/T runs are nearly invisible, on naked DNA too: sequence bias, not protein.</li>
+<li>The caller drops the edited base for 303 SNVs, including every A↔T swap. A third change the run context of a neighbouring adenine.</li>
+</ul>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: results/analysis_v2_20261028/a4_informative (tools/analysis_v2/a4_informative_bases.py, a4_context_bias.py, a4_variant_visibility.py)</p>
+<aside>Hia5 methylates adenine on either strand, so each A/T base pair carries exactly one methylatable adenine (top strand for A, bottom strand for T) and each G/C pair carries none (Stergachis et al. 2020). The “evidence” used here is the plasmid-LLR emission table for HepG2, which is built from in-sample M and U molecules, not naked controls; the naked comparison uses the pEF-GFP benchmark controls (different plasmid, Jasmine 2.2.0).</aside>
+</section>

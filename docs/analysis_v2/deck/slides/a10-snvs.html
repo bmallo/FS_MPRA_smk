@@ -1,0 +1,17 @@
+<section id="a10-snvs" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A10 · HepG2 · which SNVs change something</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">Most SNVs change the unmarked fraction somewhere in the element</h2>
+<div style="display:flex;gap:28px;align-items:flex-start">
+<img src="/_blob/57de97c83af69954772c156a39cddf90" alt="Global test p-values for 633 HepG2 SNVs along the element. With the A7 mask 602 SNVs pass FDR 5%, many at p below 1e-30; with the ±5 bp mask 467 pass, and SNVs near both ends and around oligo 100-110 and 150-160 drop toward zero" style="width:1100px;height:600px;object-fit:contain">
+<table style="font-size:21px;color:#1B2430;flex:1">
+<tr><th>SNVs selected (of 633)</th><th>E1</th><th>E2</th></tr>
+<tr><td>A7 mask (primary)</td><td>602</td><td>209</td></tr>
+<tr><td>±5 bp mask</td><td>467</td><td>123</td></tr>
+<tr><td>A7 + empirical null</td><td>594</td><td>184</td></tr>
+<tr><td>±5 bp + empirical null</td><td>432</td><td>106</td></tr>
+<tr><td colspan="3" style="font-size:19px;color:#4A5568">Split: drops its base 286 / 232 / 216 of 303; others 316 / 235 / 216 of 330 (E1: A7, ±5, ±5 + empirical)</td></tr>
+</table>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a10_effects/HepG2_run3*/snvs.tsv, *_empirical_null/summary.json · E1 adenine unmarked, E2 call coverage (all sizes) · FDR 5%</p>
+<aside>For comparison, A9's WT fake variants passed the same global test 4.9% (E1) and 4.2% (E2) of the time. With ~800 clones per SNV the MDE is ~2.5 points per adenine, so small changes are detectable; p-values below 1e-30 are drawn at 30.</aside>
+</section>

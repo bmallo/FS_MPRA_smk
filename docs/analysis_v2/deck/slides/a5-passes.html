@@ -1,0 +1,21 @@
+<section id="a5-passes" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A5 · Pass count</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">Calls hold up at low pass counts, but passes track labeling</h2>
+<div style="display:flex;gap:40px;align-items:flex-start">
+<img src="/_blob/6536dcfbb6efcaf11dcc920b721eb2f4" alt="Four panels by CCS pass bin: U-molecule call rate in the element stays between 0.2 and 0.5%, M-molecule rate stays near 65 to 70%, for HepG2 runs and HEK293T" style="width:1040px;height:542px;object-fit:contain">
+<div style="flex:1;display:flex;flex-direction:column;gap:14px">
+<table style="font-size:22px">
+<tr><th style="width:34%">Passes</th><th style="width:33%;text-align:right">U, run 3</th><th style="width:33%;text-align:right">U, HEK</th></tr>
+<tr><td>&lt; 10</td><td style="text-align:right">3.1%</td><td style="text-align:right">3.1%</td></tr>
+<tr><td>10–14</td><td style="text-align:right">4.4%</td><td style="text-align:right">6.8%</td></tr>
+<tr><td>15–19</td><td style="text-align:right">4.6%</td><td style="text-align:right">10.8%</td></tr>
+<tr><td>20–29</td><td style="text-align:right">5.2%</td><td style="text-align:right">16.2%</td></tr>
+<tr style="background:#FBEFE4"><td>30+</td><td style="text-align:right">12.1%</td><td style="text-align:right">30.2%</td></tr>
+</table>
+<p style="font-size:23px;line-height:1.4;color:#4A5568">Share of molecules that are unlabeled (U). Heavily labeled molecules get fewer passes.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568">So a pass filter changes the labeling mix. WT and variant must share the filter.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a5_m6a_qc/summary/passes.tsv · left: U molecules; right: M molecules; element, WT molecules · bins with &lt; 2,000 U observations omitted</p>
+<aside>The minimum of 10 passes stays, set by genotype errors in A2–A3, not by m6A quality: below 10 passes, the U call rate is 0.35–0.53% and the M rate 62–66%, close to higher bins. The labeling–passes link is consistent with heavy m6A slowing the polymerase, but we have not tested the cause. The A3 rule for indels at ≥ 20 passes therefore needs WT at the same filter and a reported class mix.</aside>
+</section>

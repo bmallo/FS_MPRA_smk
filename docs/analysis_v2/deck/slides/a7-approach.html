@@ -1,0 +1,24 @@
+<section id="a7-approach" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:40px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A7 · What an edit does to the caller by itself</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1">If no protein changed, how much would an SNV still move the footprint calls?</h2>
+<div style="display:flex;gap:32px;flex:1">
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<h3 style="font-size:32px;font-weight:600;color:#2F6DB5">Why</h3>
+<p style="font-size:26px;line-height:1.45;color:#4A5568">The caller reads only reference A/T where the read matches. An SNV at an A/T (including an A↔T swap) removes that base from the variant's evidence. Nearby adenines can also change context, which changes how well Hia5 marks them. Either can move calls with no change in binding.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<h3 style="font-size:32px;font-weight:600;color:#2F6DB5">What we did</h3>
+<p style="font-size:26px;line-height:1.45;color:#4A5568">Took WT molecules (HepG2 run 3: 138,770; HEK293T: 42,952; classes C and M), applied each edit in silico and re-called them with the same scan, emissions and thresholds. Compared each with the same molecules unedited. Edits: one dropped A/T, each variant's agreed mask, the ±5 bp mask, and a naked-DNA context model.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<h3 style="font-size:32px;font-weight:600;color:#2F6DB5">What we found</h3>
+<ul style="font-size:26px;line-height:1.45;color:#4A5568">
+<li>Dropping one A/T moves calls by a median of 0.9–1.0% of C molecules (up to 4–5%), mostly within ±20 bp.</li>
+<li>The agreed mask costs a median 1.4–1.5%; the ±5 bp mask about twice that.</li>
+<li>The drop explains only 15% of the v1 A/T-loss offset (29% with the context model).</li>
+</ul>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: results/analysis_v2_20261028/a7_snv_edits (tools/analysis_v2/a7_snv_edits.py) · settings fixed in rules.json (snv_edits) before results</p>
+<aside>Caller: plasmid-LLR global mode, Kadane scan from first to last observed A/T, min LLR 5, drawdown 25, min_opps 3, each cell's own fold-A emission table. Molecules: the A6 WT set (≥ 10 passes, full length); U molecules excluded (they are the protected proxy). M includes the half used to fit emissions (A6 kept no read names); the artifact is a within-molecule difference. Ranges are HepG2 run 3 – HEK293T.</aside>
+</section>

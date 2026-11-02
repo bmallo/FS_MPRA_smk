@@ -1,0 +1,24 @@
+<section id="a2-approach" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:40px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A2 · Read accounting</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1">Where does every read go, and should any of it come back?</h2>
+<div style="display:flex;gap:32px;flex:1">
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<h3 style="font-size:32px;font-weight:600;color:#2F6DB5">Why</h3>
+<p style="font-size:26px;line-height:1.45;color:#4A5568">Only a quarter of run 3’s reads reach the analysis. We need to know what is discarded and why, and to decide what to recover using read properties alone, never variant effects.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<h3 style="font-size:32px;font-weight:600;color:#2F6DB5">What we did</h3>
+<p style="font-size:26px;line-height:1.45;color:#4A5568">Ran run 3’s ledger code and settings on runs 1–2. Gave each read the first filter it fails. Aligned off-design elements to WT, tracked errors by pass count, sampled run-3 base qualities and counted clones per SNV.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<h3 style="font-size:32px;font-weight:600;color:#2F6DB5">What we found</h3>
+<ul style="font-size:26px;line-height:1.45;color:#4A5568">
+<li>Run 3: 25% eligible. Designed indels (18%) are the largest exclusion.</li>
+<li>Runs 1–2: mostly genomic or partial reads, and few clones per SNV.</li>
+<li>The barcode rule rejects deep barcodes; A3 fixes it.</li>
+</ul>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: results/analysis_v2_20261028/a2_accounting, a2_ledgers (tools/analysis_v2/a2_*.py)</p>
+<aside>Runs 1 and 2 were processed with exactly the run-3 ledger code and settings (only sample, input and output changed), on their October realignments to the NotI-rotated reference. HEK293T was processed by a different pipeline and is shown on its own slide.</aside>
+</section>

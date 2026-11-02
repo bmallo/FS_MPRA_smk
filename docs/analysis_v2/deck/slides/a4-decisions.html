@@ -1,0 +1,15 @@
+<section id="a4-decisions" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:32px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A4 · Decisions</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">What carries forward</h2>
+<table style="font-size:25px;color:#1B2430">
+<tr><th style="width:42%">Decision</th><th style="width:58%">Basis</th></tr>
+<tr><td>Every variant carries three annotations: A/T count change, caller drop, predicted neighbour change</td><td>One count-based class mislabels A ↔ T swaps and run-breaking SNVs</td></tr>
+<tr><td>A7 models the edited base and its neighbours’ context</td><td>A third of variants (472 of 1,416) change a neighbour’s run context; half change visible adenines by ≥ 0.5</td></tr>
+<tr><td>Every footprint reports its visible adenines</td><td>Footprints over A/T runs (60–64, SRE-1 124–127) rest on flanking bases</td></tr>
+<tr><td>Earlier “A/T-retaining” results are superseded</td><td>The caller drops the base in A ↔ T swaps too</td></tr>
+<tr><td>B1 controls must be this variant library</td><td>Only naked molecules of each variant give its own per-base rates</td></tr>
+</table>
+<p style="font-size:26px;line-height:1.4;color:#4A5568;width:1664px"><b style="color:#1B2430">Decided after A4:</b> symmetric masking is primary. For each variant, the same bases (the edited base when the caller loses it, and adenines whose run context changes) are removed from its molecules and from WT before calling. Sensitivity checks: a ±5 bp mask, and A ↔ T swaps read from the bottom strand. Scoring each variant on its own sequence waits for B1.</p>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Fixed in config/analysis_v2/rules.json (informative_bases) before any variant effect is examined</p>
+<aside>Not a concern: A/T spacing. The smallest detectable footprint is at most 11 bp at every position, so nothing in the element is hidden from a TF-sized footprint for lack of A/Ts. The concern is the uneven strength of evidence and how variants change it. The masking option is symmetric (the same bases are removed from WT and variant), so it cannot create an effect, but it costs evidence close to the variant, where effects are expected.</aside>
+</section>

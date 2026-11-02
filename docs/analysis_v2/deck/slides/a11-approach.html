@@ -1,0 +1,24 @@
+<section id="a11-approach" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:40px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A11 · Motifs and function</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1">Do chromatin changes follow motif damage, and do they go with expression?</h2>
+<div style="display:flex;gap:32px;flex:1">
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<h3 style="font-size:32px;font-weight:600;color:#2F6DB5">Why</h3>
+<p style="font-size:26px;line-height:1.45;color:#4A5568">A10 found where SNVs change protection. Two checks make those changes meaningful: a bound factor's footprint should shrink as its motif is broken, and chromatin changes that matter should go with changes in expression.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<h3 style="font-size:32px;font-weight:600;color:#2F6DB5">What we did</h3>
+<p style="font-size:26px;line-height:1.45;color:#4A5568"><b style="color:#1B2430">Motifs:</b> the three LDLR promoter repeats from the literature (Sp1, SRE-1, Sp1); each SNV's motif-score change against the footprint change there. <b style="color:#1B2430">Function:</b> each SNV's chromatin change against its published expression effect (Kircher 2019, HepG2, two measurements), comparing only alleles at the same position.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<h3 style="font-size:32px;font-weight:600;color:#2F6DB5">What we found</h3>
+<ul style="font-size:26px;line-height:1.45;color:#4A5568">
+<li>Breaking the Repeat 3 Sp1 site lowers TF-size footprints there; the other repeats show no dose-response.</li>
+<li>SNVs that raise protection across the element lower expression, even among alleles at one position.</li>
+<li>The 17 Repeat 3 SNVs: ~6-fold lower expression.</li>
+</ul>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: results/analysis_v2_20261028/a11_motifs_function (tools/analysis_v2/a11_motifs_function.py) · inputs: A10 ±5 bp mask effects · settings in rules.json (motifs_function) before results</p>
+<aside>HepG2 run 3 only: HEK293T has no per-SNV estimates (A10) and the published MPRA is HepG2. Chromatin changes use only adenines that survive the ±5 bp mask (A10 decision).</aside>
+</section>

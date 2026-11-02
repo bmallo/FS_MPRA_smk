@@ -1,0 +1,15 @@
+<section id="a10-hek" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A10 · HEK293T · motif level</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">SNV clones differ from WT clones at most motifs; A/T-dropping SNVs go one way</h2>
+<div style="display:flex;gap:28px;align-items:flex-start">
+<img src="/_blob/ac6838bfaa282fa0b2a65f3d9f506604" alt="HEK293T motif-level effects: SNV clones minus WT clones with ±1.96 null SD bars, per motif and SNV group. Adenine unmarked: A/T-dropping pools are below zero at all five motifs (-0.5 to -7.4 points); other pools are above zero at ZNF652-like, SP4 and SREBF1/2 (+1.6 to +3.8). Call coverage: mostly below zero, -3.9 to +0.9 points" style="width:1100px;height:470px;object-fit:contain">
+<div style="flex:1;display:flex;flex-direction:column;gap:14px">
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">Test:</b> SNVs in each motif window pooled; each SNV clone's mean (≥ 100 molecules) against WT clones of similar depth (139), 10,000 draws.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">Adenines:</b> 7 of 9 tests pass FDR 5%. Drops-its-base pools lower in all 5 motifs; others higher at ZNF652-like (+1.6), SP4 (+3.7), SREBF1/2 (+3.8).</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">Calls (10–80 bp):</b> 6 of 9 pass; −3.9 to +0.9 points.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568" style="font-size:21px;color:#9A4A12"><b>Post hoc:</b> the planned null (WT clones matched to each SNV's clone sizes) was invalid; each HEK SNV is one clone of up to 3,128 molecules and only 4–95 WT clones are that large, so its 1,000 draws reused the same few.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a10_effects/HEK293T_run1/motifs.tsv · motif windows from the HepG2 v1 top-hit motif analysis · rules.json variant_effects.HEK293T_run1.amendment_1</p>
+<aside>Each SNV is ~one clone (median 99% of its molecules), so a pool of 3–15 SNVs is 2–15 independent units: these are motif-level, not per-SNV, results. CREB1/CREM "other" has no clone of ≥ 100 molecules and is not tested. The A/T-dropping pools are not interpreted before B1 (A7: ~70% of that offset unexplained).</aside>
+</section>

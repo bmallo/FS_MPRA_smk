@@ -1,0 +1,14 @@
+<section id="a6-controls" data-transition="fade" style="background:#EDEFF2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:32px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A6 · What each control would add</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">Until B1, calls mean "less marked than in-cell M molecules"</h2>
+<table style="font-size:24px;color:#1B2430">
+<tr><th style="width:26%">Control (B1/B2)</th><th style="width:37%">What it replaces</th><th style="width:37%">What it settles</th></tr>
+<tr><td>Unmethylated: PCR product, no-Hia5 transfection</td><td>U as the "protected" emission (p_p)</td><td>The true false-call rate; U is an upper bound (0.3%)</td></tr>
+<tr><td>Naked library + Hia5 at matched doses</td><td>M as the "accessible" emission (p_a)</td><td>Whether oligo 60–86 is protein or how A-runs are called; per-variant rates</td></tr>
+<tr><td>Naked library, saturating Hia5</td><td>—</td><td>Which adenines Hia5 can ever mark (the A-run limit)</td></tr>
+<tr><td>Time course, cells and naked</td><td>—</td><td>Protection that persists vs enzyme bias filling in</td></tr>
+</table>
+<p style="font-size:26px;line-height:1.4;color:#4A5568;width:1664px">Same library, chemistry and Jasmine version as the samples, or the rates do not transfer.</p>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Plan: Phase B (B1 naked controls, B2 time course) · data to be generated</p>
+<aside>Why "relative to M" is still useful: comparing a variant with WT uses the same emissions on both, so a bias in p_a mostly cancels in the contrast. What it costs is power at positions where M is partly bound, and absolute occupancy, which we should not report until B1.</aside>
+</section>

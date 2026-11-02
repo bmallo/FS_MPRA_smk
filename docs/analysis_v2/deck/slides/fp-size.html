@@ -1,0 +1,14 @@
+<section id="fp-size" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Follow-up · 60-86 · Size or presence? <span style="font-size:20px;color:#6B4FA0;border:1px solid #6B4FA0;border-radius:999px;padding:2px 12px;margin-left:14px;letter-spacing:1px">EXPLORATORY</span></p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:54px;font-weight:600;line-height:1.1">Hiding the A run halves 20-40 bp calls but leaves total protection unchanged</h2>
+<div style="display:flex;gap:28px;align-items:flex-start">
+<img src="/_blob/e5675801ec316b8dbf5f208c7033fbbc" alt="Length of the call covering oligo 73 in 40,000 WT molecules: as read, with the A run 59-65 hidden, and with the A run and TT 85-86 hidden. About 31 percent are covered in every case; hiding the A run moves calls from 20-40 bp into 10-19 bp" style="width:1100px;height:420px;object-fit:contain">
+<div style="flex:1;display:flex;flex-direction:column;gap:14px">
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">Covered at 73:</b> 30.9% as read, 31.0% with the A run hidden: the protection is there either way.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">Size class:</b> 20-40 bp 4.9% → 2.6%; 10-19 bp 0.5% → 2.5%. The uninformative A run lets calls stretch 5 bp left, across the 20-bp line.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">A run and TT hidden:</b> 20-40 bp back to 2.8%; calls then run on to the Repeat 1 adenines at 89-91.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: fp60_86/anatomy.tsv.gz · hidden bases set to unobserved before calling · plasmid-LLR, min LLR 5, drawdown 25</p>
+<aside>This is the A4 caveat made concrete: a footprint over an A run "rests on flanking adenines", so its edges, and therefore its size class, are set by the nearest informative adenines. Read the length as an upper bound; the protected core is about 66-81 (next slides).</aside>
+</section>

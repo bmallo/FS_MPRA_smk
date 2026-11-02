@@ -1,0 +1,15 @@
+<section id="a11-dose" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A11 · Motif dose-response</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">Only the Repeat 3 Sp1 site shows a footprint that weakens as the motif breaks</h2>
+<div style="display:flex;gap:28px;align-items:flex-start">
+<img src="/_blob/603ab4846fa2bfccbd8148161e3b88d1" alt="Six panels of footprint change against motif-score change. Repeat 3 Sp1 (143-151): SNVs that break the site (about -8 to -10) lower 10-40 bp coverage by 0.2 to 2.3 points, intact ones near zero; slope 0.26, q 0.017. Repeat 1 Sp1 and Repeat 2 SRE-1 and the three v1-derived windows show flat or noisy relations, q 0.13 to 0.61" style="width:1180px;height:700px;object-fit:contain">
+<div style="flex:1;display:flex;flex-direction:column;gap:14px">
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">Repeat 3 (Sp1, 143–151):</b> +0.26 points per log2-odds unit (95% CI 0.08–0.44), q 0.017, 17 SNVs. Breaking the site lowers 10–40 bp coverage by 0.2–2.3 points; mostly a broken-vs-intact contrast.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">Repeat 1:</b> the Sp1 matrix matches it poorly (WT score 3.9); +0.09, q 0.15.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">Repeat 2 (SRE-1):</b> strong match (15.7) but no dose-response (−0.05, q 0.46).</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">Unmarked-fraction version:</b> no motif at q &lt; 0.05.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a11_motifs_function/dose.tsv, dose_snvs.tsv · OLS with robust errors, A/T-dropping SNVs as a covariate · BH across motifs</p>
+<aside>Coverage at the site uses only adenines ≥ 6 bp from the SNV, but the site itself is within 10 bp of most of its SNVs, where A10 flags possible Hia5 sequence effects until B1. Few SNVs per motif have enough calls to test (15–29), so absence of a dose-response is weak evidence.</aside>
+</section>

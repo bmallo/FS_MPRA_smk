@@ -1,0 +1,25 @@
+<section id="a9-test" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:28px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A9 · How the test and its check work</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">Compare like with like, count clones honestly, then test the test on WT</h2>
+<div style="display:flex;gap:24px;align-items:stretch;flex:1">
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<p style="font-size:22px;color:#2F6DB5;font-weight:600">1 · Effect</p>
+<p style="font-size:25px;line-height:1.45;color:#4A5568">Each SNV molecule is set against WT molecules of the same labeling. D = how far the SNV's molecules sit from that expectation, averaged.</p>
+<p style="font-size:22px;line-height:1.4;color:#6B7280">Example: an SNV molecule with labeling 0.42 at an adenine WT leaves unmarked 70% of the time at that labeling contributes (unmarked? 1 : 0) − 0.70.</p>
+</div>
+<div style="display:flex;align-items:center;font-size:44px;color:#9AA3AF">→</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<p style="font-size:22px;color:#2F6DB5;font-weight:600">2 · Uncertainty</p>
+<p style="font-size:25px;line-height:1.45;color:#4A5568">Chance among molecules, plus chance among clones. The clone part uses τ² estimated from thousands of WT clones, so it stays right when an SNV has only a few big clones.</p>
+<p style="font-size:22px;line-height:1.4;color:#6B7280">z = D ÷ its standard error; features with &lt; 10 molecules, &lt; 3 clones or &lt; 5 expected rare events are not tested.</p>
+</div>
+<div style="display:flex;align-items:center;font-size:44px;color:#9AA3AF">→</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<p style="font-size:22px;color:#2F6DB5;font-weight:600">3 · Check on WT only</p>
+<p style="font-size:25px;line-height:1.45;color:#4A5568">For each real SNV, 4 pseudo-variants: WT clones drawn to the SNV's clone sizes, tested against the remaining WT. Every call there is false.</p>
+<p style="font-size:22px;line-height:1.4;color:#6B7280">Targets: 4–6% at p &lt; 0.05; λ 0.9–1.1; ≥ 1 BH discovery in ≤ 5% of pseudo-variants. The same draws give each SNV's MDE.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">MPRA convention: barcodes (clones) as replicates against a common WT (mpralm, Myint 2019; MPRAnalyze, Ashuach 2019); empirical null from the data themselves (Efron 2004)</p>
+<aside>Random-effects variance of D: Σ_m p(1−p)/n² + τ² Σ_c (n_c/n)² for the SNV, and per WT labeling stratum p(1−p)/N_s + τ² Σ_c (n_c/N_s)², weighted by the SNV's stratum shares. τ² per feature from a one-way random-effects moment estimator on WT clones (tested to recover simulated values). p from the normal distribution.</aside>
+</section>

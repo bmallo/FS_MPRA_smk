@@ -1,0 +1,15 @@
+<section id="a10-hitmap" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A10 · HepG2 · hit map</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">Diagonal = local changes; columns = SNVs that change the whole element</h2>
+<div style="display:flex;gap:28px;align-items:flex-start">
+<img src="/_blob/01344eee1fbaf25c3764edc71a995211" alt="Hit maps of SNV position against the position of each significantly changed adenine, for the A7 and ±5 bp masks and both SNV groups. Hits crowd the diagonal. Orange vertical columns at SNV positions 143-151 show more unmarked adenines along the whole element; thinner blue columns appear near 80, 110, 115-126 and 157" style="width:830px;height:740px;object-fit:contain">
+<div style="flex:1;display:flex;flex-direction:column;gap:14px">
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">How to read:</b> each dot is one significant adenine (y) for one SNV (x). Orange = more unmarked than WT, blue = less; size = change.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">Columns:</b> 29 SNVs (±5 bp mask) have ≥ 20 hit adenines more than 30 bp away. <b style="color:#1B2430">17 of them sit at oligo 143–151</b>, inside the SP1/SP3/KLF window (140–156). All 17 raise the unmarked fraction across the element: all three alleles at 146, 148 and 149; two each at 143, 145 and 150; 147T&gt;C; 151C&gt;G.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568">The other 12 are scattered: 54A&gt;T, 62A&gt;G, 94C&gt;A, 98C&gt;A raise it; 80G&gt;C, 110G&gt;C, 115A&gt;C, 117A&gt;C/T, 126A&gt;T, 157A&gt;G, 209G&gt;C lower it.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568">Their labeling, passes and strand match WT (|SMD| ≤ 0.09). Median change at their hits: 3.1 points.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a10_effects/HepG2_run3*/effects.parquet · E1 adenine unmarked · hierarchical FDR 5%</p>
+<aside>A whole-element rise in unmarked adenines is what a gain of nucleosome-like protection would look like; it could also be a clone-level difference shared by those SNVs. The same direction for every allele at 146, 148 and 149 argues against single-clone accidents. A11 tests this against the published MPRA activity.</aside>
+</section>

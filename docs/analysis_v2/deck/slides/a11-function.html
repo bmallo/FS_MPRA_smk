@@ -1,0 +1,17 @@
+<section id="a11-function" data-transition="fade" style="background:#EDEFF2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A11 · Chromatin and expression</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">More protection across the element goes with lower expression</h2>
+<div style="display:flex;gap:28px;align-items:flex-start">
+<img src="/_blob/46a31abb595e8692bcbff83ae87b87d8" alt="Left: published MPRA effect against element-wide shift for 631 SNVs, Spearman -0.50; the 17 SNVs at oligo 143-151 sit at shifts of 1.4 to 2.6 points with effects of -1.4 to -2.9 log2. Right: the same after subtracting each position's mean, with a fitted slope of -0.35 log2 per point" style="width:1130px;height:420px;object-fit:contain">
+<table style="font-size:20px;color:#1B2430;flex:1">
+<tr><th>Within position</th><th>LDLR</th><th>LDLR.2</th></tr>
+<tr><td>Element-wide shift (F1)</td><td>−0.35 (−0.50, −0.20)</td><td>−0.37 (−0.53, −0.21)</td></tr>
+<tr><td>Local 11–50 bp (F2)</td><td>−0.19 (−0.29, −0.09)</td><td>−0.20</td></tr>
+<tr><td>|effect| vs local size (F3)</td><td>+0.11 (0.01, 0.22)</td><td>+0.13</td></tr>
+<tr><td colspan="3" style="font-size:18px;color:#4A5568">log2 expression per point of chromatin change; F1 p 3×10⁻⁶</td></tr>
+</table>
+</div>
+<p style="font-size:23px;line-height:1.4;color:#4A5568" style="width:1664px"><b style="color:#1B2430">Reading:</b> among alleles at the same position, one that raises the unmarked fraction across the element by 1 point has ~0.35 log2 (~22%) lower expression. The link holds without the 17 Repeat 3 SNVs (−0.32), without all 29 element-wide SNVs (−0.32) or without positions 140–156 (−0.28).</p>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a11_motifs_function/function.tsv, function_snvs.tsv · OLS, errors clustered by position · exclusion checks post hoc</p>
+<aside>Expression comes from a separate experiment (Kircher 2019), so this is a correlation across SNVs, not a mechanism. Measurement error in the chromatin estimates would weaken, not create, the slope. Without the position term the slope is −0.67 (both sources agree).</aside>
+</section>

@@ -1,0 +1,14 @@
+<section id="a7-example" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:20px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A7 · One edit, two real molecules</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">Removing one adenine can merge calls or erase one</h2>
+<div style="display:flex;gap:36px;align-items:flex-start">
+<img src="/_blob/75048d2b755e5cd1a92adee5ab41355f" alt="Two WT molecules from HepG2 run 3, each shown as read and with one adenine dropped. Left: dropping a marked adenine at oligo 137 stops the running score falling, so a 17 bp and a 34 bp call merge into one 68 bp call. Right: dropping an unmarked adenine at oligo 120 lowers the peak from 5.9 to 4.9, below the threshold of 5, so a 12 bp call disappears" style="width:1180px;height:680px;object-fit:contain">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px">
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">Left:</b> the marked adenine at oligo 137 pulled the score down between two protected stretches. Without it the score never falls back, so a 17-bp and a 34-bp call become one 68-bp call.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">Right:</b> the unmarked adenine at oligo 120 was part of a weak 12-bp call. Without it the peak drops from 5.9 to 4.9, under the threshold of 5, and the call is gone.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568">Nothing about the molecule changed: only the caller's evidence. A7 repeats this on every WT molecule, for every edit, and counts how coverage moves.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: tools/analysis_v2/a7_example.py · HepG2 run 3 C molecules (A6 rows 1090 and 8), run-3 fold-A emissions · found by scanning for a clear merge and a clear loss</p>
+<aside>These two molecules were chosen to illustrate the two mechanisms; most single drops change nothing on most molecules. Across all molecules the largest coverage change per drop has a median of 0.9% of C molecules (next slides). Call lengths are the full calls; the window shows ±45 bp around the dropped base.</aside>
+</section>

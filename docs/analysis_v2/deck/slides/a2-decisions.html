@@ -1,0 +1,17 @@
+<section id="a2-decisions" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:28px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A2 · Read accounting · decisions</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">What to recover, and what stays out</h2>
+<table style="font-size:24px;color:#1B2430">
+<tr><th style="width:28%">Excluded reads (run 3)</th><th style="width:12%;text-align:right">Molecules</th><th style="width:18%">Proposal</th><th style="width:42%">Reason</th></tr>
+<tr style="background:#FBEFE4"><td>Designed 1-bp indels</td><td style="text-align:right">1.89 M</td><td>Recover as own class (your call)</td><td>Real designed variants; they shift spacing, a test of helical phasing</td></tr>
+<tr><td>Partial reads, exact WT/SNV element</td><td style="text-align:right">65 k</td><td>Keep out (revised in A3)</td><td>In runs 1–2 up to 15% disagree with their own clone</td></tr>
+<tr><td>Two designed edits</td><td style="text-align:right">0.91 M</td><td>Keep out</td><td>Double mutants, not single-SNV data</td></tr>
+<tr><td>Large indels, three or more edits</td><td style="text-align:right">0.49 M</td><td>Keep out</td><td>Not designed variants</td></tr>
+<tr><td>Exact design, base below Q20</td><td style="text-align:right">0.47 M</td><td>Keep out</td><td>Homopolymer uncertainty: WT vs indel confusion</td></tr>
+<tr><td>Fewer than 10 passes</td><td style="text-align:right">1.84 M</td><td>Keep out; test in A5</td><td>Base calls clearly worse; m6A calls checked in A5</td></tr>
+<tr><td>No accepted barcode (still analysed)</td><td style="text-align:right">0.49 M</td><td>Fix rule in A3</td><td>Kept as single-molecule clusters; deep clones mis-handled</td></tr>
+</table>
+<p style="font-size:26px;line-height:1.4;color:#4A5568;width:1664px">All proposals are set from read properties only. Nothing here looks at chromatin or variant effects.</p>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Shaded: reads we could add. Source: a2_accounting/HepG2_run3/*.tsv</p>
+<aside>The designed indels are the biggest opportunity: about 1,200 molecules per variant across 146 deletions and 637 insertions. They need the same informative-base and in-silico checks (A4, A7) as SNVs, because a deletion can remove an A/T and an insertion can add one. Kircher et al. 2019 also measured activity for deletions.</aside>
+</section>

@@ -1,0 +1,22 @@
+<section id="a1-differences" data-transition="fade" style="background:#EDEFF2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:36px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A1 · Data inventory</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1">Which comparisons the runs can support</h2>
+<table style="font-size:25px;color:#1B2430">
+<tr><th style="width:20%">Comparison</th><th style="width:10%">Things that differ</th><th style="width:36%">What differs</th><th style="width:34%">What it can be used for</th></tr>
+<tr style="background:#E3EDF8"><td>HepG2 run 1 vs run 2</td><td>1</td><td>Sequencing date only</td><td>True replicates: reproducibility of footprints and effects</td></tr>
+<tr><td>HepG2 runs 1–2 vs run 3</td><td>7</td><td>Reaction time and Hia5 volume, chemistry, CCS, m6A caller version, fibertools, date</td><td>Does an effect replicate in direction? Not a clean 5 vs 10 min test</td></tr>
+<tr><td>HEK293T vs any HepG2 run</td><td>8–9</td><td>Cell, construct and orientation, chemistry, CCS, m6A caller (different tool), Hia5 dose, date</td><td>Analysed separately; no cross-cell inference</td></tr>
+</table>
+<div style="display:flex;gap:32px">
+<div style="flex:1;background:#F7F6F2;padding:36px;border-radius:16px;display:flex;flex-direction:column;gap:12px">
+<h3 style="font-size:30px;font-weight:600">Consequence for the plan</h3>
+<p style="font-size:26px;line-height:1.45;color:#4A5568">Runs 1–2 have only been measured on a 1% sample. Bringing them in fully (A2) gives the only replicate pair, which A8 uses to test footprint reproducibility.</p>
+</div>
+<div style="flex:1;background:#F7F6F2;padding:36px;border-radius:16px;display:flex;flex-direction:column;gap:12px">
+<h3 style="font-size:30px;font-weight:600">Not recorded</h3>
+<p style="font-size:26px;line-height:1.45;color:#4A5568">HEK293T Hia5 volume, cells per reaction and raw read count. The activity data are Kircher et al. 2019 (HepG2), a separate experiment.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a1_inventory/differences.tsv (attributes: cell, construct, reaction, Hia5 volume, chemistry, CCS, m6A caller, fibertools, date)</p>
+<aside>Counting differences is crude but makes the point: only runs 1 and 2 isolate biological plus preparation variability. A HEK293T vs HepG2 difference could come from any of nine sources, including a different m6A calling tool, which is why the two cell lines stay separate.</aside>
+</section>

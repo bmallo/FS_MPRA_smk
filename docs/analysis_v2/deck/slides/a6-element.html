@@ -1,0 +1,14 @@
+<section id="a6-element" data-transition="fade" style="background:#EDEFF2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:20px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A6 · Inside the element</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">One spot: M molecules are often unmarked across oligo 60–86</h2>
+<div style="display:flex;gap:36px;align-items:flex-start">
+<img src="/_blob/ca5c09dc7f3ace5b8cfc145531664dc7" alt="Per-position excess in M molecules along the element: about 2 percent everywhere except a plateau at oligo 60 to 86 (11 percent run 3, 6 percent run 1, 7 percent HEK293T); bottom panel shows LLR weight per unmethylated adenine and how it shrinks if 25 or 50 percent of M is bound" style="width:1140px;height:690px;object-fit:contain">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px">
+<p style="font-size:23px;line-height:1.4;color:#4A5568">At oligo 60–86, 10.9% (run 3), 5.6% (run 1) and 7.1% (HEK293T) of M molecules have no m6A across the stretch. The shuffle predicts 0.1%.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568">It spans the 60–64 A/T run, which Hia5 cannot mark. The stretch is set by the flanking adenines (65, 70, 71) going unmarked together.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">Cost to the caller:</b> if a fraction f of M is bound at an adenine, an unmarked call there counts less. The median weight is 1.87; it falls to 1.01 at f = 25% and 0.55 at f = 50%.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a6_proxies/summary/*/clustering.tsv.gz (M, spans ≥ 20 bp), llr_weight.tsv (HepG2 run-3 emission table) · weight = ln((1 − p_p) / (1 − p_a))</p>
+<aside>Post hoc check (not in the fixed settings): near A/T runs of ≥ 4, M shows more clustering than elsewhere (median excess 5.5% vs 1.7% in HepG2 run 3, 6.6% vs 1.8% in HEK293T); naked DNA shows a small rise (1.6% vs 0.7%). So part of this spot may be how the caller handles A-runs, and part protein; the caller differs between the two, so B1 must settle it. Run 3 (5 min) shows twice the excess of run 1 (10 min).</aside>
+</section>

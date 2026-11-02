@@ -1,0 +1,15 @@
+<section id="a10-decisions" data-transition="fade" style="background:#EDEFF2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:28px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A10 · Decisions</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">What carries forward</h2>
+<table style="font-size:23px;color:#1B2430">
+<tr><th style="width:50%">Decision</th><th style="width:50%">Basis</th></tr>
+<tr><td>Report HepG2 effects with the A7 mask, next to the ±5 bp mask and the empirical null; label every change within 10 bp "possible Hia5 sequence effect until B1"</td><td>All changes above 15 points are within 10 bp of their SNV</td></tr>
+<tr><td>A11 uses changes ≥ 11 bp from the SNV that survive the ±5 bp mask; the empirical null is its robustness check</td><td>432 SNVs survive both; hits fall from 32% (6–10 bp) to 2.7% (&gt; 50 bp)</td></tr>
+<tr><td>Carry the 17 SNVs at 143–151 to A11 as one candidate region effect</td><td>All raise the unmarked fraction element-wide; all alleles at 146, 148, 149</td></tr>
+<tr><td>HEK293T: clone-mean motif results only; A/T-dropping pools not interpreted</td><td>Planned null invalid (thin WT clone pool); A7 offset unexplained</td></tr>
+<tr><td>B1 should include the variants with the largest near-SNV changes (25C&gt;A, 211G&gt;T, 113G&gt;T, 73T&gt;A/C/G)</td><td>Only naked DNA of the variant separates Hia5 preference from protein</td></tr>
+</table>
+<p style="font-size:26px;line-height:1.4;color:#4A5568;width:1664px">Next, A11: motifs and function (protection change vs motif disruption; link to published MPRA activity).</p>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Fixed in config/analysis_v2/rules.json (variant_effects) · plan deviation: masking replaces subtracting the A7 artifact</p>
+<aside>Post hoc, flagged: the empirical-null sensitivity (after seeing that far-field z values spread 13% wider in E1, 5% in E2) and the HEK293T clone-mean test. Prespecified: Simes global test (amended before results), A7 mask, ±5 bp mask, caller-group split, hierarchical FDR.</aside>
+</section>

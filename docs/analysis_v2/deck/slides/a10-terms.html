@@ -1,0 +1,18 @@
+<section id="a10-terms" data-transition="fade" style="background:#EDEFF2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:28px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A10 · Terms used in this section</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">From one SNV's test to a list of hits</h2>
+<table style="font-size:23px;color:#1B2430">
+<tr><th style="width:24%">Term</th><th style="width:76%">Meaning</th></tr>
+<tr><td>Feature</td><td>One adenine (E1, unmarked fraction) or one position × footprint size (E2, call coverage), tested SNV vs WT with A9's test.</td></tr>
+<tr><td>Global test (Simes)</td><td>One p-value per SNV: does it change anything? Combines all its feature p-values; its false-positive rate on WT fake variants was 4.9% (A9).</td></tr>
+<tr><td>Selected SNV</td><td>An SNV whose global test passes FDR 5% across SNVs.</td></tr>
+<tr><td>Hit</td><td>A feature of a selected SNV that passes FDR within that SNV, at 5% × (share of SNVs selected) (Benjamini–Bogomolov 2014).</td></tr>
+<tr><td>A7 mask</td><td>Adenines removed from SNV and WT alike: the edited base when it is an A/T, plus neighbours whose A-run context changes.</td></tr>
+<tr><td>±5 bp mask</td><td>Prespecified check: every adenine within 5 bp of the SNV removed, against Hia5's sequence preference nearby.</td></tr>
+<tr><td>Empirical null</td><td>Post hoc check: far from each SNV, z values spread 13% wider than chance; all z are shrunk by that before FDR (Efron 2004).</td></tr>
+<tr><td>Drops its base</td><td>SNVs that remove an A/T the caller reads (303 of 633); tested apart because A7 could not explain their offset.</td></tr>
+<tr><td>Points</td><td>Percentage points of molecules: SNV minus WT, at matched labeling.</td></tr>
+</table>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Settings: rules.json (variant_effects; statistics.amendment_3 for the Simes global test)</p>
+<aside>The global test was changed from "max |z| against pseudo-variants" to Simes before any A10 result: with 2,520 pseudo-variants the max-|z| p-value cannot fall below ~4×10⁻⁴, too coarse for FDR across ~300 SNVs.</aside>
+</section>

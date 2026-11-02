@@ -1,0 +1,15 @@
+<section id="a7-offsets" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:20px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A7 · One dropped A/T</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">Losing one adenine reshapes calls nearby more than it adds or removes them</h2>
+<div style="display:flex;gap:36px;align-items:flex-start">
+<img src="/_blob/e9eac5b06f982a22206449661b858256" alt="Mean change in call coverage against distance from the dropped A/T, for four call sizes, in C and M molecules of HepG2 run 3 and HEK293T; changes are within about 0.4 percent on average, concentrated within 20 bp, with a dip at the dropped base and small rises in 20 to 40 bp and nucleosome-sized calls nearby" style="width:1160px;height:700px;object-fit:contain">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px">
+<p style="font-size:23px;line-height:1.4;color:#4A5568">Each of the 101 element A/T positions dropped in turn (what any SNV or deletion there does for the caller).</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">Per edit, largest change</b> (C): median 0.9% (HepG2) and 1.0% (HEK293T) of molecules; 90th percentile 2.2–2.4%; maximum 4.2–5.0%. In M: median 0.2–0.3%.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">Reach:</b> beyond ±5 bp the median largest change is 0.4%, maximum 2.5–3.1%.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">Net called bp</b> per molecule hardly moves (median −0.006 to −0.017 bp): boundaries shift and calls move between size classes.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a7_snv_edits/*/artifacts.npz, edits.tsv (kind = drop) · curves are means over the 101 drops; the text gives per-edit ranges</p>
+<aside>Why the dip at 0: calls start and end on observed A/T, so removing one moves a boundary off it. Small 10–19 bp calls fall a few bp away while 20–40 bp and nucleosome-sized calls rise: losing a marked adenine lets neighbouring protected stretches merge into a longer call.</aside>
+</section>

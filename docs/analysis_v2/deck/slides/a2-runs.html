@@ -1,0 +1,18 @@
+<section id="a2-runs" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:32px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A2 · Read accounting · all HepG2 runs</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">Runs 1–2 lose most reads before genotyping</h2>
+<table style="font-size:25px;color:#1B2430">
+<tr><th style="width:34%">First filter failed (% of HiFi reads)</th><th style="width:22%;text-align:right">Run 1 (5.39 M)</th><th style="width:22%;text-align:right">Run 2 (9.57 M)</th><th style="width:22%;text-align:right">Run 3 (10.51 M)</th></tr>
+<tr><td>Not plasmid (genomic, unmapped)</td><td style="text-align:right">65.2%</td><td style="text-align:right">70.0%</td><td style="text-align:right">17.1%</td></tr>
+<tr><td>Not full-length</td><td style="text-align:right">23.1%</td><td style="text-align:right">29.2%</td><td style="text-align:right">4.0%</td></tr>
+<tr><td>Fewer than 10 passes or low quality</td><td style="text-align:right">2.5%</td><td style="text-align:right">0.2%</td><td style="text-align:right">17.5%</td></tr>
+<tr><td>Element unreadable or off-design</td><td style="text-align:right">2.4%</td><td style="text-align:right">0.2%</td><td style="text-align:right">14.3%</td></tr>
+<tr><td>Exact design, a base below Q20</td><td style="text-align:right">0.9%</td><td style="text-align:right">0.1%</td><td style="text-align:right">4.5%</td></tr>
+<tr><td>Designed 1-bp indel</td><td style="text-align:right">2.5%</td><td style="text-align:right">0.1%</td><td style="text-align:right">18.0%</td></tr>
+<tr style="background:#E3EDF8"><td><b>Eligible WT or single SNV</b></td><td style="text-align:right"><b>3.4% · 184 k</b></td><td style="text-align:right"><b>0.17% · 16 k</b></td><td style="text-align:right"><b>24.7% · 2.59 M</b></td></tr>
+<tr><td>Partial reads with an exact WT/SNV element</td><td style="text-align:right">143 k</td><td style="text-align:right">179 k</td><td style="text-align:right">65 k</td></tr>
+</table>
+<p style="font-size:26px;line-height:1.4;color:#4A5568;width:1664px">Runs 1–2 are 65–70% genomic DNA, and most plasmid reads are partial (median 2–3 kb), so later filters see few reads. Their partial reads still often cover the whole element (last row).</p>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a2_accounting/HepG2_run{1,2,3}/funnel.tsv, partial_recoverable.tsv · same ledger code and settings for all three runs</p>
+<aside>Run 1 and run 2 split far more reads into two alignments (A1); together with the short partial reads, this is consistent with fragmented or rearranged plasmid DNA in those preparations, not with a reference problem; the cause is not established. The genomic share (65–70% vs 17%) also differs strongly between the 10-min and 5-min preparations.</aside>
+</section>

@@ -1,0 +1,159 @@
+{
+ "v": 4,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-10-28T22:00:00Z"
+ },
+ "lists": "css",
+ "title": "LDLR Fiber-seq MPRA: analysis v2",
+ "cover": "cover",
+ "order": [
+  "cover",
+  "roadmap",
+  "a1-approach",
+  "a1-inventory",
+  "a1-differences",
+  "a2-approach",
+  "a2-run3-funnel",
+  "a2-runs",
+  "a2-offdesign",
+  "a2-basequality",
+  "a2-clones",
+  "a2-hek",
+  "a2-decisions",
+  "a3-approach",
+  "a3-rules",
+  "a3-within",
+  "a3-independent",
+  "a3-barcode-rule",
+  "a3-decisions",
+  "a4-approach",
+  "a4-map",
+  "a4-runs",
+  "a4-variants",
+  "a4-decisions",
+  "a5-approach",
+  "a5-fp",
+  "a5-passes",
+  "a5-dam",
+  "a5-checks",
+  "a5-decisions",
+  "a6-approach",
+  "a6-labeling",
+  "a6-tiles",
+  "a6-element",
+  "a6-mcalls",
+  "a6-controls",
+  "a6-decisions",
+  "a7-approach",
+  "a7-terms",
+  "a7-example",
+  "a7-check",
+  "a7-offsets",
+  "a7-positions",
+  "a7-v1",
+  "a7-decisions",
+  "a8-approach",
+  "a8-terms",
+  "a8-example",
+  "a8-spikes",
+  "a8-floor",
+  "a8-size",
+  "a8-repro",
+  "a8-decisions",
+  "a9-approach",
+  "a9-terms",
+  "a9-test",
+  "a9-fixes",
+  "a9-calibration",
+  "a9-balance",
+  "a9-mde",
+  "a9-decisions",
+  "a10-approach",
+  "a10-terms",
+  "a10-snvs",
+  "a10-distance",
+  "a10-hitmap",
+  "a10-example",
+  "a10-hek",
+  "a10-decisions",
+  "a11-approach",
+  "a11-terms",
+  "a11-dose",
+  "a11-function",
+  "a11-repeat3",
+  "a11-decisions",
+  "fp-approach",
+  "fp-anatomy",
+  "fp-size",
+  "fp-86",
+  "fp-labeling",
+  "fp-variants",
+  "fp-conclusions"
+ ],
+ "sections": {
+  "s0": {
+   "description": "What this re-analysis is and the order of steps",
+   "start": "cover"
+  },
+  "sA1": {
+   "description": "A1 · Data inventory: every run, how it was made and processed",
+   "start": "a1-approach"
+  },
+  "sA2": {
+   "description": "A2 · Read accounting: where every read goes and what to recover",
+   "start": "a2-approach"
+  },
+  "sA3": {
+   "description": "A3 · Genotype and barcode audit: are reads assigned to the right variant and clone?",
+   "start": "a3-approach"
+  },
+  "sA4": {
+   "description": "A4 · Informative bases: what the sequence lets us see, and how variants change it",
+   "start": "a4-approach"
+  },
+  "sA5": {
+   "description": "A5 · Methylation call QC: false calls, pass count, dam, read direction",
+   "start": "a5-approach"
+  },
+  "sA6": {
+   "description": "A6 · M and U proxies: is the \"accessible\" class free of protein?",
+   "start": "a6-approach"
+  },
+  "sA7": {
+   "description": "A7 · What an SNV does to the caller by itself (in-silico edits of WT molecules)",
+   "start": "a7-approach"
+  },
+  "sA8": {
+   "description": "A8 · Confidence in footprint calls: spike-ins and repeatability",
+   "start": "a8-approach"
+  },
+  "sA9": {
+   "description": "A9 · Statistical framework: a calibrated variant-vs-WT test, balance and power",
+   "start": "a9-approach"
+  },
+  "sA10": {
+   "description": "A10 · Variant effects per cell: which SNVs change protection, where and how much",
+   "start": "a10-approach"
+  },
+  "sA11": {
+   "description": "A11 · Motifs and function: motif dose-response and the link to published expression",
+   "start": "a11-approach"
+  },
+  "sFP": {
+   "description": "Follow-up (exploratory) · Is the 20-40 bp footprint at oligo 60-86 real?",
+   "start": "fp-approach"
+  }
+ },
+ "faces": {
+  "source-serif-4": {
+   "family": "Source Serif 4",
+   "href": "https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400..700&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+  },
+  "ibm-plex-sans": {
+   "family": "IBM Plex Sans",
+   "href": "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+  }
+ },
+ "designSystems": []
+}

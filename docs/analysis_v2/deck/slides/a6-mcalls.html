@@ -1,0 +1,11 @@
+<section id="a6-mcalls" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A6 · What the existing calls already show</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">The LLR already calls TF-sized footprints in M at the same spot</h2>
+<img src="/_blob/45ab826997b45e31cc50cc93f072a2bb" alt="Share of molecules with a 20 to 80 bp LLR call per element position: M molecules peak at 7.7 percent across oligo 60 to 86, above C molecules at 3 to 4.8 percent; elsewhere M mostly under 1 percent and C near 1 to 2 percent" style="width:1664px;height:506px;object-fit:contain">
+<div style="display:flex;gap:40px">
+<p style="font-size:23px;line-height:1.4;color:#4A5568">At oligo 60–86, 6.8–7.7% of held-out M molecules carry a 20–80 bp call, more than C (3–4.8%). Elsewhere in the element M is mostly below 1%.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568">So the caller-free test and the caller agree on where M is not naked. This holds even though the M emissions already absorb part of it.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: results/llr_vs_fiberhmm_20261026 calls (fold-A emissions, min LLR 5) · a6_proxies/summary/m_calls.tsv · HepG2 run 3 only</p>
+<aside>M molecules here are the held-out half (fold B) of the 93,030 M molecules used to build emissions, so they were not used to fit the table. C molecules show fewer 20–80 bp calls at this spot partly because more of them carry longer (nucleosome-sized) calls over it. Calls are 1-based inclusive in the parquet; converted here.</aside>
+</section>

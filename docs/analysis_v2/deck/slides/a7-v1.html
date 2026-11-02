@@ -1,0 +1,15 @@
+<section id="a7-v1" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:20px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A7 · Does the caller explain the v1 A/T offset?</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">Dropping the base reproduces only a small part of the v1 offset</h2>
+<div style="display:flex;gap:36px;align-items:flex-start">
+<img src="/_blob/0fc8021cca38be5ba743a242ff40de3b" alt="Mean occupancy residual over v1 SNV-feature pairs with the SNV inside the feature: for SNVs that drop their base, v1 observed minus 0.21 points, A7 drop minus 0.03, drop plus context model minus 0.06; neither class v1 minus 0.04, A7 zero; A/T gains v1 plus 0.05, context model plus 0.04" style="width:1100px;height:500px;object-fit:contain">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px">
+<p style="font-size:23px;line-height:1.4;color:#4A5568">Same endpoint as v1 (occupancy in each WT feature, residual dC − b·dM with v1's slopes), for the 677 v1 pairs where the SNV sits inside the feature.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">SNVs that drop their base:</b> v1 −0.21 points (SE about 0.03); caller drop −0.03 (15%); drop + context model −0.06 (29%).</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">A/T gains:</b> v1 +0.05; context model +0.04. <b style="color:#1B2430">Neither:</b> v1 −0.04; A7 0.</p>
+</div>
+</div>
+<p style="font-size:24px;line-height:1.4;color:#1B2430;width:1664px">The plan expected the caller artifact to reproduce the A/T-loss offset. It does not: about 70% stays unexplained. The rest may be Hia5 context effects on this library that the naked pEF-GFP model misses, or biology. B1 can tell them apart.</p>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a7_snv_edits/HepG2_run3/v1_check.tsv, v1_pairs.tsv · v1 effects: results/footprint_sizes_20261028/at_retained/tests.tsv.gz (already reported; used for this check only)</p>
+<aside>Per pair, v1 and the A7 prediction correlate at r = 0.47 (drops) and 0.25 (gains). SE treats pairs as independent; pairs share SNVs, so it is optimistic. A7 uses raw C where v1 used stratum-standardised C_std; for a within-molecule edit that should matter little, but it is a difference. Caller class follows A4 (A↔T swaps drop their base).</aside>
+</section>

@@ -1,0 +1,15 @@
+<section id="a7-positions" data-transition="fade" style="background:#EDEFF2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:20px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A7 · What the masks cost</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">The agreed mask changes the WT reference less than the ±5 bp mask</h2>
+<div style="display:flex;gap:36px;align-items:flex-start">
+<img src="/_blob/f11ea66f30fee83c7389b23aba8f5289" alt="Largest change in C molecules per edit position along the element for HepG2 run 3 and HEK293T: dropped A/T only (open circles, mostly under 2 percent), primary mask (filled, mostly 1 to 4 percent), and the plus or minus 5 bp mask (grey line, often 3 to 8 percent, highest across oligo 115 to 150)" style="width:1160px;height:700px;object-fit:contain">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px">
+<p style="font-size:23px;line-height:1.4;color:#4A5568">Symmetric masking removes the same adenines from WT, so its caller artifact is zero by construction. What it costs is a changed WT reference: calls near the variant shift by this much.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">Agreed mask</b> (edited base + re-contexted adenines): median 1.4% (HepG2), 1.5% (HEK293T); max 4.5–5.0%.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">±5 bp mask:</b> median 2.6–2.8%; max 6.7% (HepG2, oligo 181) and 8.0% (HEK293T, oligo 115–132).</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568">Largest agreed-mask cost: 61A&gt;T in HepG2 (4.5%; 7 adenines of the 59–65 A/T run masked) and the A at oligo 130 in HEK293T (5.0%; one adenine).</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a7_snv_edits/*/edits.tsv, variants.tsv (C molecules; M is smaller: medians 0.4–0.6% agreed, 0.8–1.1% ±5 bp)</p>
+<aside>"Largest change" = maximum over element positions and the four size bins of |edited − unedited| coverage. 93 distinct agreed-mask sets cover the 1,416 designed variants (most SNVs at G/C change nothing). Indels are placed at the designed index; the aligner may place a gap elsewhere in a run.</aside>
+</section>

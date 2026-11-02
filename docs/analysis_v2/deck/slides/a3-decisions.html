@@ -1,0 +1,16 @@
+<section id="a3-decisions" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:32px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A3 · Decisions</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">What carries forward</h2>
+<table style="font-size:25px;color:#1B2430">
+<tr><th style="width:36%">Decision</th><th style="width:64%">Basis</th></tr>
+<tr><td>Keep per-read genotyping as is</td><td>Reproducible across runs (≥ 99.4%) and genotypers (99.99%)</td></tr>
+<tr><td>Clone = barcode, majority ≥ 90% rule</td><td>Exact rule rejects deep clones (run 1: 41% accepted vs 92%)</td></tr>
+<tr><td>Drop reads that contradict a confident clone</td><td>Likely misreads; 0.04% of run 3, 0.47% of run 1</td></tr>
+<tr><td>Partial reads stay out (revises A2)</td><td>In runs 1–2 up to 15% disagree with their clone (full-length: about 1%)</td></tr>
+<tr><td>Designed indels in, with a misread check</td><td>WT misreads add ≈ 2% to an average deletion; checked per variant and at ≥ 20 passes</td></tr>
+<tr><td>Keep the Q20 and ≥ 10 pass filters</td><td>One-edit errors 1.29% at 10–14 passes vs 0.37% at 30+</td></tr>
+</table>
+<p style="font-size:26px;line-height:1.4;color:#4A5568;width:1664px">These rules are fixed now, from read properties alone, in config/analysis_v2/rules.json, before any chromatin result is examined.</p>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a3_genotypes/*.tsv</p>
+<aside>HEK293T was not part of this audit: it has a different construct and genotyper, and its clones are mostly single barcodes per SNV. Its genotype checks would need the HEK barcode (20 bp between fixed flanks) and are deferred to when HEK293T motif-level tests are built.</aside>
+</section>

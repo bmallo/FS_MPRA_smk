@@ -1,0 +1,18 @@
+<section id="a2-run3-funnel" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:28px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A2 · Read accounting · HepG2 run 3</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">10.5 M HiFi reads, 2.59 M analysed</h2>
+<p style="font-size:26px;color:#4A5568">Each read is counted once, at the first filter it fails (top to bottom). Bar length is the % of all HiFi reads.</p>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:20px"><p style="width:560px;font-size:26px;text-align:right">Not plasmid (genomic, unmapped)</p><div style="width:616px;height:40px;background:#A7AFB9;border-radius:0 6px 6px 0"></div><p style="font-size:26px">17.1% · 1.80 M</p></div>
+<div style="display:flex;align-items:center;gap:20px"><p style="width:560px;font-size:26px;text-align:right">Not full-length</p><div style="width:145px;height:40px;background:#A7AFB9;border-radius:0 6px 6px 0"></div><p style="font-size:26px">4.0% · 0.42 M</p></div>
+<div style="display:flex;align-items:center;gap:20px"><p style="width:560px;font-size:26px;text-align:right">Fewer than 10 passes or low read quality</p><div style="width:629px;height:40px;background:#A7AFB9;border-radius:0 6px 6px 0"></div><p style="font-size:26px">17.5% · 1.84 M</p></div>
+<div style="display:flex;align-items:center;gap:20px"><p style="width:560px;font-size:26px;text-align:right">Element flanks unreadable</p><div style="width:16px;height:40px;background:#A7AFB9;border-radius:0 6px 6px 0"></div><p style="font-size:26px">0.4% · 0.05 M</p></div>
+<div style="display:flex;align-items:center;gap:20px"><p style="width:560px;font-size:26px;text-align:right">Element matches no design</p><div style="width:498px;height:40px;background:#A7AFB9;border-radius:0 6px 6px 0"></div><p style="font-size:26px">13.8% · 1.45 M</p></div>
+<div style="display:flex;align-items:center;gap:20px"><p style="width:560px;font-size:26px;text-align:right">Exact design, a base below Q20</p><div style="width:161px;height:40px;background:#A7AFB9;border-radius:0 6px 6px 0"></div><p style="font-size:26px">4.5% · 0.47 M</p></div>
+<div style="display:flex;align-items:center;gap:20px"><p style="width:560px;font-size:26px;text-align:right">Designed 1-bp insertion or deletion</p><div style="width:648px;height:40px;background:#D9782D;border-radius:0 6px 6px 0"></div><p style="font-size:26px">18.0% · 1.89 M</p></div>
+<div style="display:flex;align-items:center;gap:20px"><p style="width:560px;font-size:26px;text-align:right;font-weight:600">Eligible WT or single SNV</p><div style="width:888px;height:40px;background:#2F6DB5;border-radius:0 6px 6px 0"></div><p style="font-size:26px;font-weight:600">24.7% · 2.59 M</p></div>
+</div>
+<p style="font-size:26px;color:#4A5568;width:1664px">Orange: excluded by choice, not quality. These are real designed variants (about 1,200 molecules each) that the chromatin analysis has never used.</p>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a2_accounting/HepG2_run3/funnel.tsv · filters: full-length single plasmid; passes ≥ 10, rq ≥ 0.99, MAPQ ≥ 20; exact design; all element bases ≥ Q20</p>
+<aside>The order matters only for attribution: a read failing two filters is counted at the first. Designed indels were excluded because earlier analyses focused on SNVs; they include 146 distinct deletions and 637 distinct insertions.</aside>
+</section>

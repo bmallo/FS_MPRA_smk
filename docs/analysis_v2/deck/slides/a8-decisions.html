@@ -1,0 +1,16 @@
+<section id="a8-decisions" data-transition="fade" style="background:#EDEFF2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:28px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A8 · Decisions</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">What carries forward</h2>
+<table style="font-size:24px;color:#1B2430">
+<tr><th style="width:48%">Decision</th><th style="width:52%">Basis</th></tr>
+<tr><td>Call-based endpoints in A9/A10 use molecules with distal labeling ≥ 0.2 (C mid/high and M); low-labeled molecules enter only the caller-free endpoint</td><td>82–86% of molecules at 0.01–0.2 are already called at any spot; spike detection there is 11–19%</td></tr>
+<tr><td>Use the spike-measured detection per position and size in A9's power (MDE)</td><td>10 bp visible at 156–160 of 211 positions; 20 bp everywhere; 75% protection halves sensitivity</td></tr>
+<tr><td>Report footprint length as a continuous value; do not read neighbouring size classes as different proteins</td><td>Boundaries are off by 0–4 bp; edge sizes split between classes</td></tr>
+<tr><td>Compare variant with WT within a run; combine HepG2 runs only at the effect level, with a run term</td><td>Run 1 vs run 3 differ well beyond sampling (SD(z) 1.7–13.7)</td></tr>
+<tr><td>Keep the clone bootstrap as the uncertainty model</td><td>Clone halves agree within it (SD(z) 0.36–1.18)</td></tr>
+<tr><td>Keep the position-specific emissions</td><td>FiberHMM's table: same in M, slightly worse in C</td></tr>
+</table>
+<p style="font-size:26px;line-height:1.4;color:#4A5568;width:1664px">Next, A9: the statistical framework (clone-level model, pseudo-variant calibration, power per variant).</p>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Fixed in config/analysis_v2/rules.json (call_confidence) · A8 looked at no variant molecules</p>
+<aside>Post hoc, flagged on the slides: the "nothing called before" detection and the M-based floor, both added because the prespecified C net detection is capped by the share of molecules already called. The HEK293T barcode rule was corrected (flank match for the 20-bp barcode) before any repeatability result was computed.</aside>
+</section>

@@ -1,0 +1,13 @@
+<section id="a5-checks" data-transition="fade" style="background:#EDEFF2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:32px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A5 · Other checks</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">Thresholds, empty molecules, read direction and strands</h2>
+<table style="font-size:24px;color:#1B2430">
+<tr><th style="width:22%">Check</th><th style="width:44%">Result</th><th style="width:34%">Consequence</th></tr>
+<tr><td>ML threshold</td><td>Every stored call has ML ≥ 204 (≥ 250 outside run 3); 128 and 204 give identical rates</td><td>The threshold is not a tuning knob; calling is decided upstream</td></tr>
+<tr style="background:#FBEFE4"><td>Molecules with no calls</td><td>1.4–3.5% of HepG2 reads list the m6A channel with zero calls. My first pass dropped them; fixed and rerun</td><td>Kept as unlabeled. HEK293T (fibertools 0.5.4): 0.5% have no m6A channel, and these could be unlabeled or never called</td></tr>
+<tr><td>Forward vs reverse reads</td><td>Agree overall (r = 0.98–0.995) but differ by up to 17–28 points at a few CpG-adjacent adenines; no shift in U molecules</td><td>Orientation is a covariate: A9 checks WT/variant balance (45/55 forward/reverse)</td></tr>
+<tr><td>Top vs bottom strand</td><td>Isolated adenines equal in M (ratio 0.99–1.01)</td><td>Supports reading A ↔ T swaps from the other strand (sensitivity)</td></tr>
+</table>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a5_m6a_qc/summary/ml_distribution.tsv, orientation.tsv, strands.tsv, runs.tsv</p>
+<aside>Zero-call molecules: pysam does not list a modification channel that has no calls, so a read with an empty m6A channel looked like a read without one. The earlier HepG2 site-methylation table did include these molecules; the HEK293T LLR extraction (tools/hek_compare/extract_hek.py) did not, so its U class, and the HEK p_p emissions, may be slightly too high. Orientation: each molecule is read in one direction at random, so the difference averages out unless WT and variant molecules differ in their forward/reverse mix.</aside>
+</section>

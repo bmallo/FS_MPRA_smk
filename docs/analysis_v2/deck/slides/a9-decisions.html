@@ -1,0 +1,16 @@
+<section id="a9-decisions" data-transition="fade" style="background:#EDEFF2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:28px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A9 · Decisions</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">What carries forward</h2>
+<table style="font-size:23px;color:#1B2430">
+<tr><th style="width:50%">Decision</th><th style="width:50%">Basis</th></tr>
+<tr><td>HepG2 A10 uses the random-effects test; the sandwich is dropped, the naive test is shown only for comparison</td><td>Random effects meets every target (4.97% / 4.5%, λ 1.00 / 0.97, BH 4.9% / 4.2%)</td></tr>
+<tr><td>HEK293T stays motif-level, with empirical p-values from ≥ 50 pseudo-variants per SNV</td><td>Random effects is cautious on calls (λ 0.37); the 30+ tier runs hot; 78 of 197 SNVs have &lt; 3 clones</td></tr>
+<tr><td>Features with &lt; 5 expected rare events are "not testable", like low-visibility positions</td><td>They made the excess false discoveries (A run 59–65, rare-call positions)</td></tr>
+<tr><td>No adjustment beyond labeling standardisation; imbalanced SNVs are marked</td><td>HepG2 SMDs match chance</td></tr>
+<tr><td>Every A10 null carries its MDE: above the effect of interest = "not detectable", not "no effect"</td><td>20–40 bp calls: MDE ≈ the WT level itself</td></tr>
+<tr><td>A10 global test per SNV: max |z| against pseudo-variants in its clone tier</td><td>The plan's max-statistic null, now calibrated per feature</td></tr>
+</table>
+<p style="font-size:26px;line-height:1.4;color:#4A5568;width:1664px">Next, A10: variant effects per cell, with A7's symmetric masking and these tests.</p>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Fixed in config/analysis_v2/rules.json (statistics) · A9 used no variant chromatin data</p>
+<aside>Post hoc, flagged: amendment 1 (random-effects variance instead of the sandwich) and amendment 2 (expected-count rule), both after WT-only calibration. The random-effects variance also replaces A8's clone bootstrap for variant tests. MDE uses unmasked WT (masking moves WT coverage by ~1.4% of molecules at most, A7).</aside>
+</section>

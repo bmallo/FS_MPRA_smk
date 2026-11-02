@@ -1,0 +1,24 @@
+<section id="a5-approach" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:40px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A5 · Methylation call QC</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1">Can we trust each m6A call, and what else rides along with it?</h2>
+<div style="display:flex;gap:32px;flex:1">
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<h3 style="font-size:32px;font-weight:600;color:#2F6DB5">Why</h3>
+<p style="font-size:26px;line-height:1.45;color:#4A5568">A footprint is a stretch of missing m6A. False calls hide footprints; uneven calling can fake them. Bacterial dam methylation would add m6A that Hia5 never made.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<h3 style="font-size:32px;font-weight:600;color:#2F6DB5">What we did</h3>
+<p style="font-size:26px;line-height:1.45;color:#4A5568">Read about 1 M plasmid reads per run. Measured calls in unlabeled (U) molecules as the false-positive rate, by element position and by pass count. Compared GATC adenines with matched controls, forward with reverse reads, and top with bottom strands.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<h3 style="font-size:32px;font-weight:600;color:#2F6DB5">What we found</h3>
+<ul style="font-size:26px;line-height:1.45;color:#4A5568">
+<li>About 0.3% false calls vs 67–69% in labeled molecules; up to 3% at a few positions.</li>
+<li>No dam methylation at GATC.</li>
+<li>Calls hold up at 10–14 passes, but unlabeled molecules get more passes.</li>
+</ul>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: results/analysis_v2_20261028/a5_m6a_qc (tools/analysis_v2/a5_m6a_extract.py, a5_m6a_summary.py)</p>
+<aside>U and M use the rules.json classes: distal m6A ≤ 0.01 and ≥ 0.60, where distal is the backbone outside the element ±100 bp and the barcode ±25 bp. The element is counted from WT molecules only. U is not a true no-Hia5 control: its molecules may carry light labeling, so its call rate is an upper bound on the false-positive rate. B1 (no-Hia5 and PCR controls) will measure it directly. Filters: full length, MAPQ ≥ 20, rq ≥ 0.99; passes kept as a variable.</aside>
+</section>

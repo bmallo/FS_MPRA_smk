@@ -1,0 +1,28 @@
+<section id="a2-offdesign" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:32px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A2 · Read accounting · off-design molecules</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">Off-design elements are real molecules, mostly double mutants</h2>
+<div style="display:flex;gap:64px">
+<div style="flex:3;display:flex;flex-direction:column;gap:14px">
+<h3 style="font-size:30px;font-weight:600">What the 1.45 M off-design elements are (run 3)</h3>
+<div style="display:flex;align-items:center;gap:16px"><p style="width:380px;font-size:25px;text-align:right">Two designed edits</p><div style="width:430px;height:36px;background:#2F6DB5;border-radius:0 6px 6px 0"></div><p style="font-size:25px">62%</p></div>
+<div style="display:flex;align-items:center;gap:16px"><p style="width:380px;font-size:25px;text-align:right">Deletion or insertion ≥ 10 bp</p><div style="width:157px;height:36px;background:#2F6DB5;border-radius:0 6px 6px 0"></div><p style="font-size:25px">23%</p></div>
+<div style="display:flex;align-items:center;gap:16px"><p style="width:380px;font-size:25px;text-align:right">Three or more edits</p><div style="width:74px;height:36px;background:#2F6DB5;border-radius:0 6px 6px 0"></div><p style="font-size:25px">11%</p></div>
+<div style="display:flex;align-items:center;gap:16px"><p style="width:380px;font-size:25px;text-align:right">Designed edit + one other</p><div style="width:19px;height:36px;background:#2F6DB5;border-radius:0 6px 6px 0"></div><p style="font-size:25px">2.7%</p></div>
+<div style="display:flex;align-items:center;gap:16px"><p style="width:380px;font-size:25px;text-align:right">Other small indel</p><div style="width:10px;height:36px;background:#2F6DB5;border-radius:0 6px 6px 0"></div><p style="font-size:25px">1.4%</p></div>
+<p style="font-size:25px;line-height:1.4;color:#4A5568">Every single substitution is a designed SNV, so a lone substitution can never be off-design. Two designed edits on one molecule point to recombination between oligos during library PCR.</p>
+</div>
+<div style="flex:2;display:flex;flex-direction:column;gap:14px">
+<h3 style="font-size:30px;font-weight:600">Sequencing error or real?</h3>
+<table style="font-size:25px">
+<tr><th style="width:28%">Passes</th><th style="width:36%;text-align:right">Off-design</th><th style="width:36%;text-align:right">Exact, base &lt; Q20</th></tr>
+<tr><td>10–14</td><td style="text-align:right">26.8%</td><td style="text-align:right">34.9%</td></tr>
+<tr><td>15–19</td><td style="text-align:right">23.0%</td><td style="text-align:right">10.9%</td></tr>
+<tr><td>20–29</td><td style="text-align:right">21.6%</td><td style="text-align:right">2.9%</td></tr>
+<tr><td>30+</td><td style="text-align:right">20.9%</td><td style="text-align:right">0.6%</td></tr>
+</table>
+<p style="font-size:25px;line-height:1.4;color:#4A5568">More passes remove sequencing error. The off-design share barely moves, so these are real molecules. Low-quality bases nearly vanish, so those are sequencing uncertainty.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a2_accounting/HepG2_run3/offdesign_classes.tsv, error_by_passes.tsv · global alignment to WT; an edit is “designed” if it alone turns WT into a designed element</p>
+<aside>Runs 1 and 2 give the same proportions (59–61% two designed edits, 23% large indels). The double mutants (0.91 M molecules in run 3) could support a later double-mutant analysis but are not single-SNV data. Error-by-passes fractions are among full-length reads with readable flanks and passing read quality.</aside>
+</section>

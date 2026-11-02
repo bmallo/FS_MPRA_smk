@@ -1,0 +1,24 @@
+<section id="a6-approach" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:40px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A6 · What M and U can stand in for</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1">Are the high-labeling (M) molecules free of protein over the element?</h2>
+<div style="display:flex;gap:32px;flex:1">
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<h3 style="font-size:32px;font-weight:600;color:#2F6DB5">Why</h3>
+<p style="font-size:26px;line-height:1.45;color:#4A5568">The LLR caller has no naked-DNA control. It treats WT M molecules as "accessible" and U as "protected". If M carries footprints, the caller absorbs them and loses power exactly there.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<h3 style="font-size:32px;font-weight:600;color:#2F6DB5">What we did</h3>
+<p style="font-size:26px;line-height:1.45;color:#4A5568">Took every A/T call on about 250,000 WT molecules. Asked whether unmethylated adenines cluster into m6A-free stretches more than a shuffle of the same calls predicts. Compared the element with the backbone tiles of the same molecules and with naked DNA.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<h3 style="font-size:32px;font-weight:600;color:#2F6DB5">What we found</h3>
+<ul style="font-size:26px;line-height:1.45;color:#4A5568">
+<li>M is the top slice of a labeling continuum, at the level of naked DNA.</li>
+<li>M is not protein-free: 1–2% of M molecules carry nucleosome-sized stretches; naked DNA ~0.</li>
+<li>The element is typical, apart from one spot (oligo 60–86, 6–11% of M).</li>
+</ul>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: results/analysis_v2_20261028/a6_proxies (tools/analysis_v2/a6_extract.py, a6_proxies.py) · settings fixed in rules.json (m_u_proxies) before results</p>
+<aside>Molecules: WT, full length, ≥ 10 passes, MAPQ ≥ 20, rq ≥ 0.99; HepG2 run 3: 150,091, run 1: 44,363, run 2: 2,813, HEK293T: 53,598, with the same subsample as A5. One m6A call = ML ≥ 128 at a reference A/T where read = reference. The shuffle keeps every position's rate within each labeling stratum (width 0.05, within one class), so it removes linkage along a molecule but keeps sequence bias and labeling level.</aside>
+</section>

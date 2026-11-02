@@ -1,0 +1,22 @@
+<section id="a2-basequality" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:32px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A2 · Read accounting · base quality</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">Low-quality bases sit in homopolymers, so the Q20 filter stays</h2>
+<div style="display:flex;gap:64px">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px">
+<h3 style="font-size:30px;font-weight:600">Bases below Q20, by homopolymer length</h3>
+<div style="display:flex;align-items:center;gap:16px"><p style="width:240px;font-size:25px;text-align:right">Single base</p><div style="width:103px;height:36px;background:#2F6DB5;border-radius:0 6px 6px 0"></div><p style="font-size:25px">0.18%</p></div>
+<div style="display:flex;align-items:center;gap:16px"><p style="width:240px;font-size:25px;text-align:right">Run of 2</p><div style="width:232px;height:36px;background:#2F6DB5;border-radius:0 6px 6px 0"></div><p style="font-size:25px">0.41%</p></div>
+<div style="display:flex;align-items:center;gap:16px"><p style="width:240px;font-size:25px;text-align:right">Run of 3</p><div style="width:317px;height:36px;background:#2F6DB5;border-radius:0 6px 6px 0"></div><p style="font-size:25px">0.57%</p></div>
+<div style="display:flex;align-items:center;gap:16px"><p style="width:240px;font-size:25px;text-align:right">Run of 4</p><div style="width:450px;height:36px;background:#2F6DB5;border-radius:0 6px 6px 0"></div><p style="font-size:25px">0.80%</p></div>
+<div style="display:flex;align-items:center;gap:16px"><p style="width:240px;font-size:25px;text-align:right">Run of 5</p><div style="width:600px;height:36px;background:#2F6DB5;border-radius:0 6px 6px 0"></div><p style="font-size:25px">1.07%</p></div>
+<p style="font-size:25px;color:#4A5568">Worst positions: the CCCCC run at oligo 148–152 (up to 3.2% of reads).</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<h3 style="font-size:30px;font-weight:600">Why this matters for genotypes</h3>
+<p style="font-size:25px;line-height:1.45;color:#4A5568">A low-quality base in a homopolymer means the run length is uncertain. The library contains designed 1-bp deletions and insertions of these runs, so an uncertain read could be WT, an SNV or an indel.</p>
+<p style="font-size:25px;line-height:1.45;color:#4A5568">Dropping these 0.47 M reads protects the WT vs variant call. Most are low-pass reads (35% of exact matches at 10–14 passes, 0.6% at 30+).</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a2_accounting/HepG2_run3_lowbq (deterministic 1% of run-3 plasmid reads; 34,086 exact WT/SNV elements) · same Q20 rule as the ledger</p>
+<aside>Of sampled exact WT/SNV elements, 20% had at least one base below Q20 (this sample includes reads with fewer than 10 passes). A3 will measure the genotype error rate directly from barcodes, which tells us whether the Q20 rule is too strict or about right.</aside>
+</section>

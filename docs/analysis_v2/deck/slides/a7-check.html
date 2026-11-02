@@ -1,0 +1,11 @@
+<section id="a7-check" data-transition="fade" style="background:#EDEFF2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:24px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A7 · Check before editing</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">The re-call reproduces the existing LLR calls</h2>
+<img src="/_blob/9a16e17e331f77cc3829c1b7dadc6fae" alt="Share of unedited molecules with a 20 to 80 bp call along the element for C and M; the A7 re-call (solid) lies on the existing calls (dashed) everywhere, including the M plateau near 7.5 percent at oligo 60 to 86" style="width:1664px;height:480px;object-fit:contain">
+<div style="display:flex;gap:40px">
+<p style="font-size:23px;line-height:1.4;color:#4A5568">Unedited molecules, 20–80 bp calls: C 1.65% (existing 1.66%), M 1.46% (existing 1.43%) averaged over the element. Profiles agree at r = 0.999 (C) and 1.000 (M).</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568">So the edited runs differ from the existing calls only by the edit. The molecule sets differ (A6 WT set vs the LLR comparison set), so close but not identical levels are expected.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a7_snv_edits/HepG2_run3/baseline.tsv · a6_proxies/summary/m_calls.tsv (existing run-3 calls, M = held-out half) · HepG2 run 3</p>
+<aside>A unit test also checks that the A7 kernel (scan over observed A/T only, with edits applied as overrides) gives exactly the same calls as plasmid-LLR's dense reference-coordinate scan, in both element orientations.</aside>
+</section>

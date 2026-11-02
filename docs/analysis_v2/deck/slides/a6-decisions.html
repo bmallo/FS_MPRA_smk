@@ -1,0 +1,15 @@
+<section id="a6-decisions" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:32px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A6 · Decisions</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">What carries forward</h2>
+<table style="font-size:25px;color:#1B2430">
+<tr><th style="width:44%">Decision</th><th style="width:56%">Basis</th></tr>
+<tr><td>Describe calls as "relative to in-cell M", never "above naked DNA"</td><td>M carries protected stretches (1–2% at ≥ 80 bp; naked ~0)</td></tr>
+<tr><td>Report no absolute occupancy until B1</td><td>The M emission is depressed wherever M is partly bound</td></tr>
+<tr><td>Flag oligo 60–86 as low-power for every variant</td><td>6–11% of M unmarked there; LLR weight lower</td></tr>
+<tr><td>Keep the M emissions for variant vs WT contrasts</td><td>Same emissions on both sides; the bias mostly cancels</td></tr>
+<tr><td>Labeling is a continuous covariate (A9), not only a class</td><td>No separate naked population in cells</td></tr>
+</table>
+<p style="font-size:26px;line-height:1.4;color:#4A5568;width:1664px">Next, A7: how SNVs alone change footprint calls (in-silico edits of WT molecules).</p>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Fixed in config/analysis_v2/rules.json (m_u_proxies) · nothing in A6 looked at variant molecules</p>
+<aside>The A6 settings (molecules, strata, span lengths, permutations, tiles) were written to rules.json before any result. The near-A-run comparison on the element slide was added after seeing the oligo 60–86 spot and is labelled post hoc.</aside>
+</section>

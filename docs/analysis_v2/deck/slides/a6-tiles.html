@@ -1,0 +1,21 @@
+<section id="a6-tiles" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:20px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A6 · Is M protein-free?</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">M carries some protected stretches; the element is typical</h2>
+<div style="display:flex;gap:36px;align-items:flex-start">
+<img src="/_blob/478921e7e6e4a191efc025e91fcb66e4" alt="Bars per 211-bp tile: excess of m6A-free stretches in M molecules for HepG2 run 3 and HEK293T, mostly 1 to 3 percent with a few tiles near 10 to 15 percent; naked DNA near 1.5 percent at 20 bp and zero at 80 bp" style="width:1060px;height:640px;object-fit:contain">
+<div style="flex:1;display:flex;flex-direction:column;gap:14px">
+<table style="font-size:21px">
+<tr><th style="width:40%">Excess, % molecules</th><th style="width:30%;text-align:right">≥ 20 bp</th><th style="width:30%;text-align:right">≥ 80 bp</th></tr>
+<tr style="background:#E3EDF8"><td>M, element (run 3 / 1 / HEK)</td><td style="text-align:right">3.7 / 2.3 / 3.1</td><td style="text-align:right">2.0 / 1.4 / 1.9</td></tr>
+<tr><td>M, other tiles, median</td><td style="text-align:right">2.5 / 1.5 / 2.1</td><td style="text-align:right">1.3 / 1.0 / 1.4</td></tr>
+<tr><td>M, other tiles, max</td><td style="text-align:right">9.5 / 7.9 / 15.1</td><td style="text-align:right">9.4 / 7.3 / 13.9</td></tr>
+<tr><td>C, element</td><td style="text-align:right">18 / 20 / 16</td><td style="text-align:right">38 / 36 / 28</td></tr>
+<tr><td>naked DNA, median tile</td><td style="text-align:right">1.5</td><td style="text-align:right">0.01</td></tr>
+</table>
+<p style="font-size:23px;line-height:1.4;color:#4A5568">Element rank among 21–22 tiles in M: 5th–10th.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568">Nucleosome-sized stretches (≥ 80 bp) occur in M but not on naked DNA.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a6_proxies/summary/*/tiles.tsv · excess = molecules with the adenine inside an m6A-free stretch, observed minus shuffled, averaged over the tile's A/Ts</p>
+<aside>Reading: M molecules are about ten times cleaner than C (excess 2–4% vs 16–38%), but not protein-free. A few backbone tiles carry 7–15% (HepG2 near bp 812, 3344 and 4399; HEK293T near 1126 and 3658); we have not mapped these to plasmid features. At ≥ 20 bp naked DNA also shows 1.5%, which is the size of caller- and enzyme-driven clustering, though on another caller. Spans that run into a read end are not counted.</aside>
+</section>

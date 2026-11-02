@@ -1,0 +1,15 @@
+<section id="a8-spikes" data-transition="fade" style="background:#EDEFF2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:20px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A8 · Spike-ins by labeling</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">Sensitivity is high where a molecule is labeled; low-labeled molecules are already "called"</h2>
+<div style="display:flex;gap:32px;align-items:flex-start">
+<img src="/_blob/894781bb4a4263cb0572998ce8ac91f6" alt="For HepG2 run 3 and HEK293T: share of molecules already called over a spot before spiking (low-labeled C 82-86 percent, mid C 44-51, high C 14-23, M 3); net detection by spike size (M 95-98 percent, high C 72-90, mid C 43-60, low C 11-19); and detection among molecules not already called (88-100 percent for all groups, 100 percent from 30 bp)" style="width:1200px;height:620px;object-fit:contain">
+<div style="flex:1;display:flex;flex-direction:column;gap:14px">
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">Detected</b> = a call covers the spike centre and at least half the spike. <b style="color:#1B2430">Net</b> = detected after spiking − before, same molecules.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">M:</b> net 95–98% at every size, 10–147 bp.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">C:</b> 82–86% of low-labeled (0.01–0.2) molecules already carry a call over any given spot, so net there is only 11–19%. Where nothing was called before, detection is 88–100% in every group (post hoc).</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">75% protection</b> (leaky spike): M 54–62% (HepG2), 53–59% (HEK293T).</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a8_confidence/spikes/*/spikes.tsv · position-specific emissions, perfect spikes, medians over positions · "nothing called before" = net / (1 − before)</p>
+<aside>FiberHMM's hexamer emissions in the same scan: M 95–98% (same), C net 2–4 points lower, and slightly more molecules already called (60% vs 57% in HepG2 C). Collateral (calls changing more than 10 bp outside the spike): median 2–7% of C molecules, up to 12–15%, from neighbouring calls merging with the spike.</aside>
+</section>

@@ -1,0 +1,19 @@
+<section id="a4-runs" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:28px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A4 · Sequence bias</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">Adenines in runs are rarely marked, even on naked DNA</h2>
+<div style="display:flex;gap:56px;align-items:flex-start">
+<img src="/_blob/c22c050a859b68474d803050eca29728" alt="Line chart: methylation rate relative to isolated adenines falls with run length, 1.0, 0.85, 0.40, 0.15, 0.02 on naked pEF-GFP, with HepG2 and HEK293T M molecules nearly identical" style="width:900px;height:621px;object-fit:contain">
+<div style="flex:1;display:flex;flex-direction:column;gap:20px">
+<table style="font-size:24px">
+<tr><th style="width:46%">Inside a run of ≥ 3</th><th style="width:27%;text-align:right">Naked</th><th style="width:27%;text-align:right">HepG2 M</th></tr>
+<tr><td>3′ end</td><td style="text-align:right">0.74</td><td style="text-align:right">0.79</td></tr>
+<tr><td>5′ end</td><td style="text-align:right">0.22</td><td style="text-align:right">0.15</td></tr>
+<tr><td>Interior</td><td style="text-align:right">0.027</td><td style="text-align:right">0.026</td></tr>
+</table>
+<p style="font-size:25px;line-height:1.45;color:#4A5568">Relative to isolated adenines. A protein-free plasmid shows the same drop, so the bias is set by sequence (Hia5 or the m6A caller), not by protein.</p>
+<p style="font-size:25px;line-height:1.45;color:#4A5568">Consequences: footprints over A/T runs rest on the flanking adenines. A variant that breaks a run can unmask its neighbours.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a4_informative/context_bias/*.tsv · whole plasmids: naked Hia5-methylated pEF-GFP (2,387 adenines), HepG2 run 3 M (2,165), HEK293T M (2,192)</p>
+<aside>This answers part of your question 2: the low marking of A-runs in our M molecules is not evidence that M is protein-bound, because a truly naked plasmid shows it too. Whether the enzyme or the m6A caller causes it cannot be separated with these data, and for the analysis it does not need to be: both bias every molecule the same way. The naked control is a different plasmid sequenced with an older caller (Jasmine 2.2.0 vs 26.1.3 for HepG2 run 3), so only the shape is compared, as rates relative to isolated adenines in each table.</aside>
+</section>

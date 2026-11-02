@@ -1,0 +1,18 @@
+<section id="a8-terms" data-transition="fade" style="background:#EDEFF2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:28px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A8 · Terms used in this section</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">Planting a footprint we know is there, and measuring twice</h2>
+<table style="font-size:23px;color:#1B2430">
+<tr><th style="width:24%">Term</th><th style="width:76%">Meaning</th></tr>
+<tr><td>Labeling</td><td>Share of a molecule's backbone adenines that carry m6A: how hard Hia5 hit that molecule, independent of the element.</td></tr>
+<tr><td>M / C molecules</td><td>M: labeling ≥ 0.6 (heavily marked). C: 0.01–0.6, split here into low (0.01–0.2), mid (0.2–0.4) and high (0.4–0.6).</td></tr>
+<tr><td>Spike-in</td><td>A fake footprint: on a real WT molecule, every adenine in a chosen stretch is set unmarked, as if a protein had blocked Hia5 there. The molecule is re-called.</td></tr>
+<tr><td>Detected</td><td>After the spike, a call covers the spike's centre and at least half of it.</td></tr>
+<tr><td>Already called</td><td>A call covered that spot before anything was spiked.</td></tr>
+<tr><td>Net detection</td><td>Detected after the spike − already called before, on the same molecules: the part the spike itself caused.</td></tr>
+<tr><td>Leaky spike</td><td>Only 3 of 4 adenines in the stretch blocked (75% protection).</td></tr>
+<tr><td>Clone halves</td><td>WT molecules split in two by barcode clone, each clone wholly in one half; the same profile computed in each.</td></tr>
+<tr><td>z and SD(z)</td><td>Per position: (half 1 − half 2) ÷ the expected chance difference. If only chance separates them, the z values spread with SD ≈ 1 and ~5% fall beyond ±1.96.</td></tr>
+</table>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Caller as in A7: plasmid-LLR, min LLR 5, drawdown 25 · settings in rules.json (call_confidence)</p>
+<aside>"Expected chance difference" comes from a bootstrap that resamples whole barcode clones (200 draws), so molecules of one clone move together. SD(z) above 1 means the two profiles differ by more than sampling explains; below 1 means the error bars are wider than needed.</aside>
+</section>

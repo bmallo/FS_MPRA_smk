@@ -1,0 +1,11 @@
+<section id="a8-size" data-transition="fade" style="background:#EDEFF2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:20px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A8 · Size and boundaries</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">Called lengths are within a few bp, so size-class edges blur</h2>
+<img src="/_blob/ff450a6f52937cc6b57b4d9e3cd31c95" alt="Left: share of detected calls in the spike's own size class, zig-zagging between about 20-40 percent for sizes at class edges (10, 20, 40, 80 bp) and about 62-66 percent for mid-class sizes (15, 30, 60) and 100 percent at 147 bp. Right: median called length minus true length, 0 to 4 bp up to 80 bp, 6 to 14 bp at 147 bp" style="width:1600px;height:540px;object-fit:contain">
+<div style="display:flex;gap:40px">
+<p style="font-size:23px;line-height:1.4;color:#4A5568">Newly detected calls are 0–4 bp longer than the spike up to 80 bp, 6–14 bp at 147 bp. Calls end on the nearest observed adenine.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568">So a 20-bp footprint is often called 18–22 bp and lands in either the 10–19 or 20–40 class. Spikes in mid-class sizes (15, 30, 60) stay in class 62–66% of the time; at class edges (10, 20, 40, 80) only 17–43%.</p>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a8_confidence/spikes/*/spikes.tsv · C molecules, position-specific emissions · left = median net size-correct / median net detection</p>
+<aside>Size classes are from common.py (10–19, 20–40, 41–80, 81+). A footprint near a class edge is split between two classes by a couple of bp of boundary error, so per-class counts are not independent measurements of different proteins.</aside>
+</section>

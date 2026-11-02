@@ -1,0 +1,24 @@
+<section id="a10-approach" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:40px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A10 · Variant effects, per cell</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:60px;font-weight:600;line-height:1.1">Which SNVs change protection, where, and by how much?</h2>
+<div style="display:flex;gap:32px;flex:1">
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<h3 style="font-size:32px;font-weight:600;color:#2F6DB5">Why</h3>
+<p style="font-size:26px;line-height:1.45;color:#4A5568">This is the step every earlier one prepared: compare each variant with WT using the calibrated test (A9), the caller-artifact masks (A7) and the detection limits (A8), one cell at a time.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<h3 style="font-size:32px;font-weight:600;color:#2F6DB5">What we did</h3>
+<p style="font-size:26px;line-height:1.45;color:#4A5568"><b style="color:#1B2430">HepG2:</b> every SNV vs WT at each adenine (primary) and each position × footprint size (secondary); one global test per SNV, then where. SNVs that drop their own A/T are tested apart. Checked with a ±5 bp mask and an empirical null. <b style="color:#1B2430">HEK293T:</b> SNVs pooled per motif, clone vs clone.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#FFFFFF;padding:40px;border:1px solid #DCE0E5;border-radius:16px">
+<h3 style="font-size:32px;font-weight:600;color:#2F6DB5">What we found</h3>
+<ul style="font-size:26px;line-height:1.45;color:#4A5568">
+<li>HepG2: most SNVs change something (602 of 633; 467 with a ±5 bp mask), mostly within 20 bp.</li>
+<li>Every change above 15 points is within 10 bp of its SNV: possibly Hia5 sequence preference.</li>
+<li>17 SNVs at oligo 143–151 raise protection across the whole element.</li>
+</ul>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: results/analysis_v2_20261028/a10_effects (tools/analysis_v2/a10_effects.py, a10_sensitivity.py) · settings in rules.json (variant_effects) before results; post hoc items flagged</p>
+<aside>Effects are relative to in-cell WT molecules (A6), never absolute occupancy. HepG2 run 3 only (A8: runs differ). 633 SNVs, 1.35M molecules, median ~800 clones per SNV. HEK293T: 197 SNVs, mostly one clone each.</aside>
+</section>

@@ -1,0 +1,25 @@
+<section id="a2-hek" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:32px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A2 · Read accounting · HEK293T (separate pipeline)</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">HEK293T: 3.06 M plasmid reads, 0.31 M analysed</h2>
+<div style="display:flex;gap:56px">
+<table style="font-size:25px;color:#1B2430;width:1000px">
+<tr><th style="width:70%">First filter failed</th><th style="width:30%;text-align:right">% of plasmid reads</th></tr>
+<tr><td>Not full-length</td><td style="text-align:right">23.7%</td></tr>
+<tr><td>Fewer than 10 passes</td><td style="text-align:right">24.8%</td></tr>
+<tr><td>Low MAPQ or no m6A data</td><td style="text-align:right">0.1%</td></tr>
+<tr><td>Indel in the 318-bp mutable region</td><td style="text-align:right">13.6%</td></tr>
+<tr><td>Element base quality too low</td><td style="text-align:right">12.3%</td></tr>
+<tr><td>Two or more SNVs</td><td style="text-align:right">14.3%</td></tr>
+<tr><td>Single SNV outside the 211-bp element</td><td style="text-align:right">1.4%</td></tr>
+<tr style="background:#E3EDF8"><td><b>Eligible single SNV (in the HepG2 design)</b></td><td style="text-align:right"><b>4.8% · 145 k</b></td></tr>
+<tr style="background:#E3EDF8"><td><b>Eligible WT</b></td><td style="text-align:right"><b>5.3% · 163 k</b></td></tr>
+</table>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px">
+<p style="font-size:25px;line-height:1.45;color:#4A5568">A different construct and pipeline (tools/hek_compare, site_extract_hek), so its categories do not line up exactly with HepG2’s.</p>
+<p style="font-size:25px;line-height:1.45;color:#4A5568">The HEK293T library does not behave like the designed saturation set: most single SNVs are transitions, and each is usually a single clone (earlier audit).</p>
+<p style="font-size:25px;line-height:1.45;color:#4A5568">Raw HiFi count is not on disk: the BAM kept plasmid-mapped reads only.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a2_accounting/HEK293T_run1/funnel.tsv (from hek293t_llr_20261028 selection and site extraction audits)</p>
+<aside>HEK293T has 244 of the 633 HepG2-designed SNVs observed, 105 with at least 300 molecules, nearly all from one clone each. That limits it to WT landscape and motif-level pooled tests, as in the plan.</aside>
+</section>

@@ -138,3 +138,11 @@ columns (a null ≠ no dependency). Calibrate per dataset with
 **Pipeline**: `pysam`, `numpy`, `scipy`, `h5py`, `matplotlib`, `seaborn`, `tqdm`, `snakemake`
 
 **Browser (extras)**: `plotly`, `dash`, `pandas`
+
+## Analysis v2 (LDLR re-analysis, 2026-10-28 onward)
+
+A step-by-step re-analysis of the LDLR data (HepG2 run 3, HEK293T) lives in `tools/analysis_v2/`, with
+settings and decisions in `config/analysis_v2/rules.json` and outputs in `results/analysis_v2_20261028/`.
+Before any follow-up analysis, read `docs/analysis_v2/README.md` (status, rules, sub-projects), then
+`POWER_AND_LIMITS.md`, `FINDINGS.md` and `DATA_GUIDE.md` in the same folder. Load per-molecule data and
+rerun the variant-vs-WT test with `tools/analysis_v2/access.py`.

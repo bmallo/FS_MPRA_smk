@@ -1,0 +1,14 @@
+<section id="a8-example" data-transition="fade" style="background:#F7F6F2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:20px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A8 · One spike, two real molecules</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">A planted footprint stands out on a marked molecule and vanishes on an unmarked one</h2>
+<div style="display:flex;gap:36px;align-items:flex-start">
+<img src="/_blob/90983b927d2884b940d2d701be4546d7" alt="Two WT molecules from HepG2 run 3, each as read and with a 20 bp spike at oligo 97 to 116. Left, a molecule with labeling 0.72: no call before; after the spike the running score climbs above 22 and a 17 bp call appears. Right, a molecule with labeling 0.06: nearly every adenine is unmarked, so one 452 bp call covers the whole window before and after the spike" style="width:1180px;height:680px;object-fit:contain">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px">
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">Left (labeling 0.72):</b> marked adenines keep the score near zero. Blocking 20 bp lifts it past 22, and a 17-bp call appears: from the first to the last unmarked adenine in the stretch. Detected.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">Right (labeling 0.06):</b> almost nothing is marked, so the whole window is one 452-bp call before the spike. Blocking 20 bp changes nothing: already called.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568">This is why net detection is 95–98% in M but 11–19% in low-labeled C, and why footprint calls use molecules with labeling ≥ 0.2.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: tools/analysis_v2/a8_example.py · HepG2 run 3 (A6 rows 116241 and 12602), run-3 fold-A emissions · spike reference 1310–1329</p>
+<aside>Molecules were picked in a seeded random order as the first M molecule not called over the spike before and detected after, and the first low-labeled C molecule already called there: the typical case in each group, not the only one. The window shows ±50 bp around the spike centre; call lengths are the full calls.</aside>
+</section>

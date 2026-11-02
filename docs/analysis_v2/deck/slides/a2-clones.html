@@ -1,0 +1,25 @@
+<section id="a2-clones" data-transition="fade" style="background:#EDEFF2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:32px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A2 · Read accounting · clones</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">Runs 1–2 have few plasmid clones per SNV</h2>
+<table style="font-size:25px;color:#1B2430">
+<tr><th style="width:40%">Eligible molecules</th><th style="width:20%;text-align:right">Run 1</th><th style="width:20%;text-align:right">Run 2</th><th style="width:20%;text-align:right">Run 3</th></tr>
+<tr><td>SNVs observed (of 633)</td><td style="text-align:right">629</td><td style="text-align:right">620</td><td style="text-align:right">633</td></tr>
+<tr><td>Molecules per SNV, median</td><td style="text-align:right">131</td><td style="text-align:right">11</td><td style="text-align:right">1,955</td></tr>
+<tr style="background:#E3EDF8"><td>Barcodes (clones) per SNV, median</td><td style="text-align:right">11</td><td style="text-align:right">5</td><td style="text-align:right">733</td></tr>
+<tr><td>Share of an SNV’s molecules in its largest barcode</td><td style="text-align:right">42%</td><td style="text-align:right">63%</td><td style="text-align:right">1.1%</td></tr>
+<tr><td>WT molecules</td><td style="text-align:right">88 k</td><td style="text-align:right">7.9 k</td><td style="text-align:right">1.24 M</td></tr>
+<tr><td>WT barcodes</td><td style="text-align:right">7,015</td><td style="text-align:right">3,141</td><td style="text-align:right">457,811</td></tr>
+</table>
+<div style="display:flex;gap:32px">
+<div style="flex:1;background:#F7F6F2;padding:32px;border-radius:16px;display:flex;flex-direction:column;gap:10px">
+<h3 style="font-size:28px;font-weight:600">What runs 1–2 can do</h3>
+<p style="font-size:25px;line-height:1.4;color:#4A5568">Thousands of WT clones support a WT footprint reproducibility test (A8), and motif-level tests that pool SNVs. Per-SNV tests are not possible: one clone dominates each SNV.</p>
+</div>
+<div style="flex:1;background:#F7F6F2;padding:32px;border-radius:16px;display:flex;flex-direction:column;gap:10px">
+<h3 style="font-size:28px;font-weight:600">A barcode rule problem for A3</h3>
+<p style="font-size:25px;line-height:1.4;color:#4A5568">A barcode is rejected if any read shows a different genotype. Deep barcodes (hundreds of reads) almost always carry one stray read, so 57% of run 1’s eligible molecules fall into “collision”.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a2_accounting/clone_depth_by_run.tsv; a2_ledgers/run1/barcodes · barcodes = distinct N15 sequences on eligible molecules</p>
+<aside>Example from run 1: barcode AGGCTTTGACGACAC has 280 reads of one SNV, 3 WT reads and ten single reads of other variants; the current exact rule marks it a collision. Standard MPRA assignment tools use a majority or fraction threshold instead. In run 3 collisions are 3% of eligible molecules because barcodes are shallow. Molecules are not dropped for barcode reasons (each becomes its own resampling cluster), but treating hundreds of reads of one clone as independent would understate uncertainty, so A3 must fix this before any run-1 statistics.</aside>
+</section>

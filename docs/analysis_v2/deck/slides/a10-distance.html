@@ -1,0 +1,14 @@
+<section id="a10-distance" data-transition="fade" style="background:#EDEFF2;color:#1B2430;font-family:'IBM Plex Sans', Arial, sans-serif;padding:96px 128px 128px;display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;color:#2F6DB5;letter-spacing:2px;text-transform:uppercase;font-weight:600">Step A10 · HepG2 · where the changes are</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:56px;font-weight:600;line-height:1.1">Changes cluster within 20 bp of the SNV; the biggest are within 10</h2>
+<div style="display:flex;gap:28px;align-items:flex-start">
+<img src="/_blob/3c6e480288f1760a790674beb699ce7b" alt="Share of tested features that are hits by distance from the SNV. Adenine unmarked: 60% at 0-5 bp with the A7 mask (none tested with the ±5 bp mask), about 33% at 6-10, 14-16% at 11-20, 7-9% at 21-50 and about 3% beyond 50. 20-40 bp call coverage: about 12% at 0-5, 9-10% at 6-10, 4-5% at 11-20 and under 0.3% beyond 20" style="width:1150px;height:420px;object-fit:contain">
+<div style="flex:1;display:flex;flex-direction:column;gap:14px">
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">Adenines (±5 bp mask):</b> 32% of those 6–10 bp away are hits, 14% at 11–20, 7% at 21–50, 2.7% beyond 50.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568"><b style="color:#1B2430">Size:</b> all 224 hits above 15 points (A7 mask) are within 10 bp, up to 53 points (25C&gt;A at its neighbour). With the ±5 bp mask, all 45 such hits are 6–10 bp away; every allele at 73 raises oligo 65 by 35–37 points.</p>
+<p style="font-size:23px;line-height:1.4;color:#4A5568">Hia5 marks an adenine differently depending on the bases around it, so large changes this close may be sequence, not protein. Only naked DNA of each variant (B1) can tell.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:56px;width:1664px;font-size:24px;color:#6B7280">Source: a10_effects/HepG2_run3*/effects.parquet · hit = significant after hierarchical FDR 5%</p>
+<aside>61% of E1 hits are increases in the unmarked fraction (more protection). Far from the SNV (&gt; 50 bp), 9.7% of E1 tests have p &lt; 0.05 versus 5.0% for A9's fake variants: either small real effects spread across the element, or extra clone variation in SNVs that WT clones do not show. The empirical null on the previous slide removes that excess.</aside>
+</section>
