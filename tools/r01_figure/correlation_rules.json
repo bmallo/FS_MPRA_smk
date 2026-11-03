@@ -1,0 +1,31 @@
+{
+ "_written": "2026-11-02, while AlphaGenome scoring was running and before any AlphaGenome score or new correlation was viewed. Exploratory; for choosing grant figures, not for claims of significance.",
+ "unit": "designed SNV (633); one value per SNV per measure from evidence.tsv",
+ "statistic": "Spearman rho with 95% bootstrap CI (2,000 resamples of SNVs, seed 20261102) and permutation-free asymptotic P; BH across all pairs listed here; n reported per pair",
+ "pairs": {
+  "functional_vs_functional": [
+   ["act", "nuc_D_pts", "MPRA vs nucleosome-size change (HepG2)"],
+   ["act", "local_inacc_pts", "MPRA vs local inaccessibility within 10 bp (HepG2)"],
+   ["act", "C1", "MPRA vs element-wide shift (HepG2)"],
+   ["local_inacc_pts", "hek_local_pts", "HepG2 vs HEK293T local inaccessibility (HEK SNVs with >= 3 clones)"],
+   ["C1", "hek_far_pts", "HepG2 element-wide shift vs HEK293T far inaccessibility (HEK SNVs with >= 3 clones)"]
+  ],
+  "predictor_vs_functional": [
+   ["ag_rna_seq_hepg2", "act", "AlphaGenome LDLR RNA (HepG2) vs MPRA"],
+   ["ag_rna_seq_liver", "act", "AlphaGenome LDLR RNA (liver) vs MPRA"],
+   ["ag_cage_hepg2", "act", "AlphaGenome CAGE (HepG2) vs MPRA"],
+   ["ag_dnase_hepg2", "local_inacc_pts", "AlphaGenome DNase (HepG2) vs local inaccessibility (expect negative)"],
+   ["ag_dnase_hepg2", "nuc_D_pts", "AlphaGenome DNase (HepG2) vs nucleosome-size change (expect negative)"],
+   ["ag_rna_seq_hepg2", "nuc_D_pts", "AlphaGenome LDLR RNA (HepG2) vs nucleosome-size change"],
+   ["ag_chiptf_SP_hepg2", "nuc_D_pts", "AlphaGenome SP-family ChIP (HepG2) vs nucleosome-size change"]
+  ],
+  "promoterai_when_available": [
+   ["pai_score", "act", "PromoterAI vs MPRA"],
+   ["pai_score", "nuc_D_pts", "PromoterAI vs nucleosome-size change"],
+   ["pai_score", "ag_rna_seq_hepg2", "PromoterAI vs AlphaGenome"]
+  ]
+ },
+ "clinical_separation": "for each score: AUROC ClinVar P/LP (8 SNVs) vs B/LB (6 SNVs), with the direction fixed so that loss of expression / gain of protection counts as pathogenic-like; descriptive only (n tiny); also the score of each P/LP and B/LB SNV listed",
+ "subsets": "all 633; Sp1 site 143-151 (27); outside 138-157",
+ "hek_rule": "HEK values used only for SNVs with >= 3 clones; never pooled or overlaid with HepG2"
+}

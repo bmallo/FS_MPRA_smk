@@ -1,0 +1,28 @@
+{
+ "_written": "2026-11-02, before gnomAD data were downloaded or any proxy-class result was viewed. Preview of grant Aim 1B on existing LDLR data; exploratory.",
+ "source": "gnomAD v4.1 (dataset gnomad_r4) via the public GraphQL API, region chr19:11089285-11089495 (oligo 21-231), SNVs only; genomes and exomes combined (AC and AN summed; a variant absent from one is counted with that dataset's AN missing, i.e. AF from the dataset(s) where it is present). Variants failing gnomAD filters are kept but flagged.",
+ "proxy_classes": {
+  "gnomad_any": "SNV observed in gnomAD (AC >= 1)",
+  "gnomad_singleton": "AC == 1",
+  "gnomad_ac2plus": "AC >= 2",
+  "gnomad_af_1e-4": "AF >= 1e-4",
+  "gnomad_af_1e-3": "AF >= 1e-3",
+  "gnomad_common_1pct": "AF >= 0.01",
+  "gnomad_homozygote": "homozygote count >= 1"
+ },
+ "reference_classes": {
+  "clinvar_plp": "ClinVar Pathogenic, Likely pathogenic or P/LP SNV (step-3 table)",
+  "clinvar_blb": "ClinVar Benign or Likely benign SNV",
+  "not_in_gnomad": "designed SNV not observed in gnomAD",
+  "all": "all 633 designed SNVs"
+ },
+ "measures": {
+  "activity": "Kircher 2019 LDLR log2 effect; abnormal = P < 1e-5 (the significance line of the plasmid Fiber-seq paper Fig. 6a) in LDLR and same sign in LDLR.2",
+  "nucleosome": "change in molecules with a confident >= 81-bp call (repeat3.py endpoint, A7 mask, HepG2 run 3); abnormal = |D / se| > 3.29 (two-sided P < 0.001)",
+  "footprint": "any fp_features significant footprint change (A7 mask, confident calls; BH within SNV)",
+  "either": "abnormal in activity or in nucleosome",
+  "chromatin_any": "abnormal in nucleosome or footprint"
+ },
+ "report": "per class: n SNVs, n abnormal and fraction (Wilson 95% CI) for each measure; median activity and nucleosome change. Comparisons are descriptive (classes overlap and are small). No calibration (OddsPath) is computed here.",
+ "caveats_known_before_running": "6 B/LB and 8 P/LP SNVs only; gnomAD promoter coverage depends on genome depth; many element SNVs are expected to be absent from gnomAD."
+}

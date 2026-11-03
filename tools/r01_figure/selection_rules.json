@@ -1,0 +1,30 @@
+{
+ "_written": "2026-11-02, before any ranking was computed (step 2). Step-1 tables had been viewed (descriptive only).",
+ "_source_tables": "results/r01_figure_20261102/step1_reorient/snv_footprint.tsv (fp_features A7-mask confident-call significant pairs) plus fp_features effects for the +/-5 bp mask, A10 E1 for caller-free support, Kircher 2019 activity.",
+ "pool": {
+  "pairs": "SNV x footprint pairs with fp_features sig == True (mask A7, calls confident)",
+  "footprint_size": "TF-sized footprints only (length box overlapping 17-45 bp): F04 F07 F10 F13 F15 F18 F21 F22",
+  "activity_gate": "published activity P < 0.05 in LDLR and the same sign in LDLR.2"
+ },
+ "panels": {
+  "activator": "sign(footprint D) == sign(activity)  (loss with lower activity, or gain with higher activity)",
+  "repressor": "sign(footprint D) != sign(activity)  (gain with lower activity, or loss with higher activity)"
+ },
+ "score_points": {
+  "activity_effect": "|act| >= 0.5 log2: 1; |act| >= 1.0: 2",
+  "footprint_effect": "|D| >= 1 point: 1; |D| >= 2 points: 2",
+  "confident_support": "footprint confident_share >= 0.8: 1 (all pool pairs are already confident-call tests)",
+  "mask_robustness": "+/-5 bp mask: significant (fp_features sig, pm5, confident) and same sign: 2; same sign and p < 0.1: 1",
+  "distance": "SNV more than 10 bp outside the footprint span: 1 (beyond the near-SNV Hia5 range)",
+  "keeps_its_base": "SNV is not 'drops its base' (caller keeps the edited base): 1",
+  "independent_agreement": "other alleles at the same position that are themselves in the same panel's pool: 1 each, max 2"
+ },
+ "ties": "broken by smaller A7 confident p",
+ "not_scored_reported_only": [
+  "caller-free support: mean change in inaccessible (unmarked) fraction at testable adenines inside the footprint span, A7 and +/-5 masks (A10 E1)",
+  "HEK293T molecules and clones",
+  "element-wide shift C1 (A11)"
+ ],
+ "region_level_candidates": "Repeat 3 Sp1 (143-151) is reported from A11 numbers (pooled dose-response), not scored: its footprint evidence is the 10-40 bp call coverage at the site, not an F-box test.",
+ "user_guidance_2026-11-02": "Repressor panel: prefer a single variant whose TF-sized footprint and activity move in opposite directions (e.g. 68C>T), even with contradicting alleles; show the contradiction."
+}

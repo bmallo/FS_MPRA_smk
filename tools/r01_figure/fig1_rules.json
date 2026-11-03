@@ -1,0 +1,63 @@
+{
+ "_written": "2026-11-02, before any Figure 1 profile or footprint was computed. Grant figure (descriptive).",
+ "datasets": {
+  "endogenous": "HEK293T whole-genome Fiber-seq, reads overlapping DPAGT1 (data/kopah_restore/Hek293_Whole_Genome/target_bams/DPATG1_all_reads.bam)",
+  "full_length_construct": "genomic_promoters DPAGT1 4.1-kb insert (chr11:119,100,225-119,104,342), merged reps 1-3 (DPAGT1.ft.m6a.merged.bam)",
+  "construct_300bp_peak3": "IGVF_construct_mix DPAGT13 (chr11:119,102,160-119,102,459; promoter, 300-600 bp upstream of the DPAGT1 TSS)",
+  "construct_300bp_peak1": "IGVF_construct_mix DPAGT11 (chr11:119,100,271-119,100,570; gene body)"
+ },
+ "cell_line_assumption": "plasmid transfections assumed HEK293T (to confirm with the user); endogenous data are HEK293T",
+ "subsampling": "300-bp constructs: samtools view -s (seed 42) to ~6,000 reads per construct per replicate from the aligned source BAMs (reps 1 and 2); full-length construct and endogenous: all reads",
+ "read_filters": {
+  "plasmid": "primary, aligned to the construct contig, spanning the construct end-to-end within 50 bp (full-length linear molecule); treated = m6A/AT >= 0.05 (excludes the untreated component); resolvable = largest fiberhmm footprint < 30% of the read",
+  "endogenous": "primary reads covering the whole 4.1-kb window; same m6A/AT >= 0.05 filter"
+ },
+ "footprints": "fiberhmm-call --enzyme hia5 --seq pacbio --min-mapq 0 (linear mode; reads are linearised NotI or genomic), default model; size classes: TF-size 10-40 bp, PIC-size 41-80 bp, nucleosome >= 85 bp",
+ "profiles": "per hg38 position: fraction of molecules covered by each size class, and m6A fraction over A/T bases (accessibility), plasmid and endogenous computed separately and shown on the same hg38 axis",
+ "motifs": "JASPAR 2026 / HOCOMOCO v14 scan of the 300-bp inserts (P < 1e-5) to label candidate TF footprints (e.g. CTCF)",
+ "panel_a_clusters": {
+  "_written": "2026-11-02, before clustering was run (user request: cluster 4.1-kb plasmid reads to show grouping of sub-nucleosome footprints and accessibility in the 300-bp region). Display choice, descriptive.",
+  "reads": "all kept 4.1-kb construct molecules (DPAGT1_full, 488)",
+  "features": "FIRE peak 1 300-bp region chr11:119,100,271-119,100,570 in 10-bp bins; per bin the majority state: accessible (no footprint), 20-35, 35-50, 50-90 bp footprint, nucleosome (>= 90 bp); one-hot",
+  "clustering": "Ward hierarchical clustering (Euclidean on one-hot), 4 clusters; clusters ordered by their share of accessible bins; reads within a cluster in dendrogram leaf order",
+  "display": "60 molecules sampled across clusters in proportion to cluster size (seed 20261102), at least 6 per cluster; cluster share of all 488 molecules labelled",
+  "occupancy_tracks": "smoothing from the raw per-base shares with Gaussian sigma 3 bp (LRSS used 10 bp); solid fills, no lines; footprint bins x5 on the 300-bp track only; layers drawn tallest first so the shortest peaks are in front"
+ },
+ "fp_bins_v2": {
+  "_written": "2026-11-02, after the footprint-size scan (fig1_fpsizes.py) and before draft 6; bins chosen by the user from the scan (post hoc, data-derived, descriptive figure)",
+  "bins": {
+   "fp_15_30": [
+    15,
+    30
+   ],
+   "fp_31_60": [
+    31,
+    60
+   ],
+   "fp_61_89": [
+    61,
+    89
+   ],
+   "nuc": [
+    90,
+    null
+   ]
+  },
+  "below_15": "calls < 15 bp are not drawn and not counted in any track (short fixed-position calls, likely AT-poor gaps; not verified)"
+ },
+ "panel_a_accessible": {
+  "_written": "2026-11-02, before draft 6 (user: show only accessible reads with sub-nucleosome footprints, add the CTCF motif). Replaces panel_a_clusters for display.",
+  "reads": "300-bp construct DPAGT11 molecules spanning chr11:119,100,271-570 (within 20 bp), accessible (nucleosome calls >= 90 bp cover < 50% of the region) and with >= 1 footprint 15-89 bp whose midpoint lies in the region (fig1_fpsizes definitions)",
+  "display": "40 molecules drawn at random (seed 20261102), ordered by Ward clustering (one-hot of 10-bp majority states over the region, fp_bins_v2) in leaf order; footprints only, zoomed to the 300-bp region, with the gene model above (region highlighted, zoom lines) and the HOCOMOCO v14 CTCF motif (119,100,436-455, P 3.8e-6) as a track",
+  "panel_b": "footprint tracks recomputed from this project's FiberHMM calls (fig1/profiles molecules: endogenous, DPAGT11) with fp_bins_v2: per base, molecules with a call of the class covering it / molecules covering it (span of observed A/T; 300-bp construct limited to its insert); Gaussian sigma 3 bp within covered runs; FIRE layer stays from the LRSS table (FIRE BAMs, independent of footprint bins); sub-nucleosome bins x5 on the 300-bp track only"
+ },
+ "panel_a_ctcf": {
+  "_written": "2026-11-02, before draft 7 (user: 4.1-kb reads, only CTCF-sized footprints, 10-20 reads clustered on that footprint). Replaces panel_a_accessible for display.",
+  "reads": "300-bp construct (DPAGT11) molecules spanning the CTCF motif (chr11:119,100,436-455) with a 31-60 bp call overlapping it by >= 10 bp: 765 of 9,498 (fig1_ctcf_reads.py)",
+  "availability": "4.1-kb construct: 2 of 488 molecules qualify; 300-bp construct (DPAGT11): 765 of 9,498; endogenous: 1 of 22. The 4.1-kb construct cannot supply 10-20 reads, so draft 7 draws them from the 300-bp construct pending the user's decision (--reads flag selects the source).",
+  "display": "15 molecules drawn at random (seed 20261102), ordered by Ward clustering of per-base 31-60 bp call occupancy over the motif +/- 60 bp (leaf order); drawn over the whole 4,774-bp NotI-linearized plasmid (plasmid coordinate = hg38 - (insert hg38 start - insert construct start), from inserts.tsv): nucleosome calls (>= 90 bp) and 31-60 bp calls only; plasmid map shows backbone, 300-bp insert and CTCF motif (no backbone feature annotation is available, so none is drawn)",
+  "panel_b": "endogenous track: nucleosome and FIRE only (no sub-nucleosome footprints); plasmid 300-bp track: all bins, sub-nucleosome x5; CTCF motif marked on the gene model and across both tracks",
+  "renders": "PDF/PNG via rsvg-convert with tools/r01_figure/fonts.conf (Arial -> Arimo, metric-compatible), so previews match the SVG layout",
+  "_revised": "2026-11-02, before draft 7 was rendered: user chose the 300-bp construct reads, drawn along the whole linearized plasmid, clustered on the CTCF footprint"
+ }
+}

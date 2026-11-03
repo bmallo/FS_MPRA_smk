@@ -1,0 +1,23 @@
+{
+ "_written": "2026-11-02, before any Figure 2 number or panel was computed. Grant figure 2 (descriptive): SLC39A4 c.-169A>G disrupts the NF-Y (CCAAT-box) footprint and promoter activity. Figure 1 is on hold at draft 7.",
+ "source_project": "projects/SLC39A4_variant_slide (README v1-v6): HEK293T plasmid Fiber-seq, WT and c.-169A>G plasmids co-transfected, 3 replicates; FiberHMM --circular footprints; reads genotyped at plasmid 6120 (WT T / Var C) by occupancy.py; analysis/ occ_<rep>_<allele>.npy (reads with a footprint of size s covering position p), n_<rep>_<allele>.txt, reads.tsv.gz (per read: allele, kept, site_fp = length of the footprint covering the variant base)",
+ "orientation_check": "fig2_orientation_qc.py: in these fp BAMs MA spans are in stored-SEQ orientation (m6A inside nucleosome calls 2.4-2.7% on both strands as stored; 25-27% on reverse reads if flipped), so occupancy.py's projection is correct and its outputs are reused unchanged",
+ "variant": "SLC39A4 c.-169A>G (NM_130849.4; chr8:144,416,958 hg38; plasmid 6120 T>C); NF-Y motif JASPAR MA0060.4 (NFYA) CCAATCAC -> CCAGTCAC (log2-odds 13.2 -> 8.0; motifs/nfy_site.tsv)",
+ "tf_bin": "TF-sized footprint = 20-60 bp, the size range of the WT-specific footprint over c.-169 (SLC39A4 README v5, chosen before this figure); used for every panel (occupancy, site test, whole-plasmid delta). Nucleosome = >= 90 bp.",
+ "panels": {
+  "a": "construct schematic redrawn at figure size from schematic.py (not to scale: SLC39A4 promoter fragment 5215-6273 driving luciferase 2916-4568, gene orientation), variant triangle, NF-Y logo (MA0060.4) with the variant column boxed",
+  "b": "luciferase, Fig. S15A HEK293T (the Fiber-seq cell line), reused from the supplement; vector if the PDF holds it as vector, else the existing 300-dpi crop embedded as an image. HepG2 half (p = 0.056) not shown; noted in the legend draft",
+  "c": "TF-sized (20-60 bp) occupancy, WT vs c.-169A>G overlaid, reps pooled (share of kept reads), Gaussian sigma 3 bp (as Figure 1 draft 5+), x = bp from the NF-Y motif centre (c.-170) in gene orientation, window -150..+150",
+  "d": "per replicate: % of kept reads with a 20-60 bp footprint covering the variant base, WT vs variant; Fisher exact test within each replicate (reads within one replicate), replicates shown as separate pairs (n = 3 biological replicates)",
+  "e": "whole plasmid: WT - variant TF-sized (20-60 bp) occupancy per replicate (percentage points), Gaussian sigma 3 bp, plasmid coordinates, variant marked"
+ },
+ "style": "Illustrator-editable SVG (Arial live text via Arimo layout, expand_fonts), PDF/PNG via rsvg-convert with fonts.conf; WT #2E3192 / variant #E3191F (match Fig. S15A); TF teal #338B8C as Figure 1",
+ "revision_draft3": {
+  "_written": "2026-11-02, after draft 2 review, before draft 3",
+  "tf_bin_check": "fig2_nfy_size.py (fig2/nfy_size/): the WT-specific footprint over c.-169 has no single size; WT excess is spread over 3-58 bp (FiberHMM calls the protected stretch as fragments of variable length) and stops at ~60 bp (61-120 bp: +1.0 pp, 1.05x). 20-60 bp holds 8.1 of 14.4 pp of the <= 60 bp excess at 6.5x WT/variant; 25-50 bp 5.9 pp at 7.0x; 1-9 bp 4.4 pp at 6.1x. Decision: keep the pre-specified 20-60 bp bin.",
+  "panel_a": "SnapGene-style map, to scale: plasmid 6400 -> 2800 in gene orientation, thin outlined feature arrows (promoter 5215-6273, luciferase 2916-4568) with labels inside, variant tick + triangle, 500-bp scale bar; motif labelled 'NF-Y motif' only",
+  "panel_b": "side text removed; closing right frame edge at the crop, y 80.07-252.83 PDF pt (the S15A frame rectangle), stroke 1",
+  "panel_c": "legend without read counts",
+  "panel_e": "mean of the three per-replicate WT - variant tracks (replicates weighted equally)"
+ }
+}

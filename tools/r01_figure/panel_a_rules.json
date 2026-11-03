@@ -1,0 +1,24 @@
+{
+ "_written": "2026-11-02, before the site list below was computed. POST HOC with respect to the data: region summaries, the motif scan and MPRA per region had been viewed. Display rule only.",
+ "x_axis": "HGVS c. position on NM_000527.5 (c. = oligo - 285 for c < 0); TSS of NM_000527.5 at chr19:11,089,463 = c.-86 (UCSC ncbiRefSeq), marked with an arrow; ATG (c.1) lies 54 bp right of the element",
+ "motif_sites": {
+  "match": "WT element scan (motif_scan.py: JASPAR 2026 CORE vertebrates non-redundant + HOCOMOCO v14 H14CORE), match P < 1e-5 (10x stricter than FIMO's default)",
+  "merge": "overlapping matches merged into one site; site span = union; label = TF family of the best match",
+  "functional_support": "median HepG2 MPRA log2 effect of designed SNVs inside the site <= -0.5",
+  "shown": "sites meeting both; others listed in the output table, not drawn"
+ },
+ "motif_free_footprints": {
+  "candidates": "fp_features footprints of TF size (length box overlapping 17-45 bp)",
+  "confident": "confident_share >= 0.8 (share of the footprint's WT calls with P_chance < 1e-3)",
+  "no_motif": "no motif match at P < 1e-4 overlapping its protected core by >= half the motif length; core = the footprint's midpoint box +/- half its peak length, trimmed to the stretch supported by the 60-86 follow-up where available (F04: 66-81)",
+  "shown": "candidates meeting both, drawn as a bar labelled 'Fiber-seq footprint, no known motif'; flag shared_with_near_naked reported in the legend"
+ },
+ "population_track": "rug under the axis: gnomAD v4.1 observed SNVs (AC >= 1; darker for AC >= 2); GTEx: no eQTL in the element (stated, not drawn)",
+ "footprint_version": {
+  "_written": "2026-11-02, before the footprint list was drawn (footprints.tsv had been viewed in step 1).",
+  "shown": "fp_features footprints of TF size (length box overlapping 17-45 bp) with confident_share >= 0.8",
+  "span": "called span (span_lo..span_hi from footprints.tsv), except F04 drawn as 66-81 (protected stretch supported by the 60-86 follow-up; the called span 60-86 is stretched by unmarkable A/T-free flanks)",
+  "label": "footprint id-free description: size and WT confident occupancy (% of molecules with labeling >= 0.2); motif overlap stated (P < 1e-4 match in the span core)",
+  "gnomad_track": "dropped (user feedback: not visually interpretable); gnomAD/GTEx summarised in the legend text"
+ }
+}

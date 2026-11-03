@@ -1,0 +1,104 @@
+{
+ "_written": "2026-11-02, before fig3.py was run. Grant figure 3 (LDLR truth-set validation), assembled from panels already built and reviewed in this project; no new statistics. Figure 1 on hold (draft 7), Figure 2 at draft 4.",
+ "framing": "truth sets rather than an activator/repressor pair (grant review, earlier in this session): c.-156C>T is not used as a repressor example (likely Hia5 sequence artifact: C>A gains the same footprint, C>G loses it); repressor appears only as candidate categories in the classification bars",
+ "cell_lines": "HepG2 run 3 for MPRA and plasmid Fiber-seq; HEK293T only in panel e, as a separate axis (never pooled or overlaid)",
+ "sources": {
+  "a": "results/r01_figure_20261102/fig_A_v9/panel_a.tsv (fig_A.py): HepG2 MPRA log2 effect per SNV (633), ClinVar class; regulatory sites as fig_A.SITES (SP-like 89-100, SREBP 127-136, SP1/KLF 143-151; oligo coords, c. = oligo - 285); TSS c.-86",
+  "b": "fig_A_v9/panel_b_regions.tsv: share of each region's SNVs in each readout's top 20% (element-wide expectation 20%); figA_rules.json marks this panel post hoc / exploratory (region medians had been viewed)",
+  "c": "fig_A_v9/panel_c_site.tsv: Sp1 site (oligo 143-151, 27 SNVs) change in molecules with a >= 81-bp protected stretch (pts, 95% CI = 1.96 x se) vs MPRA; Spearman from correlations_v2/pairs.tsv (act vs nuc_D_pts, subset sp1_site_143_151)",
+  "d": "panel_b_v2/panel_b_counts.tsv (fig_panel_b.py, classify.py, |log2| >= 0.5): mechanism category by ClinVar class; 'Repressor gained' / 'Repressor lost' relabelled as candidates",
+  "e": "fig_A_v9/panel_d_hek.tsv: HepG2 vs HEK293T local inaccessibility change (adenines within 10 bp, pts), SNVs with >= 3 HEK293T clones (113); Spearman and 95% CI from correlations_v2/pairs.tsv (local_inacc_pts vs hek_local_pts, subset all)"
+ },
+ "style": "as Figure 2: one Illustrator-editable SVG (Arial live text via Arimo layout, expand_fonts), PDF/PNG via rsvg-convert with fonts.conf; no draft stamp on the figure (commit and date in summary.json)",
+ "regions_draft2": {
+  "_written": "2026-11-02, after draft 1 review (user: regions in b must be highlighted in a, automatically clear or easy to define, and contain significant ClinVar variants); before the new panel-b shares were computed",
+  "rule": "a region is a WT motif-scan match at P < 1e-5 (motif_scan/wt_hits.tsv; the panel-a site cutoff) of the TF family with an established role at the LDLR promoter, that contains >= 1 ClinVar pathogenic / likely pathogenic SNV",
+  "regions": {
+   "SRE-1 (SREBP motif)": [
+    127,
+    136,
+    "SREBF1 / SREBF2 HOCOMOCO match 127-136 (P 2e-6); P/LP 133C>T, 134C>G, 136C>A"
+   ],
+   "Sp1 GC box (Repeat 3)": [
+    143,
+    151,
+    "JASPAR SP1 MA0079.5 site 143-151 (repeat3_rules.json); P/LP 149C>T, 150C>G; conflicting 145C>T, 146C>G"
+   ]
+  },
+  "dropped": {
+   "SP-like 89-100": "ZFP3 match only (weak SP-like), no P/LP (one conflicting, 94C>A)",
+   "CRE 182-192": "P/LP 186A>G and 187C>T but no motif match at P < 1e-5 (best XBP1 181-192 P 2.7e-5)",
+   "F04 core 66-82": "data-defined footprint, no motif, no P/LP",
+   "117A>G (c.-168) P/LP": "isolated, no motif region"
+  },
+  "panel_b": "rows = these regions + rest of element; readout scores and top-20% rule exactly as fig_A.py (MPRA |log2|; Fiber-seq max(|nucleosome z|, max |footprint z| A7 confident); AlphaGenome max(|DNase|/SD, |LDLR RNA|/SD) HepG2; PromoterAI |score| MANE ENST00000558518.6); recomputed in fig3.py from evidence_v3 + analysis_v2 fp_features",
+  "panel_a": "shade and label exactly the panel-b regions"
+ },
+ "regions_draft3": {
+  "_written": "2026-11-02, after draft 2 review (user: keep all three motifs), before draft 3",
+  "regions": {
+   "SP-like (ZFP3 match)": [
+    89,
+    100,
+    "WT motif match P 3.4e-6 (JASPAR MA2490.1 ZFP3; weak SP-like); conflicting 94C>A"
+   ],
+   "SRE-1 (SREBP)": [
+    127,
+    136,
+    "SREBF1/2 P 2e-6; P/LP 133, 134, 136"
+   ],
+   "GC box (SP1)": [
+    143,
+    151,
+    "JASPAR SP1 MA0079.5; P/LP 149, 150; conflicting 145, 146"
+   ]
+  },
+  "rule": "the three motif sites shown in panel a (P < 1e-5), shaded in a and measured in b; F04 and the CRE are described in the text only (not drawn) pending the user's decision",
+  "f04": "oligo 66-82 (c.-219..-203), GCCGATGTCACATCGG, data-defined TF-size footprint (confident share 0.86), no motif at P < 1e-4 within the core; ClinVar 11 VUS + 2 B/LB, no P/LP",
+  "cre": "oligo 182-192 (c.-103..-93), AAATGACGTGGG: CRE-type site (TGACG core); analysis_v2 rules.json window 'CREB1/CREM 182-192' (JASPAR MA0018.5); in this scan best XBP1 P 2.7e-5, CREB1 P 7e-5 (passes 1e-4, not 1e-5); ClinVar P/LP 186A>G (c.-99) and 187C>T (c.-98) sit in the TGACG core"
+ },
+ "regions_draft4": {
+  "_written": "2026-11-02, user: 'Add both' (F04 and CRE), before draft 4",
+  "regions": {
+   "F04 footprint (no motif)": [
+    66,
+    82,
+    "data-defined TF-size footprint; drawn with a dashed box"
+   ],
+   "SP-like site": [
+    89,
+    100,
+    "motif"
+   ],
+   "SRE-1 (SREBP)": [
+    127,
+    136,
+    "motif"
+   ],
+   "GC box (SP1)": [
+    143,
+    151,
+    "motif"
+   ],
+   "CRE (CREB/ATF)": [
+    182,
+    192,
+    "CRE half-site TGACG; best XBP1 P 2.7e-5, CREB1 P 7e-5 (below the 1e-5 cutoff of the other three motifs); analysis_v2 window"
+   ]
+  },
+  "order": "5' to 3' in panels a and b; rest of element = all other SNVs"
+ },
+ "layout_draft5": {
+  "_written": "2026-11-02, after the user asked to rethink panels a/b against the grant's multi-modal and calibration aims; before draft 5 was computed. The flag rule is a display choice made after the region view (draft 4) and a read-only preview of control counts had been seen (post hoc, descriptive).",
+  "panels": {
+   "a": "unchanged (MPRA along the promoter, five shaded regions)",
+   "b": "control-variant detection matrix: columns = ClinVar P/LP SNVs (8) then B/LB SNVs (6), 5'->3' within each group, HGVS c. and region name; rows = MPRA (HepG2), Plasmid Fiber-seq (HepG2), AlphaGenome (HepG2), PromoterAI, and 'Any readout'",
+   "c": "element-wide MPRA x Fiber-seq map: all designed SNVs, ClinVar classes by panel-a markers; dashed lines at each readout's flag cutoff; counts per quadrant (both / MPRA only / Fiber-seq only / neither)",
+   "d": "HepG2 vs HEK293T local inaccessibility (former e, unchanged); the mechanism-category bars (former d) are dropped from the main figure"
+  },
+  "flag_rule": "a readout flags a variant when its |score| is in that readout's top 20% across all 633 designed SNVs (quantile 0.8, >=), the same budget for every readout; scores as fig_A.py: MPRA |log2|; Fiber-seq max(|nucleosome-size z|, max |footprint z| over A7 confident fp_features); AlphaGenome max(|DNase|/SD, |LDLR RNA|/SD), HepG2; PromoterAI |score| (MANE ENST00000558518.6)",
+  "direction": "per cell, the sign of the component that set the score: MPRA log2 effect; Fiber-seq signed z of the dominant component (+ = more protection); AlphaGenome signed standardized DNase or RNA; PromoterAI score. Shown as an up/down glyph (readout value higher / lower than WT)",
+  "margin": "per readout: P/LP flagged x/8, B/LB flagged y/6, share of gnomAD-observed SNVs flagged (all 107 are rare; max AF 0.0011), against 20% for all SNVs",
+  "panel_c_axes": "x = MPRA log2 effect; y = Fiber-seq signed z of the dominant component (same quantity as the flag)"
+ }
+}

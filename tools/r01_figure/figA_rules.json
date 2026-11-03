@@ -1,0 +1,18 @@
+{
+ "_written": "2026-11-02, before the panel-b fractions were computed. POST HOC display rule: region medians (correlations_v1/spotlight.txt) had been viewed, so panel b is labelled exploratory.",
+ "panel_a": "HepG2 MPRA expression change per SNV along the element; ClinVar class by marker; regions shaded",
+ "panel_b": {
+  "rows": {"R1 Sp1": [89, 104], "SRE-1": [124, 139], "R3 Sp1": [143, 151], "F04 core, no motif": [66, 82],
+           "CRE": [182, 192], "Rest of element": "all other designed SNVs"},
+  "readouts": {
+   "MPRA (HepG2)": "|log2 effect|",
+   "Plasmid Fiber-seq (HepG2)": "max(|z| nucleosome-size change, max |z| over testable fp_features footprints), A7 mask, confident calls",
+   "AlphaGenome (HepG2)": "max(|DNase raw| / element SD, |LDLR RNA raw| / element SD)",
+   "PromoterAI": "|PromoterAI score| (MANE transcript ENST00000558518.6; added 2026-11-02 when scores arrived, same top-20% rule)"
+  },
+  "cell_value": "share of the region's SNVs in the top 20% of that readout's score across all 633 element SNVs (element-wide expectation 0.20); rank-based so readouts on different scales are comparable",
+  "annotation": "share as % with n SNVs"
+ },
+ "panel_c": "Sp1 site 143-151 SNVs: nucleosome-size change (pts, 95% CI) vs MPRA; marker by ClinVar class (P/LP, conflicting, VUS, not reported); AlphaGenome DNase shown as marker fill? no: kept to two readouts",
+ "panel_d": "HepG2 vs HEK293T local inaccessibility change (adenines within 10 bp, pts) for SNVs with >= 3 HEK clones; Spearman from correlations_v1 (prespecified pair)"
+}

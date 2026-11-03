@@ -1,0 +1,69 @@
+{
+ "_written": "2026-11-02, before tools/r01_figure/repeat3.py was run. Approved plan: user 'Yes, run it'. Step-1/2 tables and the per-SNV inventory (activity, C1, A11 calls_D, ClinVar class) had been viewed; no pooled result had.",
+ "cell": "HepG2 run 3 only for statistics; HEK293T clone-level display only (no test).",
+ "site": {
+  "motif": "Repeat 3 Sp1, JASPAR MA0079.5 site 143-151 (A11)",
+  "oligo": [
+   143,
+   151
+  ]
+ },
+ "groups": {
+  "G1_clinvar_plp_conflicting_in_site": {
+   "rule": "ClinVar Pathogenic, Likely pathogenic, P/LP or Conflicting SNV at 143-151",
+   "snvs": [
+    "145C>T",
+    "146C>G",
+    "149C>T",
+    "150C>G"
+   ]
+  },
+  "G2_site_breaking_other": {
+   "rule": "SNV at 143-151 with A11 SP1 PWM change d_pwm <= -2, not in G1 (VUS or unreported); kept regardless of activity"
+  },
+  "G3_site_preserving": {
+   "rule": "SNV at 143-151 with d_pwm > -2",
+   "snvs": [
+    "144T>C",
+    "147T>G"
+   ]
+  },
+  "G4_flank": {
+   "rule": "SNVs at 138-142 and 152-157"
+  },
+  "G5_clinvar_benign_lb": {
+   "rule": "ClinVar Benign or Likely benign SNV anywhere in the element",
+   "snvs": [
+    "68C>T",
+    "80G>T",
+    "88G>A",
+    "119A>G",
+    "163C>A",
+    "188G>C"
+   ]
+  },
+  "G6_clinvar_plp_outside_R3": {
+   "rule": "ClinVar P, LP or P/LP SNV outside 143-151",
+   "snvs": [
+    "117A>G",
+    "133C>T",
+    "134C>G",
+    "136C>A",
+    "186A>G",
+    "187C>T"
+   ]
+  }
+ },
+ "endpoints": {
+  "site_occupancy": "share of molecules (labeling >= 0.2) with a confident LLR call (P_chance < 1e-3) of length 10-40 bp whose midpoint lies in oligo 143-151; variant - WT, labeling-standardised, A9 random-effects se; A7 mask applied to variant and WT before calling (as fp_features)",
+  "site_occupancy_all_calls": "same, all calls (secondary)",
+  "site_occupancy_pm5": "same, +/-5 bp mask (sensitivity)",
+  "nucleosome_size": "share of molecules with a confident call >= 81 bp whose midpoint lies in the element (A7 mask)",
+  "e1_profile": "per adenine, stored A10 E1 D (A7 mask), testable rows only",
+  "element_wide_shift": "stored A11 C1 (adenines > 50 bp from the SNV, +/-5 run)",
+  "activity": "Kircher 2019 log2 (LDLR; LDLR.2 reported)"
+ },
+ "pooling": "DerSimonian-Laird random effects across SNVs within a group (one estimate per SNV): estimate, 95% CI, tau2, I2, k; per-adenine profile pooled the same way. Groups are compared descriptively (no between-group test).",
+ "hek293t": "per clone (>= 20 molecules, labeling > 0.01), mean labeling-standardised inaccessible-fraction residual vs HEK WT at adenines 140-156 and at adenines > 50 bp from 147; edited A/T masked; WT clone distribution as reference; display only. Before use, check access.load_element('HEK293T') WT profile against explorer_v6 base.json.",
+ "pooling_inclusion": "per-SNV estimates enter the pool when n >= 10 molecules and >= 3 clones (A9 thresholds without the >= 5 expected-events rule, which is what pooling is meant to overcome); written before the first run"
+}

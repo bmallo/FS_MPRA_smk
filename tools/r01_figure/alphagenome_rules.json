@@ -1,0 +1,16 @@
+{
+ "_written": "2026-11-02, before any AlphaGenome score was retrieved.",
+ "model": "AlphaGenome API (alphagenome 0.10.0 client), organism human, hg38",
+ "interval": "1 Mb (SEQUENCE_LENGTH_1MB) centred on the element midpoint chr19:11089390, the same for every variant",
+ "variants": "the 633 designed SNVs (oligo 21-231; hg38 = 11089264 + oligo)",
+ "scorers": {
+  "RNA_SEQ": "GeneMaskLFCScorer (recommended): log fold change of predicted RNA over LDLR exons",
+  "CAGE": "CenterMaskScorer width 501, DIFF_LOG2_SUM (recommended)",
+  "DNASE": "CenterMaskScorer width 501, DIFF_LOG2_SUM (recommended)",
+  "CHIP_TF": "CenterMaskScorer width 501, DIFF_LOG2_SUM (recommended)"
+ },
+ "kept_tracks": "biosamples HepG2 (EFO:0001187), liver (UBERON:0002107) and HEK293 (EFO:0001182) when present; RNA_SEQ and CAGE rows restricted to gene LDLR; raw_score and quantile_score saved",
+ "primary_score": "ag_rna_hepg2 = mean raw RNA_SEQ LFC for LDLR over HepG2 tracks (sign: negative = predicted lower expression)",
+ "secondary_scores": "ag_rna_liver, ag_cage_hepg2 (LDLR), ag_dnase_hepg2, ag_rna_hek293 / ag_dnase_hek293 if tracks exist; ag_chiptf_hepg2_<TF> for SP1, SP2, KLF family, SREBF1/2, CREB1 and ATF family tracks in HepG2 if present",
+ "requests": "sequential (max_workers 1) to keep outbound connections minimal (klone policy)"
+}

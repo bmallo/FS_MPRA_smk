@@ -1,0 +1,41 @@
+{
+ "_written": "2026-11-02, before classify.py was run; approved by the user ('Lets run this analysis'), with the user's addition that non-significant signed TF-size footprint differences count as supporting evidence. Exploratory classification for a grant figure.",
+ "variants": "the 104 designed SNVs with a ClinVar record (P/LP, B/LB, conflicting, VUS); results for all 633 also written",
+ "evidence": {
+  "expression": "Kircher 2019 LDLR: change if |log2| >= 0.5 and P < 1e-5 and LDLR.2 has the same sign; down/up by sign; sensitivity: |log2| >= 1",
+  "nucleosome": "nucleosome-size change (gnomad_check / repeat3 endpoint, A7 mask, confident >= 81-bp calls); P = 2*sf(|z|); BH across the 104 ClinVar SNVs; gain/loss if q < 0.05",
+  "tf_footprint": {
+   "window": "positions within 10 bp of the SNV",
+   "data": "A10 E2 effects (A7 mask) for size bins sub_TF (10-19) and TF (20-40), unmasked rows; plus fp_features significant changes (A7, confident) of TF-size footprints whose span contains the SNV or lies within 10 bp",
+   "significant": "any A10 E2 hit (hierarchical FDR) in the window, or an fp_features significant TF-size footprint change as defined; direction = sign of the hit D (majority of hits; ties -> fp_features sign)",
+   "supporting": "otherwise, mean z (D/se over unmasked window rows, both bins) with |mean z| >= 1; direction = sign",
+   "none": "|mean z| < 1 or no unmasked rows",
+   "caveat": "all within 10 bp of the SNV: possible Hia5 sequence effect until naked-DNA controls"
+  },
+  "motif": {
+   "scan": "motif_scan.py scoring (JASPAR 2026 + HOCOMOCO v14, FIMO-style exact P), best P over matches covering the SNV, WT vs variant",
+   "breaks_activator": "family SP/KLF (TF names SP1-SP4, KLF*) or SREBF (SREBF1/2, SRBP1/2): WT P < 1e-4 and variant P >= 10 x WT P",
+   "creates": "any motif: variant P < 1e-4 and WT P >= 10 x variant P (family reported)"
+  },
+  "visibility": "A/T count within +/-5 bp of the SNV in the WT sequence, excluding the edited base; poorly visible if <= 2"
+ },
+ "categories_in_order": {
+  "expression_down": [
+   ["Activator disrupted", "significant TF-footprint loss; else breaks an SP/KLF or SREBF motif; else supporting TF-footprint loss"],
+   ["Repressor gained", "significant TF-footprint gain (and no activator motif broken); else supporting TF-footprint gain with no activator motif broken"],
+   ["Expression down, mechanism unresolved", "none of the above"]
+  ],
+  "expression_up": [
+   ["Activator gained", "significant TF-footprint gain; else creates a motif; else supporting TF-footprint gain"],
+   ["Repressor lost", "significant TF-footprint loss; else supporting TF-footprint loss"],
+   ["Expression up, mechanism unresolved", "none of the above"]
+  ],
+  "no_expression_change": [
+   ["Chromatin change only", "nucleosome q < 0.05 or significant TF-footprint change"],
+   ["No detectable effect", "visible to Fiber-seq"],
+   ["Not assessable by Fiber-seq", "poorly visible"]
+  ]
+ },
+ "annotations_per_variant": "evidence level of the call (significant footprint / motif / supporting footprint), nucleosome direction (closes = gain, opens = loss, none), HEK293T local and far change with clone count (>= 3 clones), drops-its-base flag",
+ "figure": "panel b: one stacked horizontal bar per ClinVar class (P/LP, conflicting, VUS, B/LB) by category; variant table as source data"
+}
