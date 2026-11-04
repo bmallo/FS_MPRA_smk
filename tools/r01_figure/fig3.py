@@ -1,18 +1,19 @@
-"""Grant Figure 3 (draft 5): LDLR promoter truth-set validation across readouts (fig3_rules.json: layout_draft5).
+"""Grant Figure 3 (draft 7): LDLR promoter truth-set validation across readouts (fig3_rules.json: layout_draft5-7).
 One Illustrator-editable SVG (live Arial text) plus PDF and PNG renders.
 
-a  HepG2 MPRA expression change per SNV along the promoter (HGVS c.), ClinVar class by marker, five shaded regions
-b  which readout flags which ClinVar control: P/LP (8) and B/LB (6) SNVs x MPRA, plasmid Fiber-seq, AlphaGenome,
-   PromoterAI and 'any readout'. Flag = |score| in that readout's top 20% across all designed SNVs (same budget for
-   every readout); glyph = direction of the readout (higher / lower than WT). Margin: P/LP and B/LB flagged, share of
-   gnomAD-observed and of all SNVs flagged.
-c  MPRA x plasmid Fiber-seq for every SNV, ClinVar class by marker, dashed lines at the two flag cutoffs, counts of
-   SNVs flagged by both, one or neither readout
-d  HepG2 vs HEK293T local inaccessibility change (separate cells, separate axes)
-Readout scores as fig_A.py: MPRA |log2|; Fiber-seq max(|nucleosome-size z|, max |footprint z| over A7 confident
-fp_features); AlphaGenome max(|DNase|/SD, |LDLR RNA|/SD), HepG2; PromoterAI |score| (MANE ENST00000558518.6).
-Usage: python tools/r01_figure/fig3.py --work results/r01_figure_20261102 --root results/analysis_v2_20261028
-           --output <dir>
+a  HepG2 MPRA expression change per SNV along the promoter (HGVS c.), ClinVar class by colour and shape, five
+   shaded regions
+b  which readout shows a large change for which ClinVar control: P/LP (8) and B/LB (6) SNVs x readouts grouped by the
+   quantity measured (variant - WT): expression = MPRA (measured), AlphaGenome LDLR RNA and PromoterAI (predicted);
+   accessibility = plasmid Fiber-seq (measured), AlphaGenome DNase (predicted); then 'any readout'. Large change =
+   |variant - WT| in that row's top 20% across all designed SNVs (same budget for every row; not a pathogenicity
+   call); triangle = direction. Margin: share of P/LP, B/LB and rare gnomAD-observed SNVs with a large change.
+c  MPRA expression change x plasmid Fiber-seq accessibility change for every SNV, dashed lines at the two cutoffs,
+   counts of SNVs with a large change in both, one or neither
+Readouts (variant - WT): MPRA log2 (Kircher 2019); Fiber-seq % of molecules without a confident >= 81-bp call in the
+element (A7 mask, >= 100 molecules; plain difference, no z); AlphaGenome HepG2 LDLR RNA-seq LFC and DNase 501-bp
+DIFF_LOG2_SUM; PromoterAI score (MANE ENST00000558518.6).
+Usage: python tools/r01_figure/fig3.py --work results/r01_figure_20261102 --output <dir>
 """
 import argparse
 import json
@@ -44,39 +45,43 @@ plt.rcParams.update({'font.family': 'Arimo', 'svg.fonttype': 'none', 'font.size'
                      'ytick.major.size': 2.5, 'xtick.labelsize': 6, 'ytick.labelsize': 6})
 
 INK, INK2, MUTED, GRID = '#2E2E2E', '#666666', '#9a9893', '#E6E4DF'
-ORANGE, BLUE, AQUA, FLAG = '#eb6834', '#2a78d6', '#1baf7a', '#3B3B3B'
+PLP_C, BLB_C, CONF_C, VUS_C, FLAG = '#D55E00', '#009E73', '#E69F00', '#56B4E9', '#3B3B3B'   # Okabe-Ito
 C0, TSS_C = 285, -86                      # c. = oligo - 285; NM_000527.5 TSS at c.-86
-# regions (fig3_rules.json regions_draft4): the three motif sites (P < 1e-5), the CRE half-site and the F04 footprint;
+# regions (fig3_rules.json regions_draft4, labels layout_draft8): the three motif sites (P < 1e-5), the CRE half-site
+# and the data-defined protected site (F04);
 # (label in a, short name in b, oligo lo, oligo hi). Shaded in a, named under the panel-b columns.
-REGIONS = [('F04 footprint\n(no motif)', 'F04', 66, 82), ('SP-like\n(ZFP3 match)', 'SP-like', 89, 100),
+REGIONS = [('Protected site\n(no motif match)', 'Protected site', 66, 82), ('SP-like\n(ZFP3 match)', 'SP-like', 89, 100),
            ('SRE-1\n(SREBP)', 'SRE-1', 127, 136), ('GC box\n(SP1)', 'GC box', 143, 151),
            ('CRE\n(CREB/ATF)', 'CRE', 182, 192)]
-DATA_DEFINED = {'F04'}                     # dashed box in a (footprint from the data, not a motif)
-CLS = {'none': ('Not in ClinVar', dict(s=5, color='#C9C6BF', lw=0, zorder=2)),
-       'vus': ('VUS', dict(s=11, color=BLUE, lw=0, zorder=3)),
-       'conf': ('Conflicting', dict(s=16, marker='D', facecolor='white', edgecolor=ORANGE, lw=0.9, zorder=4)),
-       'blb': ('Benign / likely benign', dict(s=15, marker='o', facecolor='white', edgecolor=AQUA, lw=1.0, zorder=4)),
-       'plp': ('Pathogenic / likely pathogenic', dict(s=18, marker='D', color=ORANGE, edgecolor='white', lw=0.4,
-                                                      zorder=5))}
-READOUTS = ['MPRA (HepG2)', 'Plasmid Fiber-seq (HepG2)', 'AlphaGenome (HepG2)', 'PromoterAI']
-TOP = 0.8                                  # flag = |score| >= the readout's 0.8 quantile across all designed SNVs
-W_IN, H_IN = 7.2, 7.3
+DATA_DEFINED = {'Protected site'}                     # dashed box in a (footprint from the data, not a motif)
+CLS = {'none': ('Not in ClinVar', dict(s=4, color='#CFCCC5', lw=0, zorder=2)),
+       'vus': ('VUS', dict(s=8, color=VUS_C, lw=0, zorder=3)),
+       'conf': ('Conflicting', dict(s=20, marker='^', color=CONF_C, edgecolor='white', lw=0.4, zorder=4)),
+       'blb': ('Benign / likely benign', dict(s=20, marker='o', color=BLB_C, edgecolor='white', lw=0.4, zorder=5)),
+       'plp': ('Pathogenic / likely pathogenic', dict(s=24, marker='D', color=PLP_C, edgecolor='white', lw=0.4,
+                                                      zorder=6))}
+# panel b rows: (key, group, name, detail); every value is variant - WT
+ROWS = [('MPRA', 'Expression', 'MPRA', 'measured, HepG2'),
+        ('AG RNA', 'Expression', 'AlphaGenome', 'predicted, HepG2 RNA'),
+        ('PromoterAI', 'Expression', 'PromoterAI', 'predicted'),
+        ('Fiber-seq', 'Accessibility', 'Plasmid Fiber-seq', 'measured, HepG2'),
+        ('AG DNase', 'Accessibility', 'AlphaGenome', 'predicted, HepG2 DNase')]
+READOUTS = [r[0] for r in ROWS]
+TOP = 0.8                                  # large change = |value| >= the row's 0.8 quantile across all designed SNVs
+MIN_MOLECULES = 100                        # Fiber-seq readout needs this many variant molecules (post hoc)
+W_IN, H_IN = 7.2, 7.4
 
 
-def readout_scores(w, root):
-    """Per SNV and readout: |score| (fig_A.py definitions), signed value of the component that set it, and flag."""
+def readout_scores(w):
+    """Per SNV and readout: signed variant - WT value, |value| and large-change flag (top 20%)."""
     t = pd.read_csv(w / 'evidence_v3/evidence.tsv', sep='\t')
-    fe = pd.read_parquet(root / 'fp_features/effects.parquet').query('mask == "A7" and calls == "confident"')
-    fe = fe[fe.p.notna()].assign(zs=lambda d: d.D / d.se)
-    fp = fe.loc[fe.zs.abs().groupby(fe.snv).idxmax(), ['snv', 'zs']].set_index('snv').zs    # signed, largest |z|
-    fpz = t.snv.map(fp)
-    nuc_dom = fpz.isna() | (t.nuc_z.abs() >= fpz.abs())
-    ag_d, ag_r = t.ag_dnase_hepg2 / t.ag_dnase_hepg2.std(), t.ag_rna_seq_hepg2 / t.ag_rna_seq_hepg2.std()
-    signed = {'MPRA (HepG2)': t.act,
-              'Plasmid Fiber-seq (HepG2)': t.nuc_z.where(nuc_dom, fpz),       # + = more protection than WT
-              'AlphaGenome (HepG2)': ag_d.where(ag_d.abs() >= ag_r.abs(), ag_r),
-              'PromoterAI': t.pai_score}
-    S = t[['snv', 'oligo', 'c_dot', 'act', 'clinvar', 'gnomad_ac']].copy()
+    nuc = pd.read_csv(w / 'gnomad_check/nucleosome_all.tsv', sep='\t').query(
+        'mask == "A7" and calls == "confident" and endpoint == "nucleosome"').set_index('snv')
+    nuc = nuc[nuc.n >= MIN_MOLECULES]
+    acc_pts = t.snv.map(-100 * (nuc.occ_variant - nuc.wt_occ))    # % of molecules without nucleosome-sized protection
+    signed = {'MPRA': t.act, 'AG RNA': t.ag_rna_seq_hepg2, 'PromoterAI': t.pai_score,
+              'Fiber-seq': acc_pts, 'AG DNase': t.ag_dnase_hepg2}
+    S = t[['snv', 'oligo', 'c_dot', 'act', 'clinvar', 'gnomad_ac', 'gnomad_af']].copy()
     for k in READOUTS:
         score = signed[k].abs()
         S[f'{k}|signed'] = signed[k]
@@ -106,17 +111,13 @@ def scatter_cls(ax, x, y, cls, keys=('none', 'vus', 'conf', 'blb', 'plp')):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--work', required=True)
-    ap.add_argument('--root', required=True, help='results/analysis_v2_20261028 (fp_features for the Fiber-seq readout)')
     ap.add_argument('--output', required=True)
     a = ap.parse_args()
     w, out = Path(a.work), Path(a.output)
     out.mkdir(parents=True, exist_ok=False)
     pa = pd.read_csv(w / 'fig_A_v9/panel_a.tsv', sep='\t')
-    pe = pd.read_csv(w / 'fig_A_v9/panel_d_hek.tsv', sep='\t')
-    corr = pd.read_csv(w / 'correlations_v2/pairs.tsv', sep='\t')
-    re_ = corr[(corr.x == 'local_inacc_pts') & (corr.y == 'hek_local_pts') & (corr.subset == 'all')].iloc[0]
-    S = readout_scores(w, Path(a.root)).merge(pa[['snv', 'cls']], on='snv', how='left')
-    assert len(pa) == 633 and len(S) == 633 and len(pe) == int(re_.n) and S.cls.notna().all()
+    S = readout_scores(w).merge(pa[['snv', 'cls']], on='snv', how='left')
+    assert len(pa) == 633 and len(S) == 633 and S.cls.notna().all()
     ctrl = pd.concat([S[S.cls == 'plp'].sort_values('oligo'), S[S.cls == 'blb'].sort_values('oligo')])
     ctrl['region'] = ctrl.oligo.map(region_of)
     ctrl['label'] = [cname(s, c) for s, c in zip(ctrl.snv, ctrl.c_dot)]
@@ -174,57 +175,85 @@ def main():
     ax.set_ylabel('Expression change\n(log2, HepG2 MPRA)', fontsize=6.5)
     ax.spines[['top', 'right']].set_visible(False)
     n = pa.cls.value_counts()
-    hs = [Line2D([], [], ls='none', marker=CLS[k][1].get('marker', 'o'), ms=4 if k != 'none' else 3,
-                 mfc=CLS[k][1].get('facecolor', CLS[k][1].get('color')),
-                 mec=CLS[k][1].get('edgecolor', CLS[k][1].get('color')), mew=0.9) for k in CLS]
+    hs = [Line2D([], [], ls='none', marker=CLS[k][1].get('marker', 'o'), ms={'none': 2.5, 'vus': 3}.get(k, 4.5),
+                 color=CLS[k][1]['color'], mec='white', mew=0.3) for k in CLS]
     fig.legend(hs, [f'{CLS[k][0]} ({n.get(k, 0)})' for k in CLS], loc='upper center', ncol=5, frameon=False,
                fontsize=6, bbox_to_anchor=(279 / Wpt, 1 - 154 / Hpt), handletextpad=0.3, columnspacing=1.4)
 
-    # ---- b: control-variant detection matrix (drawn in points on the overlay)
+    # ---- b: which readout shows a large change for which ClinVar control (drawn in points on the overlay)
     lab('b', 4, 174)
-    MX = (424, 450, 480, 512)                                     # right edges of the margin columns (pt)
-    cw, rh, gap, x0, ytop = 20.0, 16.0, 10.0, 112.0, 252.0
+    MX = (460, 486, 514)                                     # right edges of the margin columns (pt)
+    cw, rh, gap, x0, ytop = 19.0, 16.0, 10.0, 150.0, 252.0
     xs = [x0 + i * cw + (gap if i >= n_plp else 0) for i in range(len(ctrl))]
-    for (lo, hi, txt, col) in ((0, n_plp, f'Pathogenic / likely pathogenic ({n_plp})', ORANGE),
-                               (n_plp, len(ctrl), f'Benign / likely benign ({n_blb})', AQUA)):
+    for (lo, hi, txt, col) in ((0, n_plp, f'Pathogenic / likely pathogenic ({n_plp})', PLP_C),
+                               (n_plp, len(ctrl), f'Benign / likely benign ({n_blb})', BLB_C)):
         xa, xb = xs[lo] + 1, xs[hi - 1] + cw - 1
         ov.plot([xa, xb], [190, 190], color=col, lw=1.4, solid_capstyle='butt')
         ov.text((xa + xb) / 2, 187, txt, ha='center', va='bottom', fontsize=6.2, fontweight='bold', color=INK)
     for xi, (_, r) in zip(xs, ctrl.iterrows()):
         ov.text(xi + cw / 2, 236, r.label, rotation=90, ha='center', va='bottom', fontsize=5.6, color=INK)
-        ov.text(xi + cw / 2, 245, r.region, ha='center', va='center', fontsize=5.0, color=INK2)
-    for j, k in enumerate(rows):
-        yc = ytop + j * rh + rh / 2 + (4 if k == 'Any readout' else 0)
-        ov.text(x0 - 6, yc, k, ha='right', va='center', fontsize=6.2, color=INK,
-                fontweight='bold' if k == 'Any readout' else 'normal')
-        for xi, (_, r) in zip(xs, ctrl.iterrows()):
-            fl = bool(r[f'{k}|flag'])
-            s = 11.0
-            ov.add_patch(Rectangle((xi + (cw - s) / 2, yc - s / 2), s, s, fc=FLAG if fl else 'white',
-                                   ec=FLAG if fl else '#BDBAB3', lw=0.6))
-            if fl and k != 'Any readout':
-                ov.text(xi + cw / 2, yc + 0.3, '▲' if r[f'{k}|signed'] > 0 else '▼', ha='center', va='center',
-                        fontsize=5.0, color='white')
+    i = 0                                                         # one region name per run of consecutive columns
+    while i < len(ctrl):
+        j = i
+        while j + 1 < len(ctrl) and j + 1 != n_plp and ctrl.region.iloc[j + 1] == ctrl.region.iloc[i]:
+            j += 1
+        xa, xb = xs[i] + 2, xs[j] + cw - 2
+        if j > i and ctrl.region.iloc[i] != '–':
+            ov.plot([xa, xb], [240, 240], color=MUTED, lw=0.5)
+        ov.text((xa + xb) / 2, 245.5, ctrl.region.iloc[i], ha='center', va='center', fontsize=4.8, color=INK2)
+        i = j + 1
+    for xm, txt in zip(MX, (f'P/LP\n({n_plp})', f'B/LB\n({n_blb})', f'Rare in\ngnomAD\n({n_gn})')):
+        ov.text(xm, 248.5, txt, ha='right', va='bottom', fontsize=5.0, color=INK2, fontweight='bold', linespacing=1.05)
+    ov.text((MX[0] + MX[-1]) / 2 - 6, 229, 'Share with a\nlarge change', ha='center', va='bottom', fontsize=5.6,
+            color=INK2, fontweight='bold', linespacing=1.1)
+
+    def margin_row(k, yc, bold=False):
         mg = margin[k]
-        for xm, txt in zip(MX, (f'{mg["plp"]}/{n_plp}', f'{mg["blb"]}/{n_blb}',
-                                                   f'{100 * mg["gnomad"]:.0f}%', f'{100 * mg["all"]:.0f}%')):
-            ov.text(xm, yc, txt, ha='right', va='center', fontsize=6.0, color=INK,
-                    fontweight='bold' if k == 'Any readout' else 'normal')
-    ov.plot([x0 - 80, MX[-1]], [ytop + 4 * rh + 2, ytop + 4 * rh + 2], color=GRID, lw=0.6)
-    for xm, txt in zip(MX, ('P/LP', 'B/LB', 'gnomAD', 'All SNVs')):
-        ov.text(xm, 245, txt, ha='right', va='center', fontsize=5.3, color=INK2, fontweight='bold')
-    ov.text((MX[0] + MX[-1]) / 2 - 8, 232, 'Flagged', ha='center', va='bottom', fontsize=5.6, color=INK2,
-            fontweight='bold')
-    ov.text(x0, ytop + 5 * rh + 12, f'■ flagged = |effect| in that readout\'s top 20% of all {len(S)} SNVs '
-            f'(▲ / ▼ readout higher / lower than WT);  □ not flagged', ha='left', va='center', fontsize=5.4,
-            color=INK2)
-    ov.text(x0, ytop + 5 * rh + 20, f'gnomAD = the {n_gn} designed SNVs observed in gnomAD (all rare, the only '
-            f'proxy-benign class available here)', ha='left', va='center', fontsize=5.4, color=INK2)
+        for xm, txt in zip(MX, (f'{mg["plp"]}/{n_plp}', f'{mg["blb"]}/{n_blb}', f'{100 * mg["gnomad"]:.0f}%')):
+            ov.text(xm, yc, txt, ha='right', va='center', fontsize=6.0, fontweight='bold' if bold else 'normal',
+                    color=INK)
+
+    y = ytop
+    for grp in ('Expression', 'Accessibility'):
+        ov.text(8, y + 5, f'{grp} change (variant − WT)', ha='left', va='center', fontsize=6.2, fontweight='bold',
+                color=INK)
+        ov.plot([8, MX[-1]], [y + 10, y + 10], color=GRID, lw=0.5)
+        y += 10
+        for k, g, name, detail in ROWS:
+            if g != grp:
+                continue
+            yc = y + rh / 2
+            ov.text(x0 - 8, yc - 2.6, name, ha='right', va='center', fontsize=6.2, color=INK)
+            ov.text(x0 - 8, yc + 4.2, detail, ha='right', va='center', fontsize=4.9, color=INK2)
+            for xi, (_, r) in zip(xs, ctrl.iterrows()):
+                if r[f'{k}|flag']:
+                    ov.scatter(xi + cw / 2, yc, marker='^' if r[f'{k}|signed'] > 0 else 'v', s=30, color=FLAG, lw=0)
+                else:
+                    ov.scatter(xi + cw / 2, yc, s=3, color='#BDBAB3', lw=0)
+            margin_row(k, yc)
+            y += rh
+        y += 3
+    ov.plot([8, MX[-1]], [y, y], color=INK2, lw=0.6)
+    yc = y + 4 + rh / 2
+    ov.text(x0 - 8, yc, 'Any readout', ha='right', va='center', fontsize=6.2, color=INK, fontweight='bold')
+    for xi, (_, r) in zip(xs, ctrl.iterrows()):
+        if r['Any readout|flag']:
+            ov.scatter(xi + cw / 2, yc, marker='s', s=34, color=FLAG, lw=0)
+        else:
+            ov.scatter(xi + cw / 2, yc, s=3, color='#BDBAB3', lw=0)
+    margin_row('Any readout', yc, bold=True)
+    yk = yc + rh / 2 + 9
+    ov.text(30, yk, f'▲ / ▼ large increase / decrease (|variant − WT| in that row\'s top 20% of {len(S)} SNVs; any readout: '
+            f'{100 * margin["Any readout"]["all"]:.0f}% of SNVs);  · smaller change', ha='left', va='center', fontsize=5.4, color=INK2)
+    ov.text(30, yk + 8, f'Fiber-seq accessibility = % of molecules without a nucleosome-sized (≥ 81 bp) protected '
+            f'stretch;  rare in gnomAD: allele frequency ≤ {100 * S.gnomad_af.max():.2g}%', ha='left', va='center',
+            fontsize=5.4, color=INK2)
 
     # ---- c: MPRA x Fiber-seq for every SNV
-    lab('c', 4, 356)
-    axc = axpt(44, 366, 300, 486)
-    xm_, ym_ = 'MPRA (HepG2)', 'Plasmid Fiber-seq (HepG2)'
+    y0c = yk + 20
+    lab('c', 4, y0c)
+    axc = axpt(50, y0c + 8, 508, y0c + 96)
+    xm_, ym_ = 'MPRA', 'Fiber-seq'
     tx, ty = float(S[f'{xm_}|cutoff'].iloc[0]), float(S[f'{ym_}|cutoff'].iloc[0])
     X, Y = S[f'{xm_}|signed'].to_numpy(), S[f'{ym_}|signed'].to_numpy()
     for v in (-tx, tx):
@@ -236,14 +265,13 @@ def main():
     fm, ff = S[f'{xm_}|flag'], S[f'{ym_}|flag']
     quad = {'both': int((fm & ff).sum()), 'mpra': int((fm & ~ff).sum()), 'fs': int((~fm & ff).sum()),
             'neither': int((~fm & ~ff).sum())}
-    axc.text(0.99, 0.98, f'Flagged by both: {quad["both"]}\nMPRA only: {quad["mpra"]}\n'
+    axc.text(0.995, 0.98, f'Large change in both: {quad["both"]}\nMPRA only: {quad["mpra"]}\n'
              f'Fiber-seq only: {quad["fs"]}\nNeither: {quad["neither"]}', transform=axc.transAxes, ha='right',
              va='top', fontsize=5.6, color=INK, linespacing=1.25)
-    # region tag next to each P/LP point (one tag for the GC box pair); offsets in pt, chosen to avoid overlaps
+    # region tag next to each P/LP point (one tag each for the GC box and CRE pairs); offsets in pt, chosen to avoid overlaps
     halo = [pe_.withStroke(linewidth=1.6, foreground='white')]
-    tags = {'150C>G': (5, 3, 'left'), '136C>A': (5, 0, 'left'), '133C>T': (5, 0, 'left'),
-            '134C>G': (-5, -4, 'right'), '186A>G': (-5, 3, 'right'), '187C>T': (5, 2, 'left'),
-            '117A>G': (5, 0, 'left')}
+    tags = {'150C>G': (6, 0, 'left'), '136C>A': (5, 3, 'left'), '133C>T': (5, 2, 'left'),
+            '134C>G': (-5, 4, 'right'), '186A>G': (-5, -5, 'right'), '117A>G': (5, 2, 'left')}
     for _, r in ctrl[ctrl.cls == 'plp'].iterrows():
         if r.snv in tags:
             dx, dy, ha = tags[r.snv]
@@ -251,25 +279,9 @@ def main():
                          xytext=(dx, dy), textcoords='offset points', fontsize=5.4, color=INK, ha=ha, va='center',
                          zorder=7, path_effects=halo)
     axc.set_xlabel('MPRA: expression change (log2, HepG2)', fontsize=6.3)
-    axc.set_ylabel('Plasmid Fiber-seq: protection change\n(signed z, HepG2)', fontsize=6.3)
+    axc.set_ylabel('Plasmid Fiber-seq: accessibility\nchange (% of molecules)', fontsize=6.3)
+    axc.set_yticks(range(-10, 11, 5))
     axc.spines[['top', 'right']].set_visible(False)
-
-    # ---- d: HepG2 vs HEK293T
-    lab('d', 352, 356)
-    axe = axpt(392, 380, 508, 486)
-    site = pe.oligo.between(143, 151)
-    axe.scatter(pe.local_inacc_pts[~site], pe.hek_local_pts[~site], s=6, color=MUTED, lw=0, alpha=0.85)
-    axe.scatter(pe.local_inacc_pts[site], pe.hek_local_pts[site], s=12, color=ORANGE, edgecolor='white', lw=0.3)
-    axe.axhline(0, color=INK2, lw=0.5)
-    axe.axvline(0, color=INK2, lw=0.5)
-    axe.set_xlabel('HepG2 (pts)', fontsize=6.3)
-    axe.set_ylabel('HEK293T (pts)', fontsize=6.3)
-    axe.spines[['top', 'right']].set_visible(False)
-    axe.set_title(f'Local inaccessibility change\nSpearman ρ = {re_.rho:.2f} (95% CI {re_.lo:.2f}–{re_.hi:.2f}), '
-                  f'{int(re_.n)} SNVs', fontsize=5.8, loc='right', pad=3, linespacing=1.2)
-    axe.legend([Line2D([], [], ls='none', marker='o', ms=3, color=MUTED),
-                Line2D([], [], ls='none', marker='o', ms=3.5, color=ORANGE)], ['other SNVs', 'GC box (SP1)'],
-               frameon=False, fontsize=5.6, loc='lower right', handletextpad=0.2, borderaxespad=0.2)
 
     S.drop(columns=['clinvar']).to_csv(out / 'panel_c_points.tsv', sep='\t', index=False, float_format='%.4g')
     svg = out / 'fig3.svg'
@@ -284,7 +296,7 @@ def main():
     json.dump(dict(snvs=len(S), clinvar=n.to_dict(), flag_quantile=TOP,
                    cutoffs={k: float(S[f'{k}|cutoff'].iloc[0]) for k in READOUTS}, margin=margin,
                    controls=dict(plp=n_plp, blb=n_blb, gnomad_observed=n_gn), panel_c_quadrants=quad,
-                   hek=dict(n=int(re_.n), rho=re_.rho, lo=re_.lo, hi=re_.hi), date=str(date.today()), commit=commit),
+                   date=str(date.today()), commit=commit),
               open(out / 'summary.json', 'w'), indent=1)
 
 

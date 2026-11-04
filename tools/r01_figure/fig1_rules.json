@@ -59,5 +59,75 @@
   "panel_b": "endogenous track: nucleosome and FIRE only (no sub-nucleosome footprints); plasmid 300-bp track: all bins, sub-nucleosome x5; CTCF motif marked on the gene model and across both tracks",
   "renders": "PDF/PNG via rsvg-convert with tools/r01_figure/fonts.conf (Arial -> Arimo, metric-compatible), so previews match the SVG layout",
   "_revised": "2026-11-02, before draft 7 was rendered: user chose the 300-bp construct reads, drawn along the whole linearized plasmid, clustered on the CTCF footprint"
+ },
+ "wasf1": {
+  "_written": "2026-11-03, before any WASF1 read was processed (user: change Figure 1 from DPAGT1 to WASF1; restore approved; 'Decide after a look' on the 300-bp construct; 'Rethink the layout'). Descriptive figure.",
+  "datasets": {
+   "endogenous": "HEK293T whole-genome Fiber-seq target reads at WASF1 (data/kopah_restore/Hek293_Whole_Genome/target_bams/WASF1_all_reads.bam; 40 reads)",
+   "full_length_construct": "genomic_promoters WASF1 4.5-kb insert chr6:110,176,895-110,181,442 (+ strand in the construct; identity 0.998), merged reps (WASF1.ft.m6a.merged.bam; 1,144 reads)",
+   "construct_300bp_peak1": "IGVF_construct_mix WASF11 (FIRE peak 1) chr6:110,178,621-110,178,921",
+   "construct_300bp_peak4": "IGVF_construct_mix WASF12 (FIRE peak 4) chr6:110,179,911-110,180,211"
+  },
+  "processing": "identical to DPAGT1 (this file's subsampling, read_filters, footprints): fig1_fiberhmm.sh and fig1_profiles.py with --gene WASF1; same seeds (samtools -s 42, ~6,000 reads per 300-bp construct per replicate); MA orientation checked per dataset with qc.tsv (flip as DPAGT1 linear-mode BAMs, confirm with the m6A-in-nucleosome share)",
+  "window": "chr6:110,176,895-110,181,442 (full-length insert); endogenous reads clipped to it",
+  "first_look": "before any layout: per-dataset footprint-class profiles (fp_bins_v2) and m6A along the window, motif scan of both 300-bp inserts (fig1_motifs.py, P < 1e-5), gene model (UCSC ncbiRefSeq); choose the 300-bp construct and panels with the user from this",
+  "cell_line_assumption": "as DPAGT1: plasmid transfections assumed HEK293T (unconfirmed)",
+  "draft1": {
+   "_written": "2026-11-03, before the WASF1 figure was computed (user: 'use peak 4 and use the same layout and visual appearance as the DPAGT1 figure', i.e. draft 7 / fig1_v10). Descriptive figure.",
+   "construct": "WASF12 (FIRE peak 4, chr6:110,179,911-110,180,211), between the WASF1 (110,179,670, -) and CDC40 (110,180,426, +) TSSs",
+   "motif": "SP/KLF GC box chr6:110,180,054-110,180,097 (union of the overlapping best SP1/SP4/KLF matches, HOCOMOCO v14 KLF10 P 7e-10, SP1 P 1.3e-8; fig1_wasf1/motifs/motifs.tsv), drawn where draft 7 drew the CTCF motif",
+   "panel_a_reads": "as panel_a_ctcf with the GC box in place of the CTCF motif: WASF12 molecules spanning the GC box (within 20 bp) with a 31-60 bp call overlapping it by >= 10 bp; 15 drawn at random (seed 20261102), Ward clustering of per-base 31-60 bp occupancy over the box +/- 60 bp (leaf order); whole 4,774-bp linearized plasmid; nucleosome and 31-60 bp calls only",
+   "window_b": "chr6:110,178,550-110,180,700: WASF1 exons 1-2 (NM_003931.3), peak 4 and CDC40 exon 1 (NM_015891.3); both genes drawn",
+   "fire": "the LRSS FIRE table covers only DPAGT1/NAPA; FIRE is computed here the same way (fibertools-rs 0.13: ft add-nucleosomes | ft fire, no --fire-filter; ft extract --all ref_fire_starts/lengths): share = molecules with a FIRE element over the base / molecules covering it, on the kept molecules only (fig1_profiles WASF1 endogenous and WASF12 parquet read IDs); plasmid FIRE limited to the insert and lifted to hg38 with inserts.tsv. Difference from LRSS: input reads are this project's filtered molecules, not LRSS 04_count_filter output",
+   "tracks": "as draft 7: endogenous nucleosomes + FIRE; plasmid 300-bp all bins, sub-nucleosome x5; sigma 3 bp",
+   "legend": "31-60 bp footprint labelled 'TF-sized' (not CTCF-sized)"
+  },
+  "fp_size_scan": {
+   "_written": "2026-11-03, before the scan (user: scan the WASF1 reads to decide the footprint bins). Exploratory; bins are chosen by the user afterwards (post hoc, data-derived), as for DPAGT1 (fp_bins_v2).",
+   "method": "fig1_fpsizes.py unchanged in definitions, run with --gene WASF1: region = WASF12 insert chr6:110,179,911-110,180,211; molecules must span it (within 20 bp); accessible = nucleosome calls (>= 90 bp) cover < 50% of it; sub-nucleosome footprint = call < 90 bp with midpoint in it; datasets WASF1_full (4.5-kb), WASF12 (300-bp), endogenous",
+   "sites": "footprints >= 10 bp overlapping by >= 10 bp, accessible molecules, at the GC box (110,180,054-097), the ZNF444/ZNF281/VEZF1 site (110,179,973-991) and the ZNF143 site (110,180,105-127)"
+  },
+  "draft2": {
+   "_written": "2026-11-03, after the WASF1 size scan (fp_sizes) and before draft 2 was rendered. User requests: bins from the scan; all footprint sizes on the reads; reads and panel b limited to the 300-bp element, the adjacent nucleosome and the WASF1 gene body (motif kept); reads beside the PacBio icon; FIRE more transparent, TF footprints in front of FIRE in front of nucleosomes; sub-nucleosome scaling at 1x and 2x.",
+   "bins_proposed": "post hoc, data-derived, PENDING user approval: calls < 20 bp not drawn or counted; 20-30, 31-48, 49-89 bp; nucleosome >= 90 bp. Splits at the local minima of the 3-bp-smoothed length histogram of accessible-molecule footprints shared by WASF12 and the 4.5-kb construct (19, 30, 37, 48, 55/56, 69); 31-48 holds the 35/40-bp modes and the GC box footprint (median 35 bp, IQR 22-48 in WASF12); 49-89 holds the 51/59/73-bp modes (ZNF143 site median 64)",
+   "panel_a_reads": "15 WASF12 molecules (seed 20261102) drawn at random from those spanning the GC box (within 20 bp) with a 20-89 bp call overlapping it by >= 10 bp; ordered by Ward clustering of one-hot per-base call class (none, each bin, nucleosome) over the insert (leaf order); all bins and nucleosomes drawn; window = insert +/- 170 bp of backbone (plasmid 1,187-1,827), which holds the nucleosomes flanking the insert; placed to the right of the PacBio icon",
+   "window_b": "chr6:110,178,550-110,180,380: WASF1 exons 1-2 and intron 1 (gene body near the TSS), peak 4 and its downstream nucleosome (110,180,213-363 at > 50% in endogenous and 4.5-kb reads); CDC40 TSS (110,180,426) falls outside",
+   "tracks": "endogenous: nucleosomes + FIRE (as draft 1); plasmid 300-bp: all bins; draw order nucleosome, FIRE (alpha 0.65), then TF bins tallest first; sub-nucleosome scale rendered at 1x and 2x for comparison",
+   "legend": "one row between panels a and b"
+  },
+  "draft3": {
+   "_written": "2026-11-03, before draft 3 was rendered. User: 'Lets do 20-30, 31-50, and 41-80. This will keep the nucleosome bin consistent with figure 3'; reads to match the region in b; select reads with a mix of footprints at the GC box plus a smaller footprint in the 20-30 bp peak.",
+   "bins": "user-chosen (post hoc, after the WASF1 size scan): 20-30, 31-50, 51-80 bp, nucleosome >= 81 bp (Figure 3 cut); calls < 20 bp not drawn or counted. The request said '41-80', which overlaps 31-50; read as 51-80 because the nucleosome bin starts at 81 (confirmed by the user 2026-11-03: \"yes 51-80 is correct\")",
+   "reads_source": "only the 4.5-kb construct (WASF1_full, 1,144 molecules) contains the panel-b region, so the reads come from it, drawn in hg38 over the panel-b window",
+   "small_peak": "20-30 bp peak = maximum of the 3-bp-smoothed density of 20-30 bp call midpoints in WASF12 molecules spanning the insert: chr6:110,180,148 (just 3' of the ZNF143 site); the other 20-30 bp density peak sits on the GC box (110,180,076)",
+   "panel_a_reads": "4.5-kb molecules with a 20-80 bp call overlapping the GC box by >= 10 bp AND a separate 20-30 bp call (not overlapping the GC box by >= 10 bp) with midpoint within 110,180,148 +/- 10 bp: 47 of 1,144 (preview count); 15 drawn at random (seed 20261102), Ward clustering of one-hot per-base call class over the peak-4 element; all bins and nucleosomes over the panel-b window",
+   "unchanged": "panel b window and tracks (endogenous nucleosome + FIRE; plasmid 300-bp WASF12 all bins), FIRE alpha 0.65, draw order; rendered at --fp-scale 2 and 1"
+  },
+  "site_check": {
+   "_written": "2026-11-03, before fig1_wasf1_sites.py was run (user: how confident are we in the 20-30 bp footprint, and is there a motif over it or over the 31-50 bp peak on the left?). Exploratory, descriptive; no test.",
+   "method": "fig1_wasf1_sites.py: site centres from smoothed call-midpoint density (WASF12); motifs overlapping centre +/- 10 at P < 1e-5 (window scan) and P < 1e-4 (fig1_motifs.py on the element only); A/T count and longest A/T-free run in centre +/- 12; share of spanning molecules with a call of the bin within +/- 10 of the centre, per WASF12 replicate, 4.5-kb and endogenous, against the element-wide median of the same rule (centres every 5 bp); observed A/T and m6A inside each call"
+  },
+  "draft4": {
+   "_written": "2026-11-03, before draft 4 was rendered (user: crop the reads so the purple footprints at the far right are not shown; 'PacBio HiFi sequencing'; arrow from the sequencer to the reads). Display changes only.",
+   "read_window": "panel-a reads and their map end at chr6:110,180,358 (was 110,180,380): the 20-30 bp calls at the far right of the drawn reads start at 110,180,361, after the downstream nucleosome; selection unchanged",
+   "label": "schematic label 'PacBio' -> 'PacBio HiFi' (second line 'sequencing' unchanged)",
+   "arrow": "arrow from the sequencer icon to the reads; reads block moved right to make room",
+   "bins": "20-30, 31-50, 51-80, nucleosome >= 81 bp (51-80 confirmed by the user)",
+   "fp_scale": "2x (draft 3 default)"
+  },
+  "draft5": {
+   "_written": "2026-11-03, before FIRE was run on the 4.5-kb reads (user: 'if we are showing FIRE on the occupancy plot, we can also show FIRE on the individual reads').",
+   "fire_reads": "fig1_fire.sh on the staged 4.5-kb construct reads (WASF1_full; same ft 0.13 add-nucleosomes | fire, no --fire-filter); per drawn read, FIRE elements from ft extract --all ref_fire_starts/lengths, lifted to hg38 with inserts.tsv (WASF1, + strand) and clipped to X0-READ_X1",
+   "drawing": "on each read, same layer order as the tracks: nucleosomes, then FIRE elements (FIRE colour, alpha 0.65), then 20-80 bp footprints; reads, selection and tracks unchanged"
+  }
+ },
+ "ef1a": {
+  "_written": "2026-11-03, before any EF1a molecule was processed (user: Figure 1 panel a to use pEF-GFP, pEF_GFP_Gus replicate 3; first compare the EF1a promoter between plasmid and endogenous HEK293T). Exploratory comparison; descriptive.",
+  "plasmid": "pEF_GFP_Gus replicate 3 = SRA-submission pEFGFP_pSLC39A4_Replicate_3.ft.bam, already staged by the LRSS slides (lrss2026_slides56/pefgfp/pefgfp_r3.span.bam: primary reads spanning the linearized 5,058-bp pEF-GFP within 60 bp, deletion-series variants dropped; 667,972 molecules). Identity of the source: staged size 6.2G = 6,575,197,169 bytes (r2 2.7G = Replicate_2), logs/26_reps23.log",
+  "subsampling": "samtools view -s 42.03 (seed 42, ~3%, ~20,000 molecules) of the spanning BAM for footprints and FIRE (inspection-scale comparison; full set available)",
+  "endogenous": "HEK293T whole-genome Fiber-seq target reads at EEF1A1 (data/kopah_restore/Hek293_Whole_Genome/target_bams/EF1a_all_reads.bam; 30 reads, 28 cover the window)",
+  "window": "plasmid EF1a promoter = pEF-GFP positions 779-1,967 = chr6:73,520,048-73,521,236 (fig1_map.py, + strand, identity 0.9992): 204 bp upstream of the EEF1A1 TSS (73,521,032, - strand, NM_001402.6), exon 1, intron 1 and 8 bp of exon 2",
+  "processing": "as WASF1: fiberhmm-call --enzyme hia5 --seq pacbio --min-mapq 0 (linear); fig1_profiles.py filters (m6A/AT >= 0.05, largest call < 30% of the read; plasmid reads span the contig within 50 bp); MA orientation checked with qc.tsv; FIRE with fig1_fire.sh (ft 0.13 add-nucleosomes | fire) and fig1_fire_profiles.py",
+  "comparison": "fig1_ef1a_compare.py: per base over the window, share of molecules covered by nucleosome (>= 81 bp), 20-30, 31-50, 51-80 bp calls (Figure 1 bins) and FIRE, and the 51-bp m6A fraction; Spearman of the m6A profiles and of the nucleosome profiles (descriptive; positions are not independent); motif scan of the window (fig1_motifs.py, P < 1e-5) for orientation"
  }
 }

@@ -1,4 +1,4 @@
-"""Figure 1: per-molecule footprints and per-position profiles on hg38 for the DPAGT1 datasets (fig1_rules.json).
+"""Figure 1: per-molecule footprints and per-position profiles on hg38 for one gene's datasets (fig1_rules.json).
 
 For every primary read in each fiberhmm BAM: m6A calls (MM/ML, prob >= 0.9), fiberhmm MA annotations (nuc / tf
 tracks, 1-based query start-length in original read orientation, flipped for reverse reads; footprint = any nuc or tf call), lifted to the reference through
@@ -9,6 +9,7 @@ Writes per dataset: profile.tsv (hg38 position: molecules, A/T observed, m6A fra
 molecules.parquet (kept molecules: footprints and m6A positions in hg38), filters.tsv (counts removed per filter),
 plus qc.tsv (m6A inside nucleosome calls by read strand: orientation check).
 Usage: python tools/r01_figure/fig1_profiles.py --calls <calls dir> --inserts <inserts.tsv> --output <dir>
+           [--gene DPAGT1|WASF1|EF1a]
 """
 import argparse
 import json
@@ -18,9 +19,16 @@ import numpy as np
 import pandas as pd
 import pysam
 
-DATASETS = {'DPAGT11': ('DPAGT11', 'plasmid'), 'DPAGT13': ('DPAGT13', 'plasmid'),
-            'DPAGT1_full': ('DPAGT1', 'plasmid'), 'endogenous': (None, 'endogenous')}
-WIN = ('chr11', 119100225, 119104342)
+GENES = {   # datasets {name: (construct contig, kind)} and hg38 window (the full-length insert)
+    'DPAGT1': ({'DPAGT11': ('DPAGT11', 'plasmid'), 'DPAGT13': ('DPAGT13', 'plasmid'),
+                'DPAGT1_full': ('DPAGT1', 'plasmid'), 'endogenous': (None, 'endogenous')},
+               ('chr11', 119100225, 119104342)),
+    'WASF1': ({'WASF11': ('WASF11', 'plasmid'), 'WASF12': ('WASF12', 'plasmid'),
+               'WASF1_full': ('WASF1', 'plasmid'), 'endogenous': (None, 'endogenous')},
+              ('chr6', 110176895, 110181442)),
+    'EF1a': ({'pEFGFP': ('#1', 'plasmid'), 'endogenous': (None, 'endogenous')},     # pEF-GFP EF1a promoter
+             ('chr6', 73520048, 73521236)),
+}
 CLASSES = {'tf': (10, 40), 'pic': (41, 80), 'nuc': (85, 10_000)}
 M6A_P, MIN_MF, MAX_FP_FRAC, END_SLACK = 0.9, 0.05, 0.3, 50
 
@@ -58,7 +66,9 @@ def main():
     ap.add_argument('--calls', required=True)
     ap.add_argument('--inserts', required=True)
     ap.add_argument('--output', required=True)
+    ap.add_argument('--gene', default='DPAGT1', choices=sorted(GENES))
     a = ap.parse_args()
+    DATASETS, WIN = GENES[a.gene]
     out = Path(a.output)
     out.mkdir(parents=True, exist_ok=True)
     ins = pd.read_csv(a.inserts, sep='\t').set_index('construct')

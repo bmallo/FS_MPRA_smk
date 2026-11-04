@@ -100,5 +100,36 @@
   "direction": "per cell, the sign of the component that set the score: MPRA log2 effect; Fiber-seq signed z of the dominant component (+ = more protection); AlphaGenome signed standardized DNase or RNA; PromoterAI score. Shown as an up/down glyph (readout value higher / lower than WT)",
   "margin": "per readout: P/LP flagged x/8, B/LB flagged y/6, share of gnomAD-observed SNVs flagged (all 107 are rare; max AF 0.0011), against 20% for all SNVs",
   "panel_c_axes": "x = MPRA log2 effect; y = Fiber-seq signed z of the dominant component (same quantity as the flag)"
+ },
+ "layout_draft6": {
+  "_written": "2026-11-03, after the user asked for a version without the A9 z-scores ('Yes, draft 6'); before draft 6 was computed. Post hoc: the control flags for this measure were seen in an exploratory check (ANALYSIS_LOG 2026-11-03).",
+  "fiber_seq_readout": "nucleosome-sized protection change = 100 x (share of the SNV's molecules with a confident >= 81-bp call with midpoint in the element - the same share in WT molecules), A7 mask applied to both sides (gnomad_check/nucleosome_all.tsv, mask A7, calls confident, endpoint nucleosome: occ_variant - wt_occ). Plain difference: no labeling adjustment, no standard error, no z. Footprint component (fp_features max |z|) dropped.",
+  "direction": "up = more molecules with a nucleosome-sized protected stretch than WT (less accessible); the row and panel c axis are labelled with this meaning",
+  "unchanged": "MPRA, AlphaGenome and PromoterAI scores; top 20% |effect| flag rule; columns; margin; panels a and d",
+  "panel_c_axes": "y = the nucleosome-sized protection change (percentage points)",
+  "min_molecules": "post hoc, 2026-11-03 after the first draft 6 render showed 222T>C at -29 pts: the Fiber-seq readout needs >= 100 variant molecules (else missing, not flagged). Excludes 222T>C (1 molecule) and 176G>A (14) plus 160A>G (0, already missing); the next smallest SNV has 248, so any minimum from 15 to 248 gives the same set. No control SNV is affected."
+ },
+ "layout_draft7": {
+  "_written": "2026-11-03, after the user's draft 6 review (panel a crowded; 'flagged' unclear; arrows not interpretable without naming the quantity; drop panel d); before draft 7 was computed. Display changes; the AlphaGenome split changes which SNVs are flagged and is post hoc (the combined row had been seen).",
+  "panel_a": "ClinVar classes by Okabe-Ito colour and distinct shape, white edges, drawn in order not in ClinVar < VUS < conflicting < B/LB < P/LP: not in ClinVar small grey dots, VUS small sky-blue dots, conflicting amber filled triangles, B/LB bluish-green filled circles, P/LP vermillion filled diamonds",
+  "panel_b_rows": "grouped by the quantity measured, variant - WT: Expression = MPRA (measured, HepG2 log2), AlphaGenome RNA (predicted, LDLR RNA-seq LFC, HepG2), PromoterAI (predicted promoter activity); Accessibility = plasmid Fiber-seq (measured: % of molecules without a confident >= 81-bp protected stretch in the element, i.e. minus the draft 6 nucleosome-share change, >= 100 molecules), AlphaGenome DNase (predicted, 501-bp DIFF_LOG2_SUM, HepG2); then Any readout",
+  "flag_rule": "unchanged: |variant - WT| in that row's top 20% of the 633 designed SNVs; wording 'large change', not 'flagged' (it is not a pathogenicity call)",
+  "cells": "large increase = up triangle, large decrease = down triangle (ink); smaller change = small grey dot; Any readout = filled square",
+  "panel_c": "MPRA expression change x Fiber-seq accessibility change (same sign as panel b), full width",
+  "panel_d": "dropped (HepG2 vs HEK293T)"
+ },
+ "layout_draft8": {
+  "_written": "2026-11-03, after the user approved draft 8 ('Yes, draft 8'); before draft 8 was computed. Display changes only: no score, cutoff or flag changes.",
+  "f04_label": "the data-defined footprint at oligo 66-82 (c.-219..-203) is labelled 'Protected site (no motif match)' in panel a and 'Protected site' in panel b (was 'F04 footprint (no motif)' / 'F04'); still a dashed box. Wording avoids implying a bound factor: fp_features flags it shared_with_near_naked (calls more frequent in near-naked than chromatin molecules) and there is no naked-DNA control",
+  "panel_b_region_names": "consecutive columns in the same region share one name, centred under a thin bracket",
+  "wt_track": "no WT footprint occupancy track above panel a (exploratory check 2026-11-03: TF-sized coverage peaks only at the protected site; GC box and SRE-1 at the element median)",
+  "margin_headers": "'P/LP (8)', 'B/LB (6)', 'Rare in gnomAD (107)', 'All SNVs (633)'; numbers from the data. All-SNV shares of the single rows (20% by construction) drawn in muted grey; Any readout in ink",
+  "key": "second key line states that all gnomAD-observed SNVs are rare, with the maximum allele frequency from evidence_v3 gnomad_af"
+ },
+ "layout_draft9": {
+  "_written": "2026-11-03, after the user approved draft 9 ('Yes, draft 9'); before draft 9 was computed. Display change only.",
+  "margin": "drop the 'All SNVs' column (20% by construction for every single row); margin = P/LP, B/LB, rare in gnomAD",
+  "key": "first key line states the baseline and the any-readout share from the data: 'top 20% of 633 SNVs; any readout: 49% of SNVs'",
+  "not_adopted": "bottom-20% 'no change' tier (exploratory check 2026-11-03): rank is not a noise floor for the measured assays; a normal call would need a WT-vs-WT reference"
  }
 }

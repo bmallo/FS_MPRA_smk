@@ -540,3 +540,256 @@ journal; general figure defaults apply).
   - Benign flags: c.-217C>T (MPRA ▲, Fiber-seq ▼, PromoterAI ▲); c.-205G>T (Fiber-seq ▼); c.-97G>C (PromoterAI ▼).
 - Panel c, flagged-by counts: both 46, MPRA only 82, Fiber-seq only 81, neither 424.
 - Verification: an independent recompute from `evidence_v3` + fp_features reproduces every count, with 0/70 matrix cells different. Trace: c.-136C>T has MPRA |−2.62| ≥ 0.97, so it is flagged.
+
+## 2026-11-03 Figure 3 panel b: what sets each cell, and the flag cutoff (exploratory checks, no figure change)
+- Scripts in the session scratchpad (`fig3b_explain.py`, `fig3b_local.py`), which import `fig3.readout_scores`.
+- Missing data: none among the 14 controls. Plasmid Fiber-seq is missing for 1 of the 633 SNVs. An open box always means measured but below the cutoff.
+- What set each Fiber-seq flag on a P/LP variant:
+  - Three come from the element-wide nucleosome-size z: c.-136C>T +2.92, c.-135C>G +3.74, c.-168A>G −2.52.
+  - c.-98C>T (CRE) +2.79 comes from F04 footprint gain, 101 bp away. Its nucleosome z is only 0.73.
+  - Because the score is the max |z| over all 24 footprints, F04 sets the value for 9 of the 14 controls, at distances of 0–102 bp.
+- If the footprint component is limited to footprints within 10 bp of the SNV, or overlapping it:
+  - Fiber-seq P/LP falls from 4/8 to 3/8 (c.-98C>T drops). B/LB stays 2/6 (c.-217C>T and c.-205G>T are inside F04).
+  - Any readout is unchanged (7/8, 3/6).
+- Arrow sign: Fiber-seq ▲ means more protection (less accessible). For the other three readouts, ▲ means more expression or accessibility.
+- Cutoff sensitivity (top 30/25/20/15/10%), per-readout P/LP flagged:
+  - MPRA 4/4/4/4/3; Fiber-seq 4/4/4/3/1; AlphaGenome 4/4/4/4/4; PromoterAI 5/4/4/4/4.
+  - Any readout P/LP 7/7/7/6/5, while flagging 63/56/46/34/23% of all SNVs.
+- Each assay's own test, BH q < 0.05 over the 633 SNVs:
+  - MPRA (Kircher P) flags 66% of SNVs (P/LP 8/8, B/LB 4/6).
+  - Fiber-seq (A9 test; Bonferroni over the footprints within each SNV, ×2 endpoints) flags 13% (P/LP 1/8, B/LB 2/6).
+  - These are differences in power, so the assays' own tests are not usable as a common rule.
+
+## 2026-11-03 Figure 3 panel b: Fiber-seq readouts without z-scores (exploratory, no figure change)
+- Context: the user is not confident in the A9 z-scores, and asked whether panel b can be built without them.
+- Script: scratchpad `fig3b_noz.py` (exploratory). All rankings use the top 20% of |effect| over the 633 SNVs, as in panel b.
+- Nucleosome-sized share = % of molecules with a confident ≥ 81-bp call in the element, variant − WT, in points.
+  - Raw difference vs labeling-matched D: Spearman 0.91, median |diff| 0.43 points.
+  - Both give the same control flags: P/LP 3/8 (c.-168, c.-136, c.-135), B/LB 0/6. Cutoff 2.1 points.
+  - Any readout: P/LP 7/8, B/LB 2/6.
+- Local accessibility = mean change in the accessible (marked) fraction at testable adenines within 10 bp of the SNV (A7 mask). This is the negative of `local_inacc_pts`; it matches evidence_v3 to 5e-4 points. It needs no footprint caller.
+  - Top 20%: P/LP 1/8 (c.-168), B/LB 2/6 (c.-217, c.-205). Cutoff 4.1 points.
+  - WT-vs-WT: 4 WT draws per SNV, matched to the SNV's clone sizes (a9 calibration draws), averaged over the same adenines. |change| 95th percentile 1.30 points, 99th 1.94.
+  - 65% of real SNVs exceed the WT 95th percentile. The sequence change itself probably alters Hia5 marking near the edit (see the c.-156C>T note), so local changes are not interpretable without naked-DNA controls (B1).
+
+## 2026-11-03 Figure 3 draft 6 (results/r01_figure_20261102/fig3_v6; code at commit 3baab10 plus uncommitted edits)
+- Rules: fig3_rules.json layout_draft6, written before computing. The minimum-molecule rule was added after the first render (post hoc).
+- Plasmid Fiber-seq readout changed to the plain difference 100 × (variant − WT share of molecules with a confident ≥ 81-bp call in the element), A7 mask, from gnomad_check/nucleosome_all.tsv.
+  - No labeling adjustment, standard error or z. The footprint component is dropped.
+  - Cutoff (top 20%) 2.06 points. ▲ = more nucleosome-sized protection.
+- Minimum 100 variant molecules (post hoc). The first render had 222T>C at −29 points from 1 molecule.
+  - Excluded: 222T>C (1 molecule), 176G>A (14), 160A>G (0). The next smallest SNV has 248 molecules.
+  - No control is affected.
+- Panel b: Fiber-seq P/LP 3/8 (c.-168A>G ▼, c.-136C>T ▲, c.-135C>G ▲), B/LB 0/6, gnomAD 21%. Any readout P/LP 7/8, B/LB 2/6, gnomAD 50%, all 46%. Other rows unchanged.
+- Panel c: y = the same quantity in points. Quadrants: both 49, MPRA only 79, Fiber-seq only 77, neither 428. The CRE pair now shares one tag.
+- Panel d: unchanged. It uses the labeling-matched local change (D, not z).
+- Layout: key line added under b; panels c and d moved down 8 pt; page 7.2 × 7.42 in.
+- Verification: an independent recompute from nucleosome_all.tsv + evidence_v3 gives 0/70 matrix cells different, and every margin and quadrant count matches.
+  - Trace c.-135C>G: 1,286 molecules, variant 31.88% vs WT 28.77% = +3.12 points ≥ 2.06, flagged ▲.
+
+## 2026-11-03 Figure 3 draft 7 (results/r01_figure_20261102/fig3_v7; uncommitted edits)
+- Rules: fig3_rules.json layout_draft7, written before computing. The AlphaGenome split is post hoc: the combined row had already been seen.
+- Panel a: ClinVar classes now use Okabe-Ito colours with distinct shapes and white edges.
+  - Not in ClinVar: small grey dots. VUS: small sky-blue dots. Conflicting: amber triangles. B/LB: green circles. P/LP: vermillion diamonds.
+  - Drawn in that order, so P/LP is on top.
+- Panel b: rows are grouped by what is measured, variant − WT.
+  - Expression: MPRA (measured), AlphaGenome LDLR RNA (predicted), PromoterAI (predicted).
+  - Accessibility: plasmid Fiber-seq (measured; % of molecules without a ≥ 81-bp protected stretch = −1 × the draft 6 value), AlphaGenome DNase (predicted).
+  - Cells: ▲/▼ = large increase/decrease (top 20% |value|, unchanged rule); small dot = smaller change; Any readout = filled square.
+  - "Flagged" is renamed "large change"; the margin header is "Share with a large change".
+- Results (P/LP / B/LB / gnomAD / all):
+
+  | Row | P/LP | B/LB | gnomAD | All |
+  |---|---|---|---|---|
+  | MPRA | 4/8 | 1/6 | 23% | 20% |
+  | AlphaGenome RNA | 4/8 | 0/6 | 19% | 20% |
+  | PromoterAI | 4/8 | 2/6 | 28% | 20% |
+  | Fiber-seq | 3/8 | 0/6 | 21% | 20% |
+  | AlphaGenome DNase | 4/8 | 1/6 | 26% | 20% |
+  | Any readout | 7/8 | 2/6 | 51% | 49% |
+
+  - With five rows, "any readout" covers 49% of all SNVs (was 46% with four).
+  - Fiber-seq direction is now ▲ for c.-168A>G (more accessible) and ▼ for the GC-box pair.
+  - c.-97G>C (LB) now has an AlphaGenome DNase ▼ as well as PromoterAI ▼.
+- Panel c: full width; y = Fiber-seq accessibility change (sign flipped). Quadrants unchanged: 49 / 79 / 77 / 428.
+- Panel d (HepG2 vs HEK293T) removed. Page 7.2 × 7.4 in.
+- Verification: an independent recompute gives 0/84 cells different in flag or direction, and every margin and quadrant count matches.
+  - Trace c.-168A>G Fiber-seq: WT 28.74% vs variant 26.47% with a nucleosome-sized stretch, so +2.27 points more accessible ≥ 2.06; ▲.
+
+## 2026-11-03 — WT footprint track check (exploratory, not in the figure) and gnomAD margin
+
+- Question (user): add a WT Fiber-seq occupancy track above panel a to show where the footprints are?
+- Script: scratchpad `wt_track.py` (not a figure input). Inputs: `analysis_v2_20261028/fp_features/calls.npz` (exact calls), A9 extract HepG2 run 3 (`distal_frac`, `cls`).
+  - WT molecules with labeling 0.2–0.6 (the fp_features chromatin range): 128,045.
+  - Per oligo position: % of those molecules covered by a confident call (log10 P < −3, as fp_features), TF-sized (10–80 bp) or nucleosome-sized (≥ 81 bp).
+- TF-sized coverage, max within each region (element median 1.54%):
+
+  | Region | TF-sized, confident | TF-sized, all calls | Nucleosome-sized |
+  |---|---|---|---|
+  | F04 | 4.33% | 7.50% | 28.4% |
+  | SP-like | 2.96% | 4.52% | 29.7% |
+  | SRE-1 | 1.90% | 8.83% | 32.4% |
+  | GC box | 1.38% | 2.43% | 27.5% |
+  | CRE | 2.56% | 5.23% | 26.4% |
+
+  - The GC box and SRE-1, where the P/LP variants and the Fiber-seq effects are, sit at the element median.
+  - F04 (fp_features footprints.tsv): flag `shared_with_near_naked`; its calls are more frequent in near-naked molecules (occupancy_M 4.3%) than in chromatin molecules (C 1.7%, c_over_m 0.40). No naked-DNA control exists to rule out a sequence-driven call.
+- gnomAD margin (evidence_v3): 107 of 633 designed SNVs have gnomad_ac > 0; AF median 2e-6, max 0.00112 (one SNV, AC 579); 58 are singletons. None is common. The margin "gnomAD" = share of these 107 with a large change in that row (e.g. MPRA 25/107 = 23%); "All" = share of all scored SNVs (20% by construction for single rows).
+
+## 2026-11-03 — Figure 3 draft 8 (labels and margin headers)
+
+- User: "Yes, draft 8". Rules in `fig3_rules.json` `layout_draft8` (written before the run). Display changes only.
+- Output: `results/r01_figure_20261102/fig3_v8/`.
+- Changes:
+  - F04 renamed "Protected site (no motif match)" in panel a and "Protected site" in panel b; still a dashed box. No WT footprint track (exploratory check above).
+  - Panel b region names: one name per run of consecutive same-region columns, under a thin bracket (no bracket for unannotated "–").
+  - Margin headers: "P/LP (8)", "B/LB (6)", "Rare in gnomAD (107)", "All SNVs (633)", all from the data. Single-row All values (20% by construction) in muted grey.
+  - Key line 2: "rare in gnomAD: allele frequency ≤ 0.11%" (max of evidence_v3 gnomad_af).
+  - `panel_c_points.tsv` gains a `gnomad_af` column.
+- Verification: summary.json identical to draft 7 apart from date/commit; `panel_b_matrix.tsv` identical apart from the region name; `panel_c_points.tsv` identical on all draft 7 columns. SVG text is live Arial (126 elements).
+
+## 2026-11-03 — bottom-20% tier check (exploratory, not in the figure)
+
+- Question (user): also show the bottom 20% of |variant − WT| as "no change" (false negatives for P/LP, true negatives for B/LB)?
+- One-off computation from `fig3_v8/panel_c_points.tsv` (all SNVs, per-row quantiles 0.2 and 0.8 of |score|). Controls per tier, top / middle / bottom:
+
+  | Row | bottom cut | P/LP (8) | B/LB (6) |
+  |---|---|---|---|
+  | MPRA | 0.080 log2 | 4 / 4 / 0 | 1 / 4 / 1 |
+  | AlphaGenome RNA | 0.003 | 4 / 4 / 0 | 0 / 5 / 1 |
+  | PromoterAI | 0.035 | 4 / 2 / 2 | 2 / 2 / 2 |
+  | Fiber-seq | 0.42 pts | 3 / 3 / 2 | 0 / 4 / 2 |
+  | AlphaGenome DNase | 0.015 | 4 / 3 / 1 | 1 / 4 / 1 |
+
+  - P/LP in the bottom tier: PromoterAI c.-168A>G, c.-152C>T; Fiber-seq c.-149C>A, c.-99A>G; AlphaGenome DNase c.-152C>T.
+- Not adopted; a rank-based "no change" call has no noise floor for the measured assays (see reply).
+
+## 2026-11-03 — Figure 3 draft 9 (drop the All SNVs column)
+
+- User: "Yes, draft 9". Rules in `fig3_rules.json` `layout_draft9` (written before the run). Display change only.
+- Output: `results/r01_figure_20261102/fig3_v9/`.
+- Margin is now P/LP, B/LB, Rare in gnomAD (columns respaced, MX 460/486/514). The All-SNV share is still in summary.json.
+- Key line 1 now reads "... top 20% of 633 SNVs; any readout: 49% of SNVs); · smaller change" (49% from margin['Any readout']['all']).
+- Verification: panel_b_matrix.tsv and panel_c_points.tsv byte-identical to draft 8; summary.json identical apart from date/commit.
+
+## 2026-11-03 — Figure 1 switched to WASF1 (user): restore, footprints, first look (exploratory)
+
+- User: change Figure 1 from DPAGT1 to WASF1; restore approved; 300-bp construct "decide after a look"; "rethink the layout". Rules: `fig1_rules.json` → `wasf1` (written before processing).
+- Restore (log `data/kopah_restore/r01_restore_20261103_wasf1.log`; rclone check --size-only: 0 differences): genomic_promoters WASF1.ft.m6a.merged.bam (+bai; md5 d89de162480e8cb416101a2b380f779b), Hek293_Whole_Genome WASF1_all_reads.bam / WASF1_full_coverage.bam (+bai; all_reads md5 212a8da4681e59e10752707bcf901fe6).
+- `fig1_map.py` → `fig1_wasf1/inserts.tsv`: 4.5-kb insert chr6:110,176,895-110,181,442 (+, identity 0.998); WASF11 (FIRE peak 1) 110,178,621-921; WASF12 (FIRE peak 4) 110,179,911-110,180,211. Gene model (UCSC ncbiRefSeq, `raw/ucsc_ncbiRefSeq_wasf1.json`): WASF1 TSS 110,179,670 (−, NM_003931.3); CDC40 TSS 110,180,426 (+): a bidirectional promoter. Peak 4 lies between the two TSSs; peak 1 ~0.75–1.05 kb into WASF1 intron 1.
+- `fig1_fiberhmm.sh` and `fig1_profiles.py` gained a gene argument (DPAGT1 default, unchanged). Run with WASF1 → `fig1_wasf1/`. Kept / reads: WASF11 9,740/12,006 (not spanning 855, under-methylated 1,403, unresolved 8); WASF12 8,672/12,057 (1,326 / 2,039 / 20); 4.5-kb 1,144/1,144; endogenous 37/40 (under-methylated 3). Orientation QC (qc.tsv): m6A inside nucleosome calls equal on both strands after the flip (4.2–8.9%).
+- Motifs (`fig1_motifs.py`, P < 1e-5, 4.5-kb window): 920 matches. Peak 1: 5 weak scattered matches (ZN841, ZNF226, MAFA, TBX3/15). Peak 4: 173 matches, 81 TFs: SP/KLF GC box 110,180,054-097 (KLF10 P 7e-10, SP1 1e-8), ZNF444/ZNF281/VEZF1 110,179,973-991, ZNF143 110,180,105-127.
+- `fig1_wasf1_overview.py` → `fig1_wasf1/overview/` (tracks, region_stats.tsv, m6a_concordance.tsv, site_footprints.tsv, overview.png). m6A = m6A count / observed A/T in a 51-bp window (a first render smoothed per A/T base only and left gaps; replaced).
+  - Per region (molecules spanning; share with a 15–89 bp footprint midpoint inside; mean nucleosome cover; mean m6A):
+
+    | Region | Endogenous | 4.5-kb construct | 300-bp construct |
+    |---|---|---|---|
+    | Peak 1 | 31; 36%; 0.38; 0.36 | 1,144; 30%; 0.44; 0.36 | 9,740; 28%; 0.57; 0.27 |
+    | Peak 4 | 29; 90%; 0.03; 0.57 | 1,144; 74%; 0.13; 0.52 | 8,672; 63%; 0.29; 0.41 |
+
+  - Spearman of 51-bp m6A over the 301 positions (descriptive; positions not independent): endogenous vs 4.5-kb 0.90 (both peaks); endogenous vs 300-bp 0.75 (peak 1), 0.77 (peak 4).
+  - Peak 4 motif sites, molecules with a 15–89 bp call overlapping by ≥ 10 bp: GC box endogenous 22/29 (76%), 4.5-kb 520/1,144 (46%), 300-bp 3,320/8,672 (38%); ZNF444 site 10–11% in all three; ZNF143 site 10% / 10% / 5%.
+- Not checked: no naked-plasmid control for these constructs, so sequence-driven calls at the GC box are not excluded; endogenous n = 29.
+
+## 2026-11-03 — Figure 1 WASF1 draft 1 (fig1_wasf1_v1): DPAGT1 draft 7 layout, peak 4 (WASF12)
+
+- User: "use peak 4 and use the same layout and visual appearance as the DPAGT1 figure". Rules: `fig1_rules.json` → `wasf1.draft1` (written before computing).
+- FIRE (the LRSS FIRE table has only DPAGT1/NAPA): `fig1_fire.sh` (fibertools-rs 0.13 add-nucleosomes | fire, no --fire-filter, as LRSS 05_fire_fiberhmm.sh; ft extract --all) on the staged endogenous and WASF12 reads; `fig1_fire_profiles.py` → `fig1_wasf1/fire/fire_profiles.tsv.gz`, kept molecules only.
+  - Endogenous: 37 kept molecules, 31 with a FIRE element in the 4.5-kb window. WASF12: 8,672 kept, 4,904 with a FIRE element in the insert. ft fire warned "no msp annotations" on some records (skipped).
+  - Mean FIRE share over peak 4: endogenous 0.92 (≤ 30 molecules), 300-bp construct 0.44. For comparison, DPAGT1 peak 1 endogenous (LRSS) 0.57.
+- `fig1.py` gained `--gene` (DPAGT1 default; config dict GENES; gene model draws several transcripts by strand). Regression: DPAGT1 rerun gives byte-identical tracks.tsv and panel_a_reads.tsv, the same summary.json and an SVG identical to fig1_v10 apart from generated IDs and dates.
+- WASF1 settings: window chr6:110,178,550-110,180,700 (WASF1 exons 1-2, NM_003931.3; CDC40 exon 1, NM_015891.3); motif = SP/KLF GC box 110,180,054-097; 31–60 bp legend label "TF-sized".
+- Output `results/r01_figure_20261102/fig1_wasf1_v1/` (svg, pdf, png, tracks.tsv, panel_a_reads.tsv (read IDs, not committed), summary.json).
+  - Panel a: 15 of 1,828 WASF12 molecules with a 31–60 bp call on the GC box (8,672 total), seed 20261102.
+  - Verification: independent recount from the parquet gives 1,828. Traced: endogenous FIRE share over the GC box 0.931 (29 molecules); 300-bp construct 31–60 bp share over the box up to 0.206 (drawn ×5).
+
+## 2026-11-03 — Figure 1 WASF1: footprint-size scan and draft 2 (fig1_wasf1_v2_x1, _x2)
+
+- User requests (pasted list): scan the reads to choose bins; all footprint sizes on the reads; reads and panel b cut to the 300-bp element, the adjacent nucleosome and the WASF1 gene body (keep the motif); reads beside the PacBio icon; FIRE more transparent, TF footprints in front of FIRE in front of nucleosomes; try 1x and 2x instead of 5x. Rules: `fig1_rules.json` → `wasf1.fp_size_scan`, `wasf1.draft2` (both written before running).
+- Scan: `fig1_fpsizes.py --gene WASF1` (gene option added; DPAGT1 rerun gives byte-identical summary, footprints, histogram and sites tables). Output `fig1_wasf1/fp_sizes/`.
+  - Spanning / accessible molecules: WASF12 8,672 / 6,664; 4.5-kb 1,144 / 1,076; endogenous 29 / 29.
+  - Accessible-molecule footprint lengths: median 17 bp (WASF12), 18 (4.5-kb), 22.5 (endogenous); the short-call mode is at 5–15 bp, as for DPAGT1.
+  - 3-bp-smoothed histogram, both constructs: local minima at 19, 30, 37, 48, 55/56, 69 bp; maxima (WASF12) 31, 40, 51, 59, 73 bp; (4.5-kb) 22, 35, 58 bp.
+  - Sites, footprints ≥ 10 bp overlapping by ≥ 10 bp (accessible molecules), median (IQR) length: GC box WASF12 35 (22–48) bp on 3,392 of 6,664 molecules; 4.5-kb 35 (23–46) on 550 of 1,076; endogenous 34 (25–46) on 22 of 29. ZNF444 site WASF12 44 (17–57) bp on 999. ZNF143 site WASF12 64 (50–74) bp on 389.
+  - Proposed bins (post hoc, pending user approval): < 20 bp hidden; 20–30; 31–48; 49–89; ≥ 90 nucleosome.
+- New script `tools/r01_figure/fig1_wasf1.py` (WASF1 only; `fig1.py` left as is so DPAGT1 draft 7 and WASF1 draft 1 still reproduce).
+  - Panel a: reads beside the PacBio icon, plasmid window = insert ± 170 bp (plasmid 1,187–1,827), all bins and nucleosomes; pool = WASF12 molecules spanning the GC box with a 20–89 bp call over it by ≥ 10 bp: 2,910 of 8,672 (independent recount 2,910); 15 drawn (seed 20261102), Ward on one-hot call class over the insert. GC-box calls in the pool by bin: 20–30 686, 31–48 1,319, 49–89 907.
+  - Panel b: window chr6:110,178,550–110,180,380 (WASF1 exons 1–2 to the nucleosome downstream of peak 4, 110,180,213–363); CDC40 dropped (TSS outside). Draw order nucleosome → FIRE (alpha 0.65) → footprint bins.
+  - Plasmid track raw maxima over the GC box: 31–48 bp 0.150, 49–89 bp 0.101, 20–30 bp 0.066, nucleosome 0.253, FIRE 0.52.
+  - Rendered at --fp-scale 1 (`fig1_wasf1_v2_x1/`) and 2 (`fig1_wasf1_v2_x2/`).
+
+## 2026-11-03 — Figure 1 WASF1 draft 3 (fig1_wasf1_v3_x2, _x1): user bins, 4.5-kb reads over the panel-b window
+
+- User: bins "20-30, 31-50, and 41-80" with the nucleosome bin as Figure 3; reads to match the panel-b region; reads with GC-box footprints plus a 20–30 bp footprint at its peak. Rules `fig1_rules.json` → `wasf1.draft3` (written first).
+  - Bins used: 20–30, 31–50, 51–80 bp, nucleosome ≥ 81 bp. "41–80" overlaps 31–50 and was read as 51–80 (pending the user's confirmation).
+  - Reads come from the 4.5-kb construct, the only plasmid that holds the panel-b window, drawn in hg38 over chr6:110,178,550–110,180,380.
+- 20–30 bp site: peak of the smoothed 20–30 bp call-midpoint density in WASF12 molecules = chr6:110,180,148 (3′ of the ZNF143 site); the second peak sits on the GC box (110,180,076). In the 4.5-kb construct the order of the two peaks is reversed.
+- Selection: 4.5-kb molecules with a 20–80 bp call on the GC box (≥ 10 bp overlap) and a separate 20–30 bp call with midpoint within 110,180,148 ± 10: 47 of 1,144 (matches the preview count; ±15 gives 48). The same rule in WASF12: 409 of 8,672. 15 drawn (seed 20261102), Ward on one-hot call class over the 300-bp element.
+- Plasmid 300-bp track (WASF12), raw maxima with the new bins: over the GC box (110,180,054–097) 31–50 bp 0.159, 51–80 bp 0.081, 20–30 bp 0.066, nucleosome 0.263; at the 20–30 bp site (110,180,138–158) 20–30 bp 0.099.
+- Output `results/r01_figure_20261102/fig1_wasf1_v3_x2/` (2×) and `_x1/` (1×).
+
+## 2026-11-03 — WASF1 peak-4 site check (exploratory) and Figure 1 WASF1 draft 4 (fig1_wasf1_v4)
+
+- User question: how confident are we in the 20–30 bp footprint; is there a motif over it or over the 31–50 bp peak on the left? Rules `fig1_rules.json` → `wasf1.site_check` (written first). Script `tools/r01_figure/fig1_wasf1_sites.py` → `fig1_wasf1/site_check/` (site_shares.tsv, site_motifs.tsv, site_call_evidence.tsv). Extra motif scan of the element alone at P < 1e-4: `fig1_wasf1/motifs_peak4_1e4/` (349 matches). Replicate read names from `bams/WASF12_rep{1,2}.bam` (6,034 / 6,023 subsampled reads).
+- Share of spanning molecules with a call of the site's bin within ± 10 bp of the centre (element-wide median of the same rule in brackets):
+
+  | Site (centre) | Bin | WASF12 rep 1 | WASF12 rep 2 | 4.5-kb | Endogenous |
+  |---|---|---|---|---|---|
+  | GC box (110,180,075) | 20–80 | 912/3,914 = 23.3% (3.0%) | 1,175/4,758 = 24.7% (2.9%) | 344/1,144 = 30.1% (3.3%) | 19/29 = 65.5% (0%) |
+  | 31–50 bp peak (110,179,950) | 31–50 | 366/3,914 = 9.4% (0.8%) | 581/4,758 = 12.2% (0.7%) | 200/1,144 = 17.5% (1.0%) | 6/29 = 20.7% (0%) |
+  | 20–30 bp peak (110,180,148) | 20–30 | 374/3,914 = 9.6% (1.2%) | 470/4,758 = 9.9% (1.0%) | 113/1,144 = 9.9% (1.0%) | 0/29 (0%) |
+
+- Sequence (centre ± 12), A/T count, longest A/T-free run:
+  - GC box GGTCAAAGGGGGACACGCCCCCGTT: 8 A/T, run 8.
+  - 31–50 bp peak CTTTCCTGAGGTTCTGTGGTATTGC: 13 A/T, run 2.
+  - 20–30 bp peak CCTGCCGCGCTGCACGCTGGGAGTG: 6 A/T, run 7.
+- Evidence inside WASF12 calls at each site (observed A/T inside the call, median (IQR); calls with any m6A inside):
+  - GC box: 2,087 calls; 10 (9–14); 29%.
+  - 31–50 bp peak: 947 calls; 18 (17–19); 64%.
+  - 20–30 bp peak: 844 calls; 7 (7–8); 9%.
+- Motifs overlapping centre ± 10:
+  - 20–30 bp peak: P < 1e-5, ZNF76 110,180,141–157 (9.2e-7; ZNF143 paralog), ETS family (FLI1, ETV1, ETS2, ETV5) 110,180,125–142 (6e-7 to 6e-6) and ZNF/ATMIN matches. The ZNF143 match at 110,180,105–127 lies just 5′.
+  - 31–50 bp peak: P < 1e-5, only ZNF matches at its 5′ edge (ZN701 110,179,930–940, 1.7e-7; ZN441; ZN132). At P < 1e-4, C/EBP family 110,179,957–968 (6.4e-6 to 1.5e-5).
+- Not checked: no naked-plasmid control, so A/T-poor sequence effects at the 20–30 bp site are not excluded.
+
+### Draft 4
+- Rules `wasf1.draft4` (written first). Reads and their map end at 110,180,358 (20–30 bp calls at the right edge of the drawn reads start at 110,180,361). Schematic label "PacBio" → "PacBio HiFi". Arrow from the sequencer to the reads; reads block moved right 18 pt.
+- panel_a_reads.tsv and tracks.tsv byte-identical to draft 3 (×2). Output `results/r01_figure_20261102/fig1_wasf1_v4/`.
+
+## 2026-11-03 — Figure 1 WASF1 draft 5 (fig1_wasf1_v5): FIRE on the reads
+
+- User confirmed the third bin is 51–80 bp (rules updated) and asked for FIRE on the individual reads. Rules `fig1_rules.json` → `wasf1.draft5` (written first).
+- `fig1_fire.sh` on the 4.5-kb construct reads (WASF1_full, 1,144 reads; 1,124 extract rows carry FIRE lengths). Per drawn read, FIRE elements lifted to hg38 with inserts.tsv and clipped to the read window; drawn above nucleosomes and below footprints (alpha 0.65), as in the tracks.
+- All 15 drawn reads carry FIRE elements; 40 elements drawn. panel_a_reads.tsv and tracks.tsv byte-identical to draft 4.
+- Visible: some FIRE elements partly overlap FiberHMM nucleosome calls (FIRE builds on fibertools' own nucleosome calls, a different caller). Not quantified.
+
+## 2026-11-03 — Figure 1 switched to pEF-GFP: EF1a plasmid vs endogenous comparison (exploratory)
+
+- User: Figure 1 panel a to use pEF-GFP (pEF_GFP_Gus replicate 3), comparing the plasmid EF1a promoter with endogenous EF1a in HEK293T genomic Fiber-seq; look at the comparison first. Rules `fig1_rules.json` → `ef1a` (written before processing).
+- Plasmid source: LRSS slides `lrss2026_slides56/pefgfp/pefgfp_r3.span.bam` (667,972 full-length molecules; logs/26_reps23.log). Staged size "6.2G" matches `sra_submission/pEFGFP_pSLC39A4_Replicate_3.ft.bam` (6,575,197,169 bytes; Replicate_2 = 2.7G), the pEF_GFP_Gus replicate 3 sample. Inferred from sizes, not from read names.
+- Endogenous: restored `Hek293_Whole_Genome/target_bams/EF1a_{all_reads,full_coverage}.bam` (+bai) from Kopah (user OK; rclone check 0 differences; log `data/kopah_restore/r01_restore_20261103_ef1a.log`). 30 primary reads, 28 cover the window.
+- Window (`fig1_map.py`): pEF-GFP positions 779–1,967 = chr6:73,520,048–73,521,236 (+, identity 0.9992): 204 bp upstream of the EEF1A1 TSS (73,521,032, −, NM_001402.6), exon 1, intron 1, 8 bp of exon 2.
+- `fig1_ef1a_stage.sh`: samtools -s 42.03 → 20,140 plasmid molecules; fiberhmm-call (hia5, pacbio, min-mapq 0); FIRE via `fig1_fire.sh`. `fig1_profiles.py --gene EF1a` (gene added): plasmid kept 14,299 (not spanning 33, under-methylated 5,779 = 29%, unresolved 29); endogenous kept 27 (under-methylated 3). Orientation QC: m6A inside nucleosome calls 3.0/3.3% (plasmid), 9.1/9.2% (endogenous) by strand. FIRE: 26 of 27 endogenous and 6,439 of 14,299 plasmid molecules carry a FIRE element in the window.
+- Motifs (`fig1_motifs.py`, P < 1e-5): 78 matches, 66 TFs, none dominant (best PRDM6 1.8e-7).
+- `fig1_ef1a_compare.py` → `fig1_ef1a/compare/` (summary.tsv, spearman.tsv, per_molecule_nucleosome.tsv, compare.png). Mean shares (endogenous / plasmid):
+
+  | Part | Nucleosome | FIRE | m6A | 51–80 bp | 31–50 bp | 20–30 bp |
+  |---|---|---|---|---|---|---|
+  | Whole window | 0.565 / 0.309 | 0.322 / 0.181 | 0.255 / 0.420 | 0.033 / 0.014 | 0.014 / 0.017 | 0.008 / 0.019 |
+  | Upstream + exon 1 (73,520,999–73,521,236) | 0.148 / 0.223 | 0.987 / 0.242 | 0.483 / 0.439 | 0.021 / 0.021 | 0.046 / 0.026 | 0.026 / 0.033 |
+  | Intron 1 | 0.670 / 0.329 | 0.158 / 0.167 | 0.199 / 0.417 | 0.035 / 0.012 | 0.006 / 0.015 | 0.004 / 0.016 |
+
+  - Spearman, endogenous vs plasmid (descriptive): m6A 0.51 (window), 0.83 (upstream + exon 1), 0.59 (intron 1); nucleosome share 0.71 (window), 0.59 (intron 1), 0.14 (upstream + exon 1).
+  - Per molecule spanning the window, share covered by nucleosome calls: endogenous (25) median 0.565, 4% under 0.25; plasmid (14,299) median 0.224, 52% under 0.25, 10% over 0.75. The plasmid population mixes chromatinized and near-naked molecules; its averages are diluted by the latter.
+
+## 2026-11-03 — Grant figure bundle; Figure 1 WASF1 draft 6 (no draft stamp)
+- User: stay with WASF1 for Figure 1 (the EF1a comparison above is kept but not used); asked for PNGs of the three figures and a description of each figure's goal for the grant.
+- Bundle `results/r01_figure_20261102/grant_figures_20261103/`: Figure1_WASF1.png, Figure2_SLC39A4.png (fig2_v4), Figure3_LDLR.png (fig3_v9), FIGURE_GOALS.md (goals, numbers from this log, caveats).
+- User asked to remove the Figure 1 draft stamp: `fig1_wasf1.py` no longer draws it (commit and date go to summary.json). Output `fig1_wasf1_v6/`; panel_a_reads.tsv and tracks.tsv byte-identical to draft 5. The bundle PNG is replaced with it.
+
+## 2026-11-03 — Figure 3 panel a with ClinVar labels (reference panel, not a figure draft)
+- User: a version of panel a with the variants labelled by their ClinVar names, to map them to ClinVar inputs.
+- Script `tools/r01_figure/fig3_clinvar_labels.py` → `results/r01_figure_20261102/fig3_clinvar_labels/` (panel_a_clinvar_labels.png/pdf/svg, clinvar_variants.tsv).
+- Join: fig_A_v9/panel_a.tsv (633 SNVs) to clinical_raw/clinvar/esummary.json by canonical SPDI (NC_000019.10, single-base substitutions). All 104 classified SNVs have a record (84 VUS, 6 conflicting, 6 B/LB, 8 P/LP).
+  - ClinVar titles: 64 NC_000019.10 g., 22 NM_000527.5 c., 17 NM_000527.4 c., 1 NR_163945.1. No position disagreements: every NM title's c. equals the panel c. (NM_000527.5), and every g. position equals hg38.
+- Labels: HGVS c. (NM_000527.5) and VCV accession; the TSV adds the full ClinVar title, classification, review status, hg38 and MPRA log2.
