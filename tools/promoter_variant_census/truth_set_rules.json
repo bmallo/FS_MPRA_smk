@@ -1,0 +1,27 @@
+{
+ "_written": "2026-11-04, after the census (rules.json) results had been seen and before ClinVar was queried or any truth-set count was made. Approved by the user ('Approve all'). B3 replaces the census AlphaGenome rule post hoc: the quantile < 0.99 rule had been seen to pass almost no promoter SNV.",
+ "windows": "windows.tsv; elements = LDLR, HBB, GATA2_IS, GATA2_IG, SLC39A4 (W1+W2, each variant counted once)",
+ "pathogenic_candidates": {
+  "source": "ClinVar via NCBI E-utilities, queried 2026-11-04: esearch '<chrom>[chr] AND <start>:<end>[chrpos38]' per window + esummary (same query as tools/r01_figure/clinical.py)",
+  "rule": "germline classification Pathogenic, Likely pathogenic or Pathogenic/Likely pathogenic (not 'Conflicting'), any review status; SNVs and indels whose GRCh38 SPDI lies in the window (indel rule as census_lib.in_window)",
+  "context": "VUS, conflicting and B/LB counted alongside; HGMD not used (licence)"
+ },
+ "benign_candidates": {
+  "clinvar": "ClinVar Benign, Likely benign or Benign/Likely benign (established benign set), same query",
+  "B1_common": "gnomAD v4.1 genomes PASS, alt AF > 1% in at least one genetic-ancestry group with AN >= 2000 (primary); overall AF > 1% also reported",
+  "B2_not_eqtl": "not a significant single-tissue eQTL for ANY gene in GTEx V10 (Portal singleTissueEqtl by variant). Shown as: significant / tested, not significant (maf01) / not tested. 'Not tested' counts as passing B2 but is flagged.",
+  "B3_predicted_no_effect": {
+   "alphagenome": "no large change in BOTH AlphaGenome RNA (target gene, gene-mask LFC) and AlphaGenome DNase (501-bp center mask): large change = |mean raw score over the element's track set| in the element's top 20% across all possible SNVs of that element (the Figure 3 panel b rule). Track sets: LDLR HepG2 (EFO:0001187, as panel b); HBB RNA K562 + venous blood, DNase K562; GATA2 RNA K562 + CMP CD34+ + hematopoietic multipotent progenitor, DNase same; SLC39A4 RNA small intestine + Caco-2, DNase same.",
+   "promoterai": "|score| < 0.1 (published lowest threshold), window transcript",
+   "indels": "PromoterAI has no indel scores, so indels cannot pass B3 (reported as not scored)"
+  },
+  "candidate_benign": "B1 and B2 and B3 (primary = any-group AF); also the overall-AF version and the strict version (B2 requires tested)"
+ },
+ "outputs": "results/promoter_variant_census_20261104/truth_sets/: clinvar_variants.tsv, truth_sets.tsv (counts per element), candidates.tsv (every common variant with B1-B3 evidence), summary.json",
+ "gata2_enhancer": {
+  "_written": "2026-11-04, user asked to replace the GATA2 promoters with the +9.5 intronic enhancer and gave the FIRE peak chr3:128482922-128483424; before any enhancer variant was retrieved (the three ClinVar P/LP enhancer variants had been seen while locating the element)",
+  "windows": "GATA2_E95_W1 chr3:128482922-128483221 and GATA2_E95_W2 chr3:128483125-128483424 (windows.tsv; 97-bp overlap; union 503 bp = the FIRE peak)",
+  "rules": "same as the promoters (ClinVar, gnomAD, GTEx any gene) except B3 = AlphaGenome RNA (GATA2) and DNase only: PromoterAI is a promoter model and has no precomputed scores > 500 bp from a TSS (not applicable, not counted as failing). AlphaGenome track set = GATA2 set (K562, CMP CD34+, hematopoietic multipotent progenitor); one 1 Mb interval centred on the W1+W2 union; top-20% rule over the 1,509 possible SNVs of the union.",
+  "figure": "the enhancer replaces both GATA2 promoter rows in Figure 3 panel c; promoter rows stay in the census tables"
+ }
+}

@@ -1,0 +1,54 @@
+{
+ "_written": "2026-11-04, before any variant in the six windows was retrieved or counted. Approved by the user 2026-11-04; later edits are logged in ANALYSIS_LOG.md with a reason.",
+ "windows": "windows.tsv (1-based inclusive hg38). Six windows: LDLR, HBB, GATA2_IS, GATA2_IG, SLC39A4_W1, SLC39A4_W2 (W1/W2 overlap 58 bp; the SLC39A4 total counts each variant once). TSS/strand from Ensembl 116 MANE; FIRE peaks from the user.",
+
+ "denominator": "all possible SNVs = 3 x window length = 900 per window (SLC39A4 W1+W2 union 542 bp = 1626). Reported next to every observed count.",
+
+ "gnomad": {
+  "release": "gnomAD v4.1 (GraphQL dataset gnomad_r4, reference GRCh38), public API, one request at a time; region query padded 50 bp each side so deletions starting upstream are seen",
+  "primary_dataset": "genomes only (v4.1 genomes, AN up to ~152k alleles). Exomes are not in the main counts: exome coverage falls off with distance from capture targets, so window-to-window counts would not be comparable. Exome-only variants are reported in a separate context column.",
+  "in_gnomad": "genome AC >= 1 and genome FILTER = PASS (empty filters list). Variants with genome AC >= 1 that fail FILTER (AS_VQSR, InbreedingCoeff, ...) are excluded and their number is reported.",
+  "snv_vs_indel": "SNV = ref and alt both 1 bp. Everything else (insertions, deletions, complex) = indel, counted separately. Each alt allele at a multi-allelic site is one variant.",
+  "indel_in_window": "an indel counts if any deleted reference base (pos+1 .. pos+len(ref)-1) or, for an insertion, the base after the insertion point (pos+1) lies in the window",
+  "high_maf_overall": "genome alt-allele AF > 0.01 over all genomes. Sites with alt AF > 0.99 (reference allele is the rare one) are included and flagged.",
+  "high_maf_any_group": "alt AF > 0.01 in at least one genetic-ancestry group with genome AN >= 2000 (ClinGen SVI rule for BA1 group size, Ghosh et al. 2018 Hum Mutat). Groups: afr, amr, asj, eas, fin, nfe, sas (+ ami, mid only if AN >= 2000); 'remaining' excluded.",
+  "also_reported": "AC = 1 (singleton) count; homozygote count >= 1"
+ },
+
+ "gtex": {
+  "release": "GTEx Analysis V10 (gtex_v10; GRCh38, GENCODE v39) via GTEx Portal API v2, one request at a time, only for gnomAD-observed variants (SNVs and indels) matched as chr_pos_ref_alt_b38",
+  "significant": "variant is a significant single-tissue cis-eQTL for the target gene (window's gene) in at least one tissue (Portal singleTissueEqtl, GTEx per-gene FDR threshold)",
+  "tested_not_significant": "variant is in the GTEx V10 variant table with maf01 = true (MAF >= 1% in GTEx genotypes, the eQTL testing cutoff) and is not significant for the target gene",
+  "not_tested": "variant absent from the GTEx V10 variant table, or present with maf01 = false",
+  "not_an_eqtl": "primary = not significant for the target gene in any tissue (tested-not-significant + not tested). Strict version = tested and not significant.",
+  "caveat": "maf01 is a whole-cohort flag; per-tissue MAF can fall below 1% in small tissues, so 'tested' means testable in principle.",
+  "secondary_columns": "significant for any gene (V10); significant for target gene in GTEx V8 (gtex_v8); in a GTEx V8 fine-mapped credible set for the target gene (DAP-G, CaVEMaN or SuSiE; the V10 API returns no fine-mapping)"
+ },
+
+ "alphagenome": {
+  "model": "AlphaGenome API, client alphagenome 0.10.0 (venv large_home/envs/alphagenome), key read from ~/.config/alphagenome/key, never printed; requests sequential",
+  "interval": "1 Mb (SEQUENCE_LENGTH_1MB) centred on the window midpoint",
+  "variants": "all gnomAD-observed variants (SNVs and indels) and all possible SNVs in every window",
+  "scorers": "recommended scorers: RNA_SEQ gene-mask LFC for the target gene; CAGE center-mask 501 bp DIFF_LOG2_SUM; DNASE center-mask 501 bp DIFF_LOG2_SUM (DNase reported but not part of the no-effect call)",
+  "score_used": "quantile_score: rank of the raw score among common variants (gnomAD v3 MAF > 0.01), range about -1 to 1 (AlphaGenome docs FAQ). Raw scores are saved too.",
+  "threshold": "no effect = |quantile_score| < 0.99 in every RNA_SEQ (target gene) and CAGE track of the gene's biosample set, i.e. no track puts the variant in the top 1% of common-variant effects. NOT an official cutoff: the developers state there is no recommended threshold. Sensitivity: 0.95.",
+  "biosample_sets": {
+   "LDLR": "HepG2 (EFO:0001187); liver (UBERON:0002107, 0001114, 0001115)",
+   "HBB": "K562 (EFO:0002067); venous blood (UBERON:0013756, RNA); blood (UBERON:0000178), bone marrow (UBERON:0002371), umbilical cord blood (UBERON:0012168), bone marrow cell (CL:0002092) (CAGE). No adult erythroid biosample exists in AlphaGenome.",
+   "GATA2_IS, GATA2_IG": "K562; common myeloid progenitor CD34+ (CL:0001059); hematopoietic multipotent progenitor (CL:0000837) (RNA); bone marrow, bone marrow cell, umbilical cord blood (CAGE)",
+   "SLC39A4_W1, SLC39A4_W2": "small intestine (UBERON:0002108); duodenum (UBERON:0002114, CAGE); Caco-2 (EFO:0001099); intestinal epithelial cell (CL:0002563, CAGE)"
+  },
+  "also_reported": "same call over ALL RNA_SEQ (target gene) and CAGE tracks of any biosample (strict); HepG2 and HEK293 (CAGE only) for every gene, as the current experiment's cell lines"
+ },
+
+ "promoterai": {
+  "source": "precomputed scores promoterAI_tss500.tsv.gz (Illumina academic licence copy, projects/LDLR_MPRA/promoterai/, md5 f6ac61c2ea66313222c4ba2d1c94033e). Jaganathan, Ersaro, Novakovsky et al., Science 2025, doi:10.1126/science.ads7373.",
+  "variants": "SNVs only (precomputed file has no indels; indels reported as not scored). All possible SNVs in each window plus the gnomAD SNVs.",
+  "tss": "score relative to the transcript that defines the window (windows.tsv transcript column; for GATA2_IG the IG transcript ENST00000487848). Max |score| across all transcripts of the gene is reported as a sensitivity column.",
+  "threshold": "no effect = |score| < 0.1, the lowest of the recommended thresholds (+/-0.1, +/-0.2, +/-0.5; PromoterAI README). Sensitivity: |score| < 0.2. Sign: negative = predicted under-expression."
+ },
+
+ "intersection": "SNVs that are (1) in gnomAD genomes PASS, (2) AF > 1% (overall; also any-group version), (3) not a GTEx V10 eQTL for the target gene (primary; strict = tested and not significant), (4) AlphaGenome no effect, (5) PromoterAI no effect. Indels are counted through step 3 only.",
+
+ "outputs": "results/promoter_variant_census_<YYYYMMDD>/ : counts.tsv (main table per window and per gene), funnel.tsv (count after each filter step), variants.tsv (one row per gnomAD variant with all columns), all_snvs.tsv (all possible SNVs with predictor scores), summary.json with resource versions and md5s."
+}

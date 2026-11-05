@@ -793,3 +793,139 @@ journal; general figure defaults apply).
 - Join: fig_A_v9/panel_a.tsv (633 SNVs) to clinical_raw/clinvar/esummary.json by canonical SPDI (NC_000019.10, single-base substitutions). All 104 classified SNVs have a record (84 VUS, 6 conflicting, 6 B/LB, 8 P/LP).
   - ClinVar titles: 64 NC_000019.10 g., 22 NM_000527.5 c., 17 NM_000527.4 c., 1 NR_163945.1. No position disagreements: every NM title's c. equals the panel c. (NM_000527.5), and every g. position equals hg38.
 - Labels: HGVS c. (NM_000527.5) and VCV accession; the TSV adds the full ClinVar title, classification, review status, hg38 and MPRA log2.
+
+## 2026-11-04 — Figure 3 draft 10 (population evidence in b; truth-set potential panel c)
+- User: reformat panel b to show the multi-modal categorisation of LDLR controls and the potential of the new promoters.
+  Rules: fig3_rules.json layout_draft10 + tools/promoter_variant_census/truth_set_rules.json (written before computing).
+- Output: results/r01_figure_20261102/fig3_v10/ (page 7.2 x 10.45 in). fig3.py now takes --census.
+- b: rows regrouped Population (gnomAD v4.1 genomes common = AF > 1% in a group with AN >= 2000; GTEx V10 eQTL any
+  gene) / Predicted (AG RNA, AG DNase, PromoterAI) / Measured (MPRA, Fiber-seq). Population rows are not in 'any
+  readout'. Population: c.-217C>T common (afr 1.04%); c.-135C>G, c.-205G>T, c.-97G>C rare; all 14 not tested in GTEx.
+- c (new): per element ClinVar P/LP, B/LB, VUS/conflicting and the candidate-benign funnel (census truth_sets.tsv).
+- d: former c, unchanged. File renamed panel_d_points.tsv.
+- Verification: panel_b_matrix.tsv and the scatter points equal draft 9 after ordering; margins, cutoffs and quadrant
+  counts identical. Draft 9 untouched. Two intermediate renders (layout fixes: c title overlap, d clipped) deleted.
+
+## 2026-11-04 — Figure 2 draft 5 (fig2_v5): consolidated to 4 panels; HepG2 replication
+- User review of draft 4: (1) show the plasmid map once; (2) drop panel e if one of c/e must go; (3) HepG2 luciferase is weak for both alleles, so test whether the chromatin change carries over to HepG2; (4) add the clinical evidence for c.-169A>G.
+- Rules written before computing: `fig2_rules.json` → `revision_draft5`.
+- Clinical evidence:
+  - ClinVar: no record. Searched NM_130849.4/.3 c.-169A>G and NC_000008.11 g.144416958T>C via eutils; the gnomAD ClinVar link is also empty.
+  - gnomAD v4 (API, 2026-11-04): 8-144416958-T-C exomes AC 2 / AN 566,338, 0 homozygotes, no filters, no rsID; not in genomes.
+  - Source for pathogenicity: Zalusky et al. 2024, Genet Med Open, doi 10.1016/j.gimo.2024.101833 (PMC11484281). The variant is reported as g.144416958T>C, the same base as c.-169A>G (minus-strand gene).
+    - Child with acrodermatitis enteropathica: plasma zinc 0.26 µg/mL (normal 0.6–1.2); rash resolved on zinc.
+    - In trans with p.(Trp401*) (c.1203G>A, g.144414042C>T), phased by targeted long-read sequencing. Parents were unavailable.
+    - ACMG: likely pathogenic on PM2/PM3/PP3/PP4; pathogenic after PS3 from the HEK293 luciferase. The clinical lab reported it as a VUS.
+  - The figure shows "likely pathogenic (PM2, PM3, PP3, PP4)", so that panel b stays independent of the classification.
+  - The paper says HEK293, while Fig. S15A says HEK293T. Not resolved; the figure keeps S15A's label.
+- HepG2 data (user OK to restore):
+  - Source: Kopah `ft_data/plasmid_fiberseq/SLC39A4_HepG2/rep_{1..4}/plasmid_bams_processed/SLC39A4{WT,MUT}/*_50_range_exact_reads.bam` → `data/kopah_restore/SLC39A4_HepG2/`. rclone check: 0 differences; log `r01_restore_20261104_slc39a4_hepg2.log`.
+  - Same construct contigs and file type as HEK293T.
+- HepG2 processing (`tools/r01_figure/fig2_hepg2.sh` → `fig2/hepg2/`):
+  - FiberHMM 2.12.0 `fiberhmm-call --circular` with the same flags as `run_fiberhmm.sh`, then `occupancy.py` run unchanged.
+  - Orientation QC (`fig2/hepg2/qc/`): spans are in stored orientation. m6A inside nucleosomes is 2.8–3.1% as stored and ~30% if flipped, as for HEK293T.
+  - Attrition (`fig2/hepg2/attrition.tsv`, reads → kept):
+
+    | Rep | WT | Variant |
+    |---|---|---|
+    | 1 | 1,830 → 1,718 | 1,952 → 1,841 |
+    | 2 | 34,380 → 33,236 | 37,902 → 36,511 |
+    | 3 | 46,175 → 44,783 | 51,445 → 49,893 |
+    | 4 | 2,384 → 2,286 | 2,589 → 2,506 |
+
+    - Drops are unresolved reads plus ≤20 per BAM with no base call at 6120.
+    - Genotype vs file: 0 of 172,774 kept reads disagree.
+- Panel d, HepG2 (`fig2_v5/site_stats_HepG2.tsv`): reads with a 20–60 bp footprint over c.-169, Fisher exact test within each replicate.
+
+  | Rep | WT | Variant | Odds ratio | Fisher p |
+  |---|---|---|---|---|
+  | 1 | 170/1,718 (9.9%) | 39/1,841 (2.1%) | 5.1 | 3.5e-24 |
+  | 2 | 1,950/33,236 (5.9%) | 363/36,511 (1.0%) | 6.2 | 1.1e-304 |
+  | 3 | 4,599/44,783 (10.3%) | 481/49,893 (0.96%) | 11.8 | <1e-300 |
+  | 4 | 107/2,286 (4.7%) | 19/2,506 (0.76%) | 6.4 | 1.9e-18 |
+
+  - The HEK293T rows are identical to draft 4 (`site_stats_HEK293T.tsv`).
+- Whole-plasmid specificity (legend only; `whole_plasmid_delta_<cell>.tsv`, `summary.json`): mean WT − variant Δ at the variant base vs the largest |mean Δ| outside the promoter.
+  - HEK293T: 7.55 vs 1.13 percentage points.
+  - HepG2: 6.40 vs 0.61 percentage points.
+- Trace (HepG2 rep 4): occupancy matrix at plasmid 6120 gives WT 107/2,286 and variant 19/2,506. A direct recount from the fp BAMs, which re-parses the MA tags without `occupancy.py`, gives the same.
+- Layout:
+  - a: patient alleles (NM_130849.4 to scale, p.Trp401* in exon 7, c.-169A>G) in trans, with an evidence strip; one construct map and the NF-Y logo below. The old panel e plasmid bar is removed.
+  - b: luciferase, unchanged.
+  - c: HEK293T occupancy, unchanged.
+  - d: HEK293T and HepG2 side by side, on separate axes, never pooled.
+  - Page height 5.5 → 5.2 in.
+- Input md5s (HepG2) are listed below:
+  - 2da1a4251128b22f1472da96bbdd6f04 rep_1 WT; 39d621852a3373be045cd41fd57591a3 rep_1 MUT
+  - e39e266e398e6c3f0375ebe89e539934 rep_2 WT; fd06575882adff9c02e0cc116f6d94a4 rep_2 MUT
+  - 7b866f5100c39cce209516fdc41ace52 rep_3 WT; d3eeac7126209d634d345d3b79597550 rep_3 MUT
+  - 71e9b0ee2e92fdb0836df9cf2107981b rep_4 WT; fc81d2154bb0503eb01f4008ab1aca95 rep_4 MUT
+- The grant bundle still holds draft 4 until the user approves draft 5. Nothing committed.
+
+## 2026-11-04 — Figure 2 draft 6 (fig2_v6): plasmid loop, no allele schematic
+- User: remove the patient-allele schematic from panel a; draw the feature map as a plasmid (backbone wrapped into a loop), keeping the promoter and luciferase where they are. Rules: `fig2_rules.json` → `revision_draft6` (layout only).
+- Panel a: features unchanged (to scale along the straight edge). The backbone closes into a loop above them; the loop is not to scale. "Reporter plasmid" sits inside the loop.
+- Clinical evidence kept as text right of the NF-Y logo. "In trans with p.Trp401* (long-read phasing)" was added, since the schematic that showed it is gone.
+- Panel d: integer y ticks. Page height 5.2 → 4.7 in.
+- No new numbers: site_stats_HEK293T.tsv and site_stats_HepG2.tsv are identical to draft 5. Nothing committed; the grant bundle still holds draft 4.
+
+## 2026-11-04 — Figure 2 draft 7 (fig2_v7): clinical text removed from the figure
+- User: remove the paper text. The panel-a evidence block (Zalusky et al. 2024 patient details, gnomAD, ACMG codes) is removed and moves to the legend. Rules: `fig2_rules.json` → `revision_draft7` (layout only).
+- No new numbers: site_stats tables are identical to draft 6, and the SVG has no Zalusky/gnomAD/ACMG text. Nothing committed; the grant bundle still holds draft 4.
+
+## 2026-11-04 — Figure 3 draft 11 (GATA2 +9.5 enhancer in panel c)
+- User: replace the GATA2 promoters with the +9.5 intronic enhancer (FIRE peak chr3:128482922-128483424). Rules:
+  fig3_rules.json layout_draft11. Output: results/r01_figure_20261102/fig3_v11/.
+- Panel c rows: LDLR, HBB, GATA2 +9.5 enhancer (2 windows, 503 bp; AlphaGenome only), SLC39A4. GATA2 enhancer:
+  P/LP 2, B/LB 85, VUS/conflicting 14, possible 1,509, gnomAD 128, common 2, not eQTL 1, predicted no effect 1.
+- Panels a, b, d: panel_b_matrix.tsv, panel_b_population.tsv and panel_d_points.tsv byte-identical to draft 10.
+- Grant bundle: Figure3_LDLR.png replaced with fig3_v11 (user: 'Yes, replace it'); FIGURE_GOALS.md Figure 3 section updated to panels a-d.
+
+## 2026-11-04 — Figure 2 draft 8 (fig2_v8): two-panel strip (whole-plasmid track + luciferase)
+- User: show only the whole-plasmid track (draft-4 panel e), the variant location with the NF-Y motif, and the luciferase; shrink as far as text stays legible. Rules: `fig2_rules.json` → `revision_draft8` (layout only, written before the build).
+- a: HEK293T WT − variant 20–60 bp occupancy over the whole plasmid (mean of 3 per-replicate tracks, sigma 3 bp; the same `whole_plasmid_delta_HEK293T.tsv` as drafts 5–7), drawn directly above the one construct map on a shared x axis. x runs in gene orientation from the promoter fragment's 5′ end (plasmid 6273) and wraps round the circle, so the promoter and luciferase read left to right; map to scale, 1-kb bar, no loop. NF-Y logo as a zoom from the c.-169 peak, variant column boxed and labelled c.-169A>G.
+- b: luciferase (S15A HEK293T crop), scaled 0.68 so its smallest text is 6.0 pt.
+- Dropped: draft-7 c (occupancy around the motif) and d (per-replicate site test, HEK293T and HepG2). HepG2 is not drawn; its tables stay in the output for the legend.
+- Page 7.2 × 4.7 in → 7.2 × 2.1 in. Smallest text 6 pt.
+- No new numbers: whole_plasmid_delta_{HEK293T,HepG2}.tsv and site_stats_{HEK293T,HepG2}.tsv are byte-identical to draft 7. Plotted peak = 7.55 pp at plasmid 6120 (c.-169); largest |Δ| outside the promoter 1.13 pp. SVG text is live Arial (30 runs). Nothing committed; the grant bundle still holds draft 4.
+
+## 2026-11-04 — Figure 3 draft 12: HEK293T coverage row in panel b (fig3_rules.json layout_draft12)
+
+User asked for the HEK293T plasmid Fiber-seq accessibility test on the panel-b controls. Coverage was checked
+first (no HEK293T variant-vs-WT value computed or viewed): 6 of 14 controls have any HEK293T molecules, and
+each rests on 1-2 barcode clones with >= 100 molecules (c.-136C>T: 2; c.-168A>G, c.-149C>A, c.-197G>A,
+c.-166A>G: 1; c.-99A>G: 2 molecules). None meets the analysis_v2 rule of >= 3 clones per testable HEK293T SNV,
+HEK293T single-clone tests run hot on WT pseudo-variants, and HEK293T has no LLR nucleosome-size calls yet.
+User chose a coverage row only: 'Plasmid Fiber-seq, HEK293T' in the Measured group shows clones >= 100 molecules
+(labeling > 0.01) per control, '–' for none, n.t. in the margins, not part of 'any readout'; one footnote line.
+Output results/r01_figure_20261102/fig3_v12/ (new panel_b_hek293t.tsv); panels a, c, d unchanged. The grant
+bundle still holds draft 11.
+
+## 2026-11-04 — Figure 3 draft 13: HEK293T accessibility row in panel b (fig3_rules.json layout_draft13)
+
+User: take every HEK293T variant with sufficient coverage regardless of barcode diversity, measure accessibility vs WT
+and show up/down. Rule written before computing. New `tools/r01_figure/hek_fiberseq.py` = the HepG2 row's endpoint
+(repeat3.hepg2) on HEK293T run 1: labeling >= 0.2, plasmid-LLR with HEK293T fold-A emissions on the reversed element
+(contig LDLR 3236-3447), confident >= 81-bp call with midpoint in the element, A7 mask on variant and WT; SNVs with
+>= 100 molecules, no clone rule. Check: the same code pointed at HepG2 run 3 reproduces nucleosome_all.tsv exactly
+(117A>G, 149C>T, 88G>A: shares, n and D identical).
+- HEK293T: WT 82,674 molecules (confident >= 81-bp share 0.211); 108 of 172 SNVs with molecules pass coverage
+  (median 563 molecules, median 6 clones). Top-20% cutoff 3.71 points. Raw and labeling-standardised change agree
+  in sign for 91% of SNVs.
+- Controls covered: c.-168A>G +2.6 (396 molecules, 94% one clone), c.-136C>T -6.9 (1,541, 2 clones; large),
+  c.-197G>A +2.2 (255, 96% one clone), c.-166A>G +2.4 (937, 99% one clone). c.-149C>A has 97 molecules at labeling
+  >= 0.2: below coverage. Margins: P/LP 1/2, B/LB 0/2, rare-in-gnomAD 4/20.
+- Output results/r01_figure_20261102/hek_fiberseq_20261104/ and fig3_v13/ (panel_b_hek293t.tsv). Draft 12 (coverage
+  row) superseded and its render folder removed; the grant bundle still holds draft 11.
+
+## 2026-11-04 — Figure 3 draft 14: panel b population rows and margins (fig3_rules.json layout_draft14)
+
+User requests. (1) gnomAD row shows the gnomAD v4.1 allele frequency (genomes + exomes joint, AC sum / AN sum)
+instead of the > 1% call: 7 of 14 controls are in gnomAD, 4 in genomes (c.-135C>G, c.-217C>T, c.-205G>T, c.-97G>C)
+and 3 exome-only (c.-152C>T, c.-149C>A, c.-122C>A); P/LP 3/8, B/LB 4/6. Only c.-217C>T is above 1e-5 (joint
+1.1e-3; genomes 0.31%; African/African American genomes 1.04%). (2) GTEx V10: only c.-217C>T is in the GTEx
+variant table, MAF < 1% in donors, so not tested; the other 13 are absent (row now separates n.t. from absent).
+GTEx V10 lists 219 significant LDLR eQTL variants in 13 tissues (none in Liver); the nearest is rs17248727 at
+1.6 kb upstream of the TSS, so no GTEx per-variant data exist for any control. (3) 'Rare in gnomAD' margin column
+removed. (4) 'Any readout' row removed. Height 10.51 in. Output results/r01_figure_20261102/fig3_v14/; the
+grant bundle still holds draft 11.

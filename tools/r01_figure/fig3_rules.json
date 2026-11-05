@@ -131,5 +131,41 @@
   "margin": "drop the 'All SNVs' column (20% by construction for every single row); margin = P/LP, B/LB, rare in gnomAD",
   "key": "first key line states the baseline and the any-readout share from the data: 'top 20% of 633 SNVs; any readout: 49% of SNVs'",
   "not_adopted": "bottom-20% 'no change' tier (exploratory check 2026-11-03): rank is not a noise floor for the measured assays; a normal call would need a WT-vs-WT reference"
+ },
+ "layout_draft10": {
+  "_written": "2026-11-04, user approved ('Approve all') the truth-set definitions (tools/promoter_variant_census/truth_set_rules.json) and this layout; before ClinVar for the new windows was queried and before draft 10 was computed.",
+  "panel_a": "unchanged",
+  "panel_b": "same 8 P/LP and 6 B/LB LDLR controls; rows grouped by evidence type: Population (gnomAD v4.1 genomes: common = AF > 1% in any group with AN >= 2000; GTEx V10: eQTL for any gene / tested / not tested), Predicted (AlphaGenome HepG2 RNA, AlphaGenome HepG2 DNase, PromoterAI; top-20% rule unchanged), Measured (MPRA, plasmid Fiber-seq; unchanged); then 'any readout' over the five functional rows (unchanged). Population rows are not part of 'any readout'. Controls meeting B1 are marked. Margin unchanged.",
+  "panel_c_new": "truth-set potential per element (LDLR, HBB, GATA2 IS, GATA2 IG, SLC39A4 W1+W2): ClinVar P/LP, ClinVar B/LB, and candidate-benign funnel all possible SNVs -> in gnomAD -> B1 common -> B2 not eQTL -> B3 predicted no effect; from truth_sets/truth_sets.tsv",
+  "panel_d": "former panel c (MPRA x Fiber-seq scatter), unchanged",
+  "page": "height grows to fit panel c"
+ },
+ "layout_draft11": {
+  "_written": "2026-11-04, user: replace the GATA2 promoters with the +9.5 intronic enhancer (FIRE peak chr3:128482922-128483424); before draft 11 was computed",
+  "panel_c": "rows LDLR, HBB, GATA2 +9.5 enhancer (2 windows, 503 bp), SLC39A4 (2 windows); title 'promoter or enhancer window'; enhancer 'predicted no effect' uses AlphaGenome only (PromoterAI not applicable), stated in the row note and footnote",
+  "other_panels": "unchanged"
+ },
+ "layout_draft12": {
+  "_written": "2026-11-04, user chose 'Coverage row only' after seeing HEK293T molecule and clone counts per panel-b control (no HEK293T variant-vs-WT value computed or viewed)",
+  "panel_b_hek293t_row": "Measured group, after the HepG2 plasmid Fiber-seq row: 'Plasmid Fiber-seq, HEK293T' coverage only, no effect. Cell = number of barcode clones carrying the variant with >= 100 molecules of labeling > 0.01 (analysis_v2 a10_effects MIN_CLONE_MOLECULES and a9_framework E1_MIN); '–' = no HEK293T molecules. A variant needs >= 3 such clones to be testable (rules.json HEK293T A10: SNVs with < 3 clones not testable), so every control is marked not tested. Not part of 'any readout'; margin columns '–'.",
+  "source": "results/analysis_v2_20261028/a9_statistics/extract/HEK293T_run1 (meta.npz label/clone, molecules.npz distal_frac); written to panel_b_hek293t.tsv",
+  "cell_lines": "HEK293T kept as its own row, never pooled with HepG2 (README rule)",
+  "other_panels": "unchanged; figure height grows by the row and one footnote line"
+ },
+ "layout_draft13": {
+  "_written": "2026-11-04, user: 'take any variant that has sufficient coverage, regardless of barcode diversity; measure the variant accessibility effect relative to WT and put an arrow up or down'. Written before any HEK293T variant-vs-WT value was computed. Replaces the draft-12 coverage-only row",
+  "molecules": "HEK293T run 1 (results/analysis_v2_20261028/a9_statistics/extract/HEK293T_run1), labeling >= 0.2 (a9_framework E2_MIN, as the HepG2 row), all clones; WT reference = every WT molecule with labeling >= 0.2",
+  "coverage": ">= 100 variant molecules with labeling >= 0.2 (the HepG2 row's MIN_MOLECULES); no clone requirement (user). Post hoc with respect to the analysis_v2 rule that HEK293T SNVs need >= 3 clones",
+  "endpoint": "same as the HepG2 row: share of molecules with a confident (P_chance < 1e-3) >= 81-bp plasmid-LLR call with midpoint in the element (contig LDLR 3236-3447, reversed), called with the HEK293T fold-A emissions (results/hek293t_llr_20261028); A7 primary mask (HepG2 catalog mapped to the reversed element, as A10 HEK293T motif mode) applied to the variant's and WT molecules before calling. Accessibility change = -100 x (variant share - WT share), plain difference (as HepG2); the labeling-standardised D is written alongside",
+  "flag": "large change = |accessibility change| in the top 20% across all HEK293T SNVs meeting coverage (the panel's top-20% rule, applied within HEK293T); triangle up/down = more/less accessible; dot = smaller change; '–' = below coverage or absent",
+  "display": "own row 'Plasmid Fiber-seq, accessibility, HEK293T' under the HepG2 row; never pooled with HepG2; not part of 'any readout' (unchanged, HepG2 rows only); margin = large-change counts over HEK293T-covered controls",
+  "caveat": "one or two barcode clones per variant: a clone-specific (barcode or backbone) difference cannot be told from the variant's effect; HEK293T genotype/barcode audit (A3) not done"
+ },
+ "layout_draft14": {
+  "_written": "2026-11-04, user requests for panel b: show the gnomAD allele frequency instead of the > 1% call; which controls are in GTEx; drop the 'Rare in gnomAD' margin column; drop the 'Any readout' row",
+  "gnomad_row": "cell = gnomAD v4.1 allele frequency, genomes + exomes joint (AC sum / AN sum, as the gnomAD browser total), from the census variants.tsv; '·' = not in gnomAD (AC 0 in both). c.-217C>T's highest group (African/African American genomes, 1.04%) stated in the footnote. Margin = number in gnomAD per class",
+  "gtex_row": "'n.t.' = in the GTEx V10 variant table but MAF < 1% in GTEx donors, so not tested for eQTLs; '·' = not in the GTEx V10 variant table; (filled/open circle for eQTL/tested kept, none occur). Margin = eQTLs per class",
+  "removed": "'Rare in gnomAD' margin column; 'Any readout' row and its footnote text",
+  "other_panels": "unchanged"
  }
 }

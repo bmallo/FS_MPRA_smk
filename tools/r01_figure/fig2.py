@@ -1,17 +1,19 @@
-"""Grant Figure 2 (draft 3): SLC39A4 c.-169A>G disrupts the NF-Y footprint and promoter activity (fig2_rules.json).
-Output is one Illustrator-editable SVG (live Arial text), plus PDF and PNG renders (rsvg-convert with fonts.conf).
+"""Grant Figure 2 (draft 8): SLC39A4 c.-169A>G disrupts the NF-Y footprint and promoter activity (fig2_rules.json,
+revision_draft5-8). Output is one Illustrator-editable SVG (live Arial text), plus PDF and PNG renders (rsvg-convert with
+fonts.conf).
 
-Inputs are the SLC39A4_variant_slide project's outputs (HEK293T plasmid Fiber-seq, WT and c.-169A>G co-transfected,
-3 replicates): analysis/occ_<rep>_<allele>.npy (reads with a footprint of size s covering plasmid position p),
-n_<rep>_<allele>.txt (kept reads), reads.tsv.gz (per read: allele, kept, site_fp), motifs/MA0060.4.jaspar, and
-Fig. S15A (HEK293T half) as vector: fig2_s15_svg.py exports Supplemental.pdf page 27 to S15_page_runs.svg, which is
-embedded here clipped to S15_CROP (the raw luciferase values are not on klone). TF-sized footprint = 20-60 bp.
-a  construct map (SnapGene style, to scale, plasmid MAP_P in gene orientation) with c.-169A>G and the NF-Y logo
+Inputs: the SLC39A4_variant_slide project's outputs (HEK293T plasmid Fiber-seq, WT and c.-169A>G co-transfected,
+3 replicates) and the same outputs for HepG2 (4 replicates; fig2_hepg2.sh, identical processing):
+analysis/occ_<rep>_<allele>.npy (reads with a footprint of size s covering plasmid position p), n_<rep>_<allele>.txt
+(kept reads), reads.tsv.gz (per read: allele, kept, site_fp); motifs/MA0060.4.jaspar; and Fig. S15A (HEK293T half) as vector: fig2_s15_svg.py exports Supplemental.pdf page 27 to
+S15_page_runs.svg, embedded here clipped to S15_CROP (the raw luciferase values are not on klone).
+TF-sized footprint = 20-60 bp. Cell lines are never pooled or overlaid.
+a  whole plasmid: WT - variant TF-sized occupancy (HEK293T, mean of the per-replicate tracks, Gaussian sigma SIGMA bp)
+   above the construct map (to scale, gene orientation from the promoter's 5' end, wrapping round), variant tick and
+   the NF-Y logo as a zoom from the c.-169 peak
 b  luciferase (Fig. S15A, HEK293T)
-c  TF-sized occupancy around the NF-Y motif, WT vs variant, reps pooled, Gaussian sigma SIGMA bp
-d  per replicate: % of kept reads with a 20-60 bp footprint over the variant base; Fisher exact test per replicate
-e  whole plasmid: WT - variant TF-sized occupancy, mean of the 3 replicates, Gaussian sigma SIGMA bp
-Usage: python tools/r01_figure/fig2.py --project <SLC39A4_variant_slide> --output <dir>
+Per-replicate site tests (site_stats_<cell>.tsv) and the HepG2 whole-plasmid track are written for the legend only.
+Usage: python tools/r01_figure/fig2.py --project <SLC39A4_variant_slide> --hepg2 <fig2/hepg2> --s15 <svg> --output <dir>
 """
 import argparse
 import json
@@ -19,11 +21,11 @@ import os
 import re
 import subprocess
 import sys
-from datetime import date
 from pathlib import Path
 
 import matplotlib
-matplotlib.use('Agg')
+matplotlib.use("Agg")
+import matplotlib.ticker  # noqa: E402
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
@@ -50,56 +52,46 @@ INK, INK2 = '#2E2E2E', '#666666'
 WT_C, VAR_C, TF_C = '#2E3192', '#E3191F', '#338B8C'          # WT / variant as Fig. S15A; TF teal as Figure 1
 PROM_C, LUC_C = '#B9BCE6', '#F2C14E'
 LETTER_C = {'A': '#109648', 'C': '#255C99', 'G': '#F7B32B', 'T': '#D62839'}
-REPS = ['rep_1', 'rep_2', 'rep_3']
+REPS = {'HEK293T': ['rep_1', 'rep_2', 'rep_3'], 'HepG2': ['rep_1', 'rep_2', 'rep_3', 'rep_4']}
 L = 6466                                  # plasmid length (bp)
 PROM, LUC, VPOS1 = (5215, 6273), (2916, 4568), 6120          # 1-based plasmid features; variant c.-169
 ATG_A = 5951                              # 1-based plasmid position of the ATG A; c.-x = ATG_A + x
 MOTIF_P = ATG_A + 170                     # NF-Y CCAAT core centre (c.-170)
 TF = (20, 60)
-SIGMA, HALF = 3, 150
-W_IN, H_IN = 7.2, 5.5
+SIGMA = 3
+W_IN, H_IN = 7.2, 2.1
 S15_CROP = (56.0, 68.0, 140.0, 216.0)        # x, y, w, h (PDF pt): Fig. S15A HEK293T half, left of the divider
 S15_FRAME_Y = (80.07, 252.83)                 # S15A axes frame (rect x 100.09-322.07, stroke 1 pt): close it at the crop
-MAP_P = (6400, 2800)                          # panel a map window, plasmid coordinates (gene orientation: left = 6400)
+B_H = 147.0                                   # panel b height (pt): S15 text 8.9-12 pt -> >= 6 pt
 
 
-def letter(ax, ch, x, y, w, h, color, prop):
-    tp = TextPath((0, 0), ch, size=1, prop=prop)
-    bb = tp.get_extents()
-    t = Affine2D().translate(-bb.x0, -bb.y0).scale(w / bb.width, h / bb.height).translate(x, y)
-    ax.add_patch(PathPatch(t.transform_path(tp), fc=color, ec='none', zorder=2))
+def gx(p):
+    """Plasmid position -> bp from the promoter fragment's 5' end, gene orientation, wrapping round the circle."""
+    return (PROM[1] - np.asarray(p)) % L
 
 
-def feature_arrow(ax, x0, x1, y, h, color, label, tc, gid, lx=None):
+def feature_arrow(ax, x0, x1, y, h, color, label, tc, gid, lx=None, fs=6.3):
     """SnapGene-style feature: thin box with a pointed 3' end, label inside."""
     tip = min(6.0, (x1 - x0) * 0.3)
     ax.add_patch(Polygon([[x0, y - h / 2], [x1 - tip, y - h / 2], [x1, y], [x1 - tip, y + h / 2], [x0, y + h / 2]],
                          fc=color, ec='#4A4A4A', lw=0.4, zorder=2, gid=gid))
-    ax.text((x0 + x1 - tip) / 2 if lx is None else lx, y + 0.3, label, fontsize=6.3, fontweight='bold', color=tc,
+    ax.text((x0 + x1 - tip) / 2 if lx is None else lx, y + 0.3, label, fontsize=fs, fontweight='bold', color=tc,
             ha='center' if lx is None else 'left', va='center', zorder=3)
 
 
-def main():
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument('--project', required=True)
-    ap.add_argument('--s15', required=True, help='S15_page_runs.svg from fig2_s15_svg.py')
-    ap.add_argument('--output', required=True)
-    a = ap.parse_args()
-    P, out = Path(a.project), Path(a.output)
-    out.mkdir(parents=True, exist_ok=False)
-    A = P / 'analysis'
-    occ = {al: {r: np.load(A / f'occ_{r}_{al}.npy') for r in REPS} for al in ('WT', 'Var')}
-    n = {al: {r: int(open(A / f'n_{r}_{al}.txt').read()) for r in REPS} for al in ('WT', 'Var')}
-    tf = {al: {r: occ[al][r][TF[0]:TF[1] + 1].sum(0) / n[al][r] for r in REPS} for al in occ}   # share per position
-    pooled = {al: sum(occ[al][r][TF[0]:TF[1] + 1].sum(0) for r in REPS) / sum(n[al].values()) for al in occ}
-    sm = lambda v: gaussian_filter1d(v.astype(float), SIGMA, mode='wrap')   # noqa: E731  (circular plasmid)
+def load(adir, reps):
+    occ = {al: {r: np.load(adir / f'occ_{r}_{al}.npy') for r in reps} for al in ('WT', 'Var')}
+    n = {al: {r: int(open(adir / f'n_{r}_{al}.txt').read()) for r in reps} for al in ('WT', 'Var')}
+    return occ, n
 
-    # d: per-replicate site test from per-read calls
-    reads = pd.read_csv(A / 'reads.tsv.gz', sep='\t')
+
+def site_stats(adir, reps, n):
+    """Per replicate: kept reads with a 20-60 bp footprint covering the variant base, WT vs variant; Fisher exact."""
+    reads = pd.read_csv(adir / 'reads.tsv.gz', sep='\t')
     reads = reads[reads.kept == 1]
     reads['tf_site'] = reads.site_fp.between(*TF)
     stats = []
-    for r in REPS:
+    for r in reps:
         g = reads[reads.rep == r]
         t = pd.crosstab(g.allele, g.tf_site).reindex(index=['WT', 'Var'], columns=[True, False], fill_value=0)
         orr, p = fisher_exact(t.values)
@@ -108,23 +100,41 @@ def main():
                           pct_wt=100 * t.loc['WT', True] / t.loc['WT'].sum(),
                           pct_var=100 * t.loc['Var', True] / t.loc['Var'].sum(), odds_ratio=orr, fisher_p=p))
     S = pd.DataFrame(stats)
-    S.to_csv(out / 'site_stats.tsv', sep='\t', index=False, float_format='%.4g')
-    assert all(S.n_wt == [n['WT'][r] for r in REPS]) and all(S.n_var == [n['Var'][r] for r in REPS])
+    assert all(S.n_wt == [n['WT'][r] for r in reps]) and all(S.n_var == [n['Var'][r] for r in reps])
+    return S
 
-    # c: source table
-    p1 = np.arange(MOTIF_P - HALF, MOTIF_P + HALF + 1)
-    xc = MOTIF_P - p1                                              # gene orientation: upstream (5') on the left
-    csm = {al: sm(pooled[al])[p1 - 1] for al in pooled}
-    pd.DataFrame({'plasmid_pos': p1, 'bp_from_nfy': xc, 'wt_share': pooled['WT'][p1 - 1],
-                  'var_share': pooled['Var'][p1 - 1], 'wt_smooth': csm['WT'], 'var_smooth': csm['Var']}).to_csv(
-        out / 'panel_c_occupancy.tsv', sep='\t', index=False, float_format='%.5g')
-    # e: source table
-    dlt = {r: sm(tf['WT'][r] - tf['Var'][r]) * 100 for r in REPS}
-    dmean = np.mean([dlt[r] for r in REPS], axis=0)                # mean of the 3 replicates (each weighted equally)
-    pd.DataFrame({'plasmid_pos': np.arange(1, L + 1), **{f'delta_pp_{r}': dlt[r] for r in REPS},
-                  'delta_pp_mean': dmean}).to_csv(
-        out / 'panel_e_delta.tsv', sep='\t', index=False, float_format='%.4g')
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument('--project', required=True)
+    ap.add_argument('--hepg2', required=True, help='fig2_hepg2.sh work dir (holds analysis/)')
+    ap.add_argument('--s15', required=True, help='S15_page_runs.svg from fig2_s15_svg.py')
+    ap.add_argument('--output', required=True)
+    a = ap.parse_args()
+    P, out = Path(a.project), Path(a.output)
+    out.mkdir(parents=True, exist_ok=False)
+    adirs = {'HEK293T': P / 'analysis', 'HepG2': Path(a.hepg2) / 'analysis'}
+    sm = lambda v: gaussian_filter1d(v.astype(float), SIGMA, mode='wrap')   # noqa: E731  (circular plasmid)
+    occ, n, S, dlt, spec = {}, {}, {}, {}, {}
+    for cell, reps in REPS.items():
+        occ[cell], n[cell] = load(adirs[cell], reps)
+        S[cell] = site_stats(adirs[cell], reps, n[cell])
+        S[cell].to_csv(out / f'site_stats_{cell}.tsv', sep='\t', index=False, float_format='%.4g')
+        tf = {al: {r: occ[cell][al][r][TF[0]:TF[1] + 1].sum(0) / n[cell][al][r] for r in reps} for al in ('WT', 'Var')}
+        dlt[cell] = {r: sm(tf['WT'][r] - tf['Var'][r]) * 100 for r in reps}           # panel a (HEK293T)
+        dmean = np.mean([dlt[cell][r] for r in reps], axis=0)                       # replicates weighted equally
+        pd.DataFrame({'plasmid_pos': np.arange(1, L + 1), **{f'delta_pp_{r}': dlt[cell][r] for r in reps},
+                      'delta_pp_mean': dmean}).to_csv(out / f'whole_plasmid_delta_{cell}.tsv', sep='\t', index=False,
+                                                      float_format='%.4g')
+        outside = np.r_[dmean[:PROM[0] - 1], dmean[PROM[1]:]]
+        spec[cell] = dict(mean_delta_at_variant_pp=float(dmean[VPOS1 - 1]),
+                          max_abs_mean_delta_outside_promoter_pp=float(np.abs(outside).max()),
+                          delta_at_variant_pp={r: float(dlt[cell][r][VPOS1 - 1]) for r in reps})
+
     commit = subprocess.run(['git', 'rev-parse', '--short', 'HEAD'], capture_output=True, text=True).stdout.strip()
+    dmean = pd.read_csv(out / 'whole_plasmid_delta_HEK293T.tsv', sep='\t').delta_pp_mean.to_numpy()   # as drawn
+    order = np.argsort(gx(np.arange(1, L + 1)))
+    xg, yg = gx(np.arange(1, L + 1))[order], dmean[order]
 
     fig = plt.figure(figsize=(W_IN, H_IN))
     Wpt, Hpt = W_IN * 72, H_IN * 72
@@ -135,124 +145,71 @@ def main():
     def letter_lab(ch, x, y):
         fig.text(x / Wpt, 1 - y / Hpt, ch, fontsize=10, fontweight='bold', va='top', ha='left')
 
-    # ---- a: schematic (points, y down)
-    letter_lab('a', 4, 6)
-    ax = axpt(14, 14, 318, 150)
-    ax.set_xlim(14, 318)
-    ax.set_ylim(150, 14)
-    ax.axis('off')
-    yb, bh = 40, 10                                                # to scale, gene orientation (plasmid MAP_P0 -> MAP_P1)
-    mx0, mx1 = 24.0, 306.0
-    xm = lambda p: mx0 + (MAP_P[0] - p) / (MAP_P[0] - MAP_P[1]) * (mx1 - mx0)   # noqa: E731
-    ax.plot([mx0 - 6, mx1 + 6], [yb, yb], color='#4A4A4A', lw=0.8, solid_capstyle='butt', zorder=1, gid='backbone')
-    for xe in (mx0 - 6, mx1 + 6):                                  # backbone continues (break marks)
-        ax.plot([xe - 1.5, xe + 1.5], [yb + 3, yb - 3], color='#4A4A4A', lw=0.6)
-    feature_arrow(ax, xm(PROM[1]), xm(PROM[0]), yb, bh, PROM_C, 'SLC39A4 promoter', WT_C, 'feature-promoter',
-                  lx=xm(VPOS1) + 3)                             # label starts right of the variant tick
-    feature_arrow(ax, xm(LUC[1]), xm(LUC[0]), yb, bh, LUC_C, 'Luciferase', INK, 'feature-luciferase')
-    xv = xm(VPOS1)
-    ax.plot([xv, xv], [yb - bh / 2 - 1, yb + bh / 2 + 3], color=VAR_C, lw=0.9, zorder=4)
-    ax.add_patch(Polygon([[xv, yb + bh / 2 + 3], [xv - 3.2, yb + bh / 2 + 8.5], [xv + 3.2, yb + bh / 2 + 8.5]],
-                         fc=VAR_C, ec='none', zorder=4))
-    ax.text(xv + 5, yb + bh / 2 + 7, 'c.-169A>G', fontsize=6.5, fontweight='bold', color=VAR_C, va='center')
-    ax.plot([mx1 - xm(0) + xm(500), mx1], [yb - 13, yb - 13], color=INK, lw=0.7)
-    ax.text(mx1 - (xm(0) - xm(500)) / 2, yb - 15, '500 bp', fontsize=5.5, color=INK, ha='center', va='bottom')
+    # ---- a: whole-plasmid WT - variant track over the construct map (shared x, to scale)
+    letter_lab('a', 2, 2)
+    X0, X1, Y0, Y1 = 50.0, 398.0, 8.0, 104.0                      # track axes (pt)
+    ylo, yhi = -1.5, 8.5
+    tax = axpt(X0, Y0, X1, Y1)
+    tax.axhline(0, color=INK2, lw=0.5, zorder=1)
+    tax.plot(xg, yg, color=TF_C, lw=0.8, zorder=2)
+    tax.set_xlim(0, L)
+    tax.set_ylim(ylo, yhi)
+    tax.set_xticks([])
+    tax.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(5, integer=True))
+    tax.spines[['top', 'right', 'bottom']].set_visible(False)
+    tax.set_ylabel('Δ 20–60 bp footprints\n(WT − variant, % reads)', fontsize=6.3, labelpad=2)
+    tax.text(1.0, 0.98, 'HEK293T', transform=tax.transAxes, fontsize=6.3, fontweight='bold', color=INK, ha='right',
+             va='top')
+    ov = axpt(0, 0, Wpt, Hpt)                                       # overlay in pt (map, logo, labels)
+    ov.set_xlim(0, Wpt)
+    ov.set_ylim(Hpt, 0)
+    ov.axis('off')
+    xp = lambda g: X0 + np.asarray(g) / L * (X1 - X0)              # noqa: E731
+    yp = lambda v: Y0 + (yhi - v) / (yhi - ylo) * (Y1 - Y0)         # noqa: E731
+    yb, bh = Y1 + 10, 9                                             # map backbone y, feature height
+    ov.plot([X0, X1], [yb, yb], color='#4A4A4A', lw=0.8, zorder=1, solid_capstyle='butt')
+    feature_arrow(ov, xp(0), xp(gx(PROM[0])), yb, bh, PROM_C, '', WT_C, 'feature-promoter')
+    feature_arrow(ov, xp(gx(LUC[1])), xp(gx(LUC[0])), yb, bh, LUC_C, 'Luciferase', INK, 'feature-luciferase')
+    ov.text(xp(gx(PROM[0])) / 2 + X0 / 2, yb + bh / 2 + 2.5, 'SLC39A4 promoter', fontsize=6.3, fontweight='bold',
+            color=WT_C, ha='center', va='top')
+    xv = xp(gx(VPOS1))
+    ov.plot([xv, xv], [yb - bh / 2 - 1, yb + bh / 2 + 1], color=VAR_C, lw=1.0, zorder=4)
+    kb = xp(1000) - xp(0)
+    ov.plot([X1 - kb, X1], [yb + bh / 2 + 5, yb + bh / 2 + 5], color=INK, lw=0.7)
+    ov.text(X1 - kb / 2, yb + bh / 2 + 6.5, '1 kb', fontsize=6, color=INK, ha='center', va='top')
+    # NF-Y logo, zoomed from the c.-169 peak
     cnt = np.array([[float(x) for x in ln.split('[')[1].split(']')[0].split()]
                     for ln in open(P / 'motifs/MA0060.4.jaspar').read().splitlines()[1:5]])
     pr = (cnt + 0.8) / (cnt.sum(0) + 3.2)
     ic = 2 + (pr * np.log2(pr)).sum(0)
-    cw, bit, ly0 = 13.0, 15.0, 128.0                               # column width, pt per bit, logo baseline
-    lx0 = xv + 40
-    ax.add_patch(Polygon([[xv - 1.5, yb + bh / 2 + 11], [xv + 1.5, yb + bh / 2 + 11],
-                          [lx0 + 8 * cw, ly0 - 2 * bit - 6], [lx0, ly0 - 2 * bit - 6]], fc='#E9E9F4', ec='none',
-                         zorder=0))
+    cw, bit = 9.0, 11.0                                             # column width, pt per bit
+    apex = (xv, yp(dmean[VPOS1 - 1]))
+    lx0, ly0 = xv + 34, Y0 + 44                                      # logo left edge, baseline
+    ov.add_patch(Polygon([apex, [lx0 - 2, ly0 - 2 * bit - 3], [lx0 - 2, ly0 + 2]], fc='#E9E9F4', ec='none', zorder=0))
     bold = FontProperties(family='Arimo', weight='bold')
-    lax = axpt(14, 14, 318, 150)                                   # logo in a y-up copy of the same frame
-    lax.set_xlim(14, 318)
-    lax.set_ylim(150, 14)
-    lax.axis('off')
     for j in range(8):
         y = ly0
         for k in np.argsort(pr[:, j] * ic[j]):
             h = pr[k, j] * ic[j] * bit
-            if h > 0.7:
+            if h > 0.5:
                 tp = TextPath((0, 0), 'ACGT'[k], size=1, prop=bold)
                 bb = tp.get_extents()
-                tr = Affine2D().translate(-bb.x0, -bb.y0).scale((cw - 2) / bb.width, -h / bb.height).translate(
-                    lx0 + j * cw + 1, y)
-                lax.add_patch(PathPatch(tr.transform_path(tp), fc=LETTER_C['ACGT'[k]], ec='none', zorder=2))
+                tr = Affine2D().translate(-bb.x0, -bb.y0).scale((cw - 1.4) / bb.width, -h / bb.height).translate(
+                    lx0 + j * cw + 0.7, y)
+                ov.add_patch(PathPatch(tr.transform_path(tp), fc=LETTER_C['ACGT'[k]], ec='none', zorder=2))
             y -= h
-    ax.plot([lx0 - 2, lx0 + 8 * cw + 2], [ly0 + 1.5, ly0 + 1.5], color=INK2, lw=0.6)
-    vj = 3                                                         # CCA[A]TCAC: variant = motif position 4
-    ax.add_patch(Rectangle((lx0 + vj * cw, ly0 - 2 * bit - 3), cw, 2 * bit + 7, fc='none', ec=VAR_C, lw=1.0,
-                           ls=(0, (3, 1.5)), zorder=3))
-    ax.text(lx0 + (vj + 0.5) * cw, ly0 + 6, 'A>G', fontsize=6.5, fontweight='bold', color=VAR_C, ha='center',
-            va='top')
-    ax.text(lx0 + 8 * cw + 8, ly0 - bit, 'NF-Y motif', fontsize=6.5, fontweight='bold', color=INK, va='center')
+    ov.plot([lx0 - 1, lx0 + 8 * cw + 1], [ly0 + 1, ly0 + 1], color=INK2, lw=0.5)
+    vj = 3                                                          # CCA[A]TCAC: variant = motif position 4
+    ov.add_patch(Rectangle((lx0 + vj * cw, ly0 - 2 * bit - 2), cw, 2 * bit + 5, fc='none', ec=VAR_C, lw=0.8,
+                           ls=(0, (2.5, 1.2)), zorder=3))
+    ov.text(lx0 + (vj + 0.5) * cw, ly0 + 4.5, 'c.-169A>G', fontsize=6.3, fontweight='bold', color=VAR_C,
+            ha='center', va='top')
+    ov.text(lx0 + 8 * cw + 5, ly0 - bit, 'NF-Y motif', fontsize=6.3, fontweight='bold', color=INK, va='center')
 
     # ---- b: luciferase (Fig. S15A, HEK293T)
-    letter_lab('b', 330, 6)
-    b_slot, b_h = (352.0, 12.0), 140.0                              # S15 vector embedded here after saving
-    b_sc = b_h / S15_CROP[3]
-
-    # ---- c: TF occupancy around the motif
-    letter_lab('c', 4, 160)
-    cax = axpt(40, 172, 300, 290)
-    for al, col, lab in (('WT', WT_C, 'WT'), ('Var', VAR_C, 'c.-169A>G')):
-        cax.fill_between(xc, 0, csm[al] * 100, color=col, alpha=0.12, lw=0)
-        cax.plot(xc, csm[al] * 100, color=col, lw=1.2, label=lab)
-    cax.axvspan(-4, 4, color='#E9E9F4', lw=0, zorder=0)
-    cax.set_xlim(-HALF, HALF)
-    cax.set_ylim(0, None)
-    cax.set_xticks([-150, -100, -50, 0, 50, 100, 150], ['−150', '−100', '−50', 'NF-Y', '+50', '+100', '+150'])
-    cax.set_xlabel('Distance from NF-Y motif (bp; 5′ ← → 3′ of SLC39A4)', fontsize=6.5)
-    cax.set_ylabel('Reads with a 20–60 bp\nfootprint (%)', fontsize=6.5)
-    cax.spines[['top', 'right']].set_visible(False)
-    cax.legend(frameon=False, fontsize=6, loc='upper right', handlelength=1.5)
-
-    # ---- d: per-replicate site occupancy
-    letter_lab('d', 330, 160)
-    dax = axpt(392, 172, 500, 290)
-    x = np.arange(2)
-    for i, row in S.iterrows():
-        dax.plot(x, [row.pct_wt, row.pct_var], color='#9A9A9A', lw=0.8, zorder=1)
-        dax.scatter(x, [row.pct_wt, row.pct_var], c=[WT_C, VAR_C], s=18, zorder=2, edgecolor='white', lw=0.4)
-        dax.text(-0.09, row.pct_wt, f'Rep {i + 1}', fontsize=5.5, color=INK2, va='center', ha='right')
-    dax.set_xticks(x, ['WT', 'c.-169A>G'])
-    dax.get_xticklabels()[0].set_color(WT_C)
-    dax.get_xticklabels()[1].set_color(VAR_C)
-    dax.set_xlim(-0.5, 1.4)
-    dax.set_ylim(0, max(S.pct_wt) * 1.25)
-    dax.set_ylabel('Reads with a 20–60 bp footprint\nover c.-169 (%)', fontsize=6.5)
-    dax.spines[['top', 'right']].set_visible(False)
-    pmax = S.fisher_p.max()
-    ptxt = f'Fisher p < 10$^{{{int(np.floor(np.log10(pmax))) + 1}}}$' if pmax > 0 else 'Fisher p < 1e-300'
-    dax.text(0.5, max(S.pct_wt) * 1.16, f'each replicate\n{ptxt}', ha='center', va='center', fontsize=5.8,
-             color=INK)
-
-    # ---- e: whole-plasmid delta
-    letter_lab('e', 4, 314)
-    eax = axpt(40, 324, 500, 380)
-    pos = np.arange(1, L + 1)
-    eax.plot(pos, dmean, color=TF_C, lw=0.8)
-    eax.axhline(0, color=INK, lw=0.5)
-    eax.set_xlim(1, L)
-    eax.set_ylabel('Δ occupancy\n(WT − var., %)', fontsize=6.5)
-    eax.spines[['top', 'right']].set_visible(False)
-    eax.set_xticks([])
-    yl = eax.get_ylim()
-    eax.annotate('c.-169 (NF-Y)', xy=(VPOS1, dmean[VPOS1 - 1]), xytext=(VPOS1 - 700, yl[1] * 0.85),
-                 fontsize=6, ha='right', va='center', arrowprops=dict(arrowstyle='-|>', lw=0.6, color=INK,
-                                                                      mutation_scale=6))
-    fax = axpt(40, 382, 500, 392)                                  # plasmid feature bar
-    fax.set_xlim(1, L)
-    fax.set_ylim(0, 1)
-    fax.axis('off')
-    fax.add_patch(Rectangle((1, 0.42), L - 1, 0.16, fc='#8B9094', lw=0))
-    fax.add_patch(Rectangle((PROM[0], 0.15), PROM[1] - PROM[0], 0.7, fc=PROM_C, lw=0))
-    fax.add_patch(Rectangle((LUC[0], 0.15), LUC[1] - LUC[0], 0.7, fc=LUC_C, lw=0))
-    fax.text((PROM[0] + PROM[1]) / 2, 0.5, 'promoter', fontsize=5.5, ha='center', va='center', color=WT_C)
-    fax.text((LUC[0] + LUC[1]) / 2, 0.5, 'luciferase', fontsize=5.5, ha='center', va='center', color=INK)
+    b_sc = B_H / S15_CROP[3]
+    b_slot = (Wpt - S15_CROP[2] * b_sc - 2, 2.0)                     # S15 vector embedded here after saving
+    letter_lab('b', b_slot[0] - 14, 2)
 
     svg = out / 'fig2.svg'
     fig.savefig(svg, facecolor='white', dpi=300)
@@ -276,14 +233,12 @@ def main():
     subprocess.run([RSVG, '-f', 'pdf', '-o', str(out / 'fig2.pdf'), str(svg)], check=True, env=env)
     subprocess.run([RSVG, '-d', '300', '-p', '300', '-f', 'png', '-o', str(out / 'fig2.png'), str(svg)], check=True,
                    env=env)
-    peak = {al: (int(xc[np.argmax(csm[al])]), float(csm[al].max() * 100)) for al in csm}
-    json.dump(dict(reads=n, tf_bin=TF, sigma=SIGMA, peak_bp_from_nfy_and_pct=peak,
-                   at_variant_pct={al: float(sm(pooled[al])[VPOS1 - 1] * 100) for al in pooled},
-                   delta_at_variant_pp={r: float(dlt[r][VPOS1 - 1]) for r in REPS},
-                   max_abs_delta_outside_promoter_pp={r: float(np.abs(np.r_[dlt[r][:PROM[0] - 1], dlt[r][PROM[1]:]]).max())
-                                                      for r in REPS},
-                   commit=commit), open(out / 'summary.json', 'w'), indent=1)
-    print(S.to_string(index=False))
+    json.dump(dict(reads=n, tf_bin=TF, sigma=SIGMA, whole_plasmid_specificity=spec, commit=commit),
+              open(out / 'summary.json', 'w'), indent=1)
+    for cell in REPS:
+        print(cell)
+        print(S[cell].to_string(index=False))
+    print(json.dumps(spec, indent=1))
 
 
 if __name__ == '__main__':

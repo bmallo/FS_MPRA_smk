@@ -19,5 +19,35 @@
   "panel_b": "side text removed; closing right frame edge at the crop, y 80.07-252.83 PDF pt (the S15A frame rectangle), stroke 1",
   "panel_c": "legend without read counts",
   "panel_e": "mean of the three per-replicate WT - variant tracks (replicates weighted equally)"
+ },
+ "revision_draft5": {
+  "_written": "2026-11-04, after the user's draft-4 review, before any HepG2 number was computed. Goal: consolidate to 4 panels; flow = clinical evidence -> luciferase -> NF-Y footprint loss -> reproducible in HEK293T and HepG2.",
+  "hepg2_source": "Kopah ft_data/plasmid_fiberseq/SLC39A4_HepG2/rep_{1..4}/plasmid_bams_processed/SLC39A4{WT,MUT}/*_50_range_exact_reads.bam, restored 2026-11-04 (user OK) to data/kopah_restore/SLC39A4_HepG2/ (rclone check: 0 differences). Same construct contigs (SLC39A4WT/MUT, 6,466 bp) and file type as the HEK293T inputs.",
+  "hepg2_processing": "identical to HEK293T: fiberhmm-call --enzyme hia5 --seq pacbio --circular --min-mapq 0 --primary -c 4 (same binary as run_fiberhmm.sh); projects/SLC39A4_variant_slide/scripts/occupancy.py run unchanged in results/r01_figure_20261102/fig2/hepg2/ (genotype at plasmid 6120, drop reads with > 30% in > 400 bp footprints); MA orientation re-checked on HepG2 rep 1 with fig2_orientation_qc.py before use. All 4 HepG2 replicates are used; none excluded, whatever their read counts.",
+  "tf_bin": "unchanged: 20-60 bp for both cell lines",
+  "panel_a": "one construct map (draft 3/4 map) with the variant and the NF-Y logo, plus a clinical-evidence inset: two SLC39A4 alleles in trans (p.Trp401* coding; c.-169A>G promoter; phased by long-read sequencing) and an evidence strip from Zalusky et al. 2024 Genet Med Open (PMC11484281): acrodermatitis enteropathica, plasma zinc 0.26 ug/mL (normal 0.6-1.2), zinc-responsive; ACMG likely pathogenic on PM2/PM3/PP3/PP4 (PS3 from the luciferase not counted, to keep panel b independent); gnomAD v4 exomes AC 2 / AN 566,338, 0 homozygotes (API query 2026-11-04). The duplicate whole-plasmid map (old panel e strip) is removed.",
+  "panel_b": "unchanged (HEK293T luciferase, S15A vector crop). HepG2 luciferase not shown; the legend says activity was low for both alleles in HepG2 (p = 0.056).",
+  "panel_c": "unchanged (HEK293T, reps pooled).",
+  "panel_d": "two side-by-side sub-panels with separate axes, HEK293T (reps 1-3) and HepG2 (reps 1-4): per replicate % of kept reads with a 20-60 bp footprint covering the variant base, WT vs variant; Fisher exact test within each replicate (reads as observations). Cell lines never pooled or overlaid.",
+  "panel_e": "dropped from the figure; the whole-plasmid specificity numbers (draft 3: mean delta 7.55 pp at the variant vs <= 1.14 pp elsewhere, HEK293T) go in summary.json and the legend."
+ },
+ "revision_draft6": {
+  "_written": "2026-11-04, after the user's draft-5 review; layout only, no new numbers",
+  "panel_a": "patient-allele schematic removed. The construct map keeps the promoter and luciferase arrows at their draft-5 positions (to scale along the straight edge); the backbone closes into a loop above them so the map reads as a circular plasmid (loop not to scale). The clinical evidence stays as text (now including 'in trans with p.Trp401*, long-read phasing'), right of the NF-Y logo.",
+  "rest": "b, c, d unchanged; rows moved up to use the freed space"
+ },
+ "revision_draft7": {
+  "_written": "2026-11-04, after the user's draft-6 review; layout only, no new numbers",
+  "panel_a": "clinical-evidence text (Zalusky et al. 2024 patient details, gnomAD, ACMG codes) removed from the figure at the user's request; it moves to the legend. Map, loop and NF-Y logo unchanged.",
+  "rest": "b, c, d unchanged"
+ },
+ "revision_draft8": {
+  "_written": "2026-11-04, after the user's draft-7 review, before building draft 8; layout only, no new numbers",
+  "request": "show only the whole-plasmid track (draft-4 panel e), the variant location with the NF-Y motif, and the luciferase; shrink as far as text stays legible",
+  "panel_a": "whole-plasmid WT - variant TF-sized (20-60 bp) occupancy, HEK293T, mean of the 3 per-replicate tracks (as draft 3/4 panel e; Gaussian sigma 3 bp, circular), drawn directly above the one construct map, sharing its x axis. x = whole plasmid in gene orientation, starting at the 5' end of the promoter fragment (plasmid 6273) and wrapping round (x = (6273 - p) mod 6466), so the promoter and luciferase read left to right as in drafts 3-7; to scale, 1-kb scale bar, no loop. Variant tick on the promoter; NF-Y logo (MA0060.4, variant column boxed) as a zoom inset from the c.-169 peak.",
+  "panel_b": "luciferase (Fig. S15A HEK293T crop) unchanged, scaled so its smallest text stays >= 6 pt",
+  "dropped": "draft-7 panels c (occupancy around the motif) and d (per-replicate site occupancy, HEK293T and HepG2). Their tables (site_stats_<cell>.tsv) and the HepG2 whole-plasmid numbers are still written for the legend.",
+  "cell_lines": "HEK293T only on the figure (the luciferase cell line, as in draft-4 panel e); HepG2 not drawn",
+  "min_text_pt": 6
  }
 }
