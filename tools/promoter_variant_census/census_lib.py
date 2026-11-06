@@ -12,6 +12,7 @@ import pandas as pd
 
 HERE = Path(__file__).parent
 RULES = json.load(open(HERE / 'rules.json'))
+WINDOWS_TSV = HERE / 'windows.tsv'               # other window sets (e.g. tools/immune_promoter_scan) reassign this
 GROUP_MIN_AN = 2000
 GROUPS_EXCLUDED = {'remaining'}
 # AlphaGenome scoring context: one 1 Mb interval per context; SLC39A4 W1/W2 share one (union midpoint)
@@ -19,13 +20,18 @@ CONTEXT = {'LDLR': 'LDLR', 'HBB': 'HBB', 'GATA2_IS': 'GATA2_IS', 'GATA2_IG': 'GA
            'SLC39A4_W1': 'SLC39A4', 'SLC39A4_W2': 'SLC39A4', 'GATA2_E95_W1': 'GATA2_E95', 'GATA2_E95_W2': 'GATA2_E95'}
 
 
+def context(window):
+    """AlphaGenome interval name for a window (CONTEXT; windows of other window sets are their own context)."""
+    return CONTEXT.get(window, window)
+
+
 def windows():
-    return pd.read_csv(HERE / 'windows.tsv', sep='\t')
+    return pd.read_csv(WINDOWS_TSV, sep='\t')
 
 
 def contexts():
     """context -> (chrom, gene, lo, hi) spanning its windows."""
-    w = windows().assign(context=lambda d: d.window.map(CONTEXT))
+    w = windows().assign(context=lambda d: d.window.map(context))
     return {c: (g.chrom.iloc[0], g.gene.iloc[0], int(g.start.min()), int(g.end.max())) for c, g in w.groupby('context')}
 
 

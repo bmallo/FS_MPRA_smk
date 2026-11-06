@@ -1,19 +1,20 @@
-"""Grant Figure 2 (draft 8): SLC39A4 c.-169A>G disrupts the NF-Y footprint and promoter activity (fig2_rules.json,
-revision_draft5-8). Output is one Illustrator-editable SVG (live Arial text), plus PDF and PNG renders (rsvg-convert with
-fonts.conf).
+"""Grant Figure 2 (draft 14, half page): SLC39A4 c.-169A>G disrupts the NF-Y footprint and promoter activity
+(fig2_rules.json, revision_draft5-14). Laid out at its final size (3.5 in wide, text >= 7 pt). Output is one
+Illustrator-editable SVG (live Arial text), plus PDF and PNG renders (rsvg-convert with fonts.conf).
 
 Inputs: the SLC39A4_variant_slide project's outputs (HEK293T plasmid Fiber-seq, WT and c.-169A>G co-transfected,
 3 replicates) and the same outputs for HepG2 (4 replicates; fig2_hepg2.sh, identical processing):
 analysis/occ_<rep>_<allele>.npy (reads with a footprint of size s covering plasmid position p), n_<rep>_<allele>.txt
-(kept reads), reads.tsv.gz (per read: allele, kept, site_fp); motifs/MA0060.4.jaspar; and Fig. S15A (HEK293T half) as vector: fig2_s15_svg.py exports Supplemental.pdf page 27 to
-S15_page_runs.svg, embedded here clipped to S15_CROP (the raw luciferase values are not on klone).
+(kept reads), reads.tsv.gz (per read: allele, kept, site_fp); motifs/MA0060.4.jaspar; and the HEK293T luciferase
+points and box geometry read from the vector Fig. S15A by fig2_luc_digitize.py (points.tsv, box.tsv; the raw values
+are not on klone).
 TF-sized footprint = 20-60 bp. Cell lines are never pooled or overlaid.
-a  whole plasmid: WT - variant TF-sized occupancy (HEK293T, mean of the per-replicate tracks, Gaussian sigma SIGMA bp)
-   above the construct map (to scale, gene orientation from the promoter's 5' end, wrapping round), variant tick and
-   the NF-Y logo as a zoom from the c.-169 peak
-b  luciferase (Fig. S15A, HEK293T)
+a  WT - variant TF-sized occupancy (HEK293T, mean of the per-replicate tracks, Gaussian sigma SIGMA bp) over the
+   promoter and luciferase (WIN), above the plasmid map (to scale, gene orientation from the promoter's 5' end); a
+   dotted line joins the c.-169 peak to the variant tick; NF-Y logo as a zoom from the peak
+b  luciferase (HEK293T; box and points as in Fig. S15A, p as stated there)
 Per-replicate site tests (site_stats_<cell>.tsv) and the HepG2 whole-plasmid track are written for the legend only.
-Usage: python tools/r01_figure/fig2.py --project <SLC39A4_variant_slide> --hepg2 <fig2/hepg2> --s15 <svg> --output <dir>
+Usage: python tools/r01_figure/fig2.py --project <SLC39A4_variant_slide> --hepg2 <fig2/hepg2> --luc <dir> --output <dir>
 """
 import argparse
 import json
@@ -44,9 +45,11 @@ sys.path.insert(0, str(HPRC / 'scripts/plasmid_background'))
 from svg_fonts import expand_fonts  # noqa: E402
 for f in ('Arimo-Regular.ttf', 'Arimo-Bold.ttf'):
     font_manager.fontManager.addfont(str(HPRC / 'scripts/fonts' / f))
-plt.rcParams.update({'font.family': 'Arimo', 'svg.fonttype': 'none', 'font.size': 6.5, 'axes.linewidth': 0.7,
+FS = 7                                    # every label (pt); panel letters 9 pt
+plt.rcParams.update({'font.family': 'Arimo', 'svg.fonttype': 'none', 'font.size': FS, 'axes.linewidth': 0.7,
                      'xtick.major.width': 0.7, 'ytick.major.width': 0.7, 'xtick.major.size': 2.5,
-                     'ytick.major.size': 2.5, 'xtick.labelsize': 6, 'ytick.labelsize': 6})
+                     'ytick.major.size': 2.5, 'xtick.labelsize': FS, 'ytick.labelsize': FS,
+                     'xtick.major.pad': 1.5, 'ytick.major.pad': 1.5})
 
 INK, INK2 = '#2E2E2E', '#666666'
 WT_C, VAR_C, TF_C = '#2E3192', '#E3191F', '#338B8C'          # WT / variant as Fig. S15A; TF teal as Figure 1
@@ -59,10 +62,8 @@ ATG_A = 5951                              # 1-based plasmid position of the ATG 
 MOTIF_P = ATG_A + 170                     # NF-Y CCAAT core centre (c.-170)
 TF = (20, 60)
 SIGMA = 3
-W_IN, H_IN = 7.2, 2.1
-S15_CROP = (56.0, 68.0, 140.0, 216.0)        # x, y, w, h (PDF pt): Fig. S15A HEK293T half, left of the divider
-S15_FRAME_Y = (80.07, 252.83)                 # S15A axes frame (rect x 100.09-322.07, stroke 1 pt): close it at the crop
-B_H = 147.0                                   # panel b height (pt): S15 text 8.9-12 pt -> >= 6 pt
+W_IN, H_IN = 3.5, 1.62
+WIN = (-100, 3460)                            # panel a window, bp from the promoter's 5' end (promoter + luciferase)
 
 
 def gx(p):
@@ -70,7 +71,7 @@ def gx(p):
     return (PROM[1] - np.asarray(p)) % L
 
 
-def feature_arrow(ax, x0, x1, y, h, color, label, tc, gid, lx=None, fs=6.3):
+def feature_arrow(ax, x0, x1, y, h, color, label, tc, gid, lx=None, fs=FS):
     """SnapGene-style feature: thin box with a pointed 3' end, label inside."""
     tip = min(6.0, (x1 - x0) * 0.3)
     ax.add_patch(Polygon([[x0, y - h / 2], [x1 - tip, y - h / 2], [x1, y], [x1 - tip, y + h / 2], [x0, y + h / 2]],
@@ -108,7 +109,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--project', required=True)
     ap.add_argument('--hepg2', required=True, help='fig2_hepg2.sh work dir (holds analysis/)')
-    ap.add_argument('--s15', required=True, help='S15_page_runs.svg from fig2_s15_svg.py')
+    ap.add_argument('--luc', required=True, help='fig2_luc_digitize.py output dir (points.tsv, box.tsv)')
     ap.add_argument('--output', required=True)
     a = ap.parse_args()
     P, out = Path(a.project), Path(a.output)
@@ -133,8 +134,11 @@ def main():
 
     commit = subprocess.run(['git', 'rev-parse', '--short', 'HEAD'], capture_output=True, text=True).stdout.strip()
     dmean = pd.read_csv(out / 'whole_plasmid_delta_HEK293T.tsv', sep='\t').delta_pp_mean.to_numpy()   # as drawn
+    pts = pd.read_csv(Path(a.luc) / 'points.tsv', sep='\t')
+    box = pd.read_csv(Path(a.luc) / 'box.tsv', sep='\t').set_index('group')
     order = np.argsort(gx(np.arange(1, L + 1)))
     xg, yg = gx(np.arange(1, L + 1))[order], dmean[order]
+    xg, yg = np.r_[xg - L, xg], np.r_[yg, yg]                      # circular: the window may start before 0
 
     fig = plt.figure(figsize=(W_IN, H_IN))
     Wpt, Hpt = W_IN * 72, H_IN * 72
@@ -143,49 +147,51 @@ def main():
         return fig.add_axes([x0 / Wpt, 1 - y1 / Hpt, (x1 - x0) / Wpt, (y1 - y0) / Hpt], **kw)
 
     def letter_lab(ch, x, y):
-        fig.text(x / Wpt, 1 - y / Hpt, ch, fontsize=10, fontweight='bold', va='top', ha='left')
+        fig.text(x / Wpt, 1 - y / Hpt, ch, fontsize=9, fontweight='bold', va='top', ha='left')
 
-    # ---- a: whole-plasmid WT - variant track over the construct map (shared x, to scale)
-    letter_lab('a', 2, 2)
-    X0, X1, Y0, Y1 = 50.0, 398.0, 8.0, 104.0                      # track axes (pt)
+    # ---- a: WT - variant track over the plasmid map, promoter + luciferase window (shared x, to scale)
+    letter_lab('a', 0, 1)
+    X0, X1, Y0, Y1 = 31.0, 168.0, 6.0, 78.0                        # track axes (pt)
     ylo, yhi = -1.5, 8.5
     tax = axpt(X0, Y0, X1, Y1)
     tax.axhline(0, color=INK2, lw=0.5, zorder=1)
-    tax.plot(xg, yg, color=TF_C, lw=0.8, zorder=2)
-    tax.set_xlim(0, L)
+    tax.plot(xg, yg, color=TF_C, lw=1.0, zorder=2)
+    tax.set_xlim(*WIN)
     tax.set_ylim(ylo, yhi)
     tax.set_xticks([])
-    tax.yaxis.set_major_locator(matplotlib.ticker.MaxNLocator(5, integer=True))
+    tax.set_yticks([0, 4, 8])
     tax.spines[['top', 'right', 'bottom']].set_visible(False)
-    tax.set_ylabel('Δ 20–60 bp footprints\n(WT − variant, % reads)', fontsize=6.3, labelpad=2)
-    tax.text(1.0, 0.98, 'HEK293T', transform=tax.transAxes, fontsize=6.3, fontweight='bold', color=INK, ha='right',
-             va='top')
+    tax.set_ylabel('Footprint loss (%)\n(WT − variant)', fontsize=FS, labelpad=1.5, linespacing=1.1)
     ov = axpt(0, 0, Wpt, Hpt)                                       # overlay in pt (map, logo, labels)
     ov.set_xlim(0, Wpt)
     ov.set_ylim(Hpt, 0)
     ov.axis('off')
-    xp = lambda g: X0 + np.asarray(g) / L * (X1 - X0)              # noqa: E731
+    xp = lambda g: X0 + (np.asarray(g) - WIN[0]) / (WIN[1] - WIN[0]) * (X1 - X0)   # noqa: E731
     yp = lambda v: Y0 + (yhi - v) / (yhi - ylo) * (Y1 - Y0)         # noqa: E731
     yb, bh = Y1 + 10, 9                                             # map backbone y, feature height
-    ov.plot([X0, X1], [yb, yb], color='#4A4A4A', lw=0.8, zorder=1, solid_capstyle='butt')
-    feature_arrow(ov, xp(0), xp(gx(PROM[0])), yb, bh, PROM_C, '', WT_C, 'feature-promoter')
-    feature_arrow(ov, xp(gx(LUC[1])), xp(gx(LUC[0])), yb, bh, LUC_C, 'Luciferase', INK, 'feature-luciferase')
-    ov.text(xp(gx(PROM[0])) / 2 + X0 / 2, yb + bh / 2 + 2.5, 'SLC39A4 promoter', fontsize=6.3, fontweight='bold',
-            color=WT_C, ha='center', va='top')
+    loop_rx, loop_ry = 5.0, 9.0                                     # plasmid loop ends (half-ellipses), not to scale
+    t = np.linspace(0, np.pi, 60)
+    lx = np.r_[X1, X0, X0 - loop_rx * np.sin(t), X1, X1 + loop_rx * np.sin(t)]
+    ly = np.r_[yb, yb, yb + loop_ry - loop_ry * np.cos(t), yb + 2 * loop_ry, yb + loop_ry + loop_ry * np.cos(t)]
+    ov.plot(lx, ly, color='#4A4A4A', lw=0.8, solid_joinstyle='round', zorder=1, gid='backbone')
     xv = xp(gx(VPOS1))
-    ov.plot([xv, xv], [yb - bh / 2 - 1, yb + bh / 2 + 1], color=VAR_C, lw=1.0, zorder=4)
-    kb = xp(1000) - xp(0)
-    ov.plot([X1 - kb, X1], [yb + bh / 2 + 5, yb + bh / 2 + 5], color=INK, lw=0.7)
-    ov.text(X1 - kb / 2, yb + bh / 2 + 6.5, '1 kb', fontsize=6, color=INK, ha='center', va='top')
+    feature_arrow(ov, xp(0), xp(gx(PROM[0])), yb, bh, PROM_C, 'SLC39A4', WT_C, 'feature-promoter')
+    feature_arrow(ov, xp(gx(LUC[1])), xp(gx(LUC[0])), yb, bh, LUC_C, 'Luciferase', INK, 'feature-luciferase')
+    ov.text((X0 + X1) / 2, yb + loop_ry + bh / 4, 'Reporter plasmid', fontsize=FS, color=INK2, ha='center',
+            va='center')
+    dots = dict(color=VAR_C, lw=0.5, ls=(0, (1.0, 1.2)))           # peak -> variant: behind the track, then to the map
+    tax.axvline(gx(VPOS1), zorder=1.5, **dots)
+    ov.plot([xv, xv], [Y1, yb - bh / 2], zorder=0.5, **dots)
     # NF-Y logo, zoomed from the c.-169 peak
     cnt = np.array([[float(x) for x in ln.split('[')[1].split(']')[0].split()]
                     for ln in open(P / 'motifs/MA0060.4.jaspar').read().splitlines()[1:5]])
     pr = (cnt + 0.8) / (cnt.sum(0) + 3.2)
     ic = 2 + (pr * np.log2(pr)).sum(0)
-    cw, bit = 9.0, 11.0                                             # column width, pt per bit
+    cw, bit = 7.5, 8.5                                              # column width, pt per bit
     apex = (xv, yp(dmean[VPOS1 - 1]))
-    lx0, ly0 = xv + 34, Y0 + 44                                      # logo left edge, baseline
-    ov.add_patch(Polygon([apex, [lx0 - 2, ly0 - 2 * bit - 3], [lx0 - 2, ly0 + 2]], fc='#E9E9F4', ec='none', zorder=0))
+    lx0, ly0 = xv + 20, Y0 + 40                                      # logo left edge, baseline
+    ov.add_patch(Polygon([apex, [lx0 - 2, ly0 - 2 * bit - 2], [lx0 - 2, ly0 + 1.5]], fc='#E9E9F4', ec='none',
+                         zorder=0))
     bold = FontProperties(family='Arimo', weight='bold')
     for j in range(8):
         y = ly0
@@ -194,38 +200,51 @@ def main():
             if h > 0.5:
                 tp = TextPath((0, 0), 'ACGT'[k], size=1, prop=bold)
                 bb = tp.get_extents()
-                tr = Affine2D().translate(-bb.x0, -bb.y0).scale((cw - 1.4) / bb.width, -h / bb.height).translate(
-                    lx0 + j * cw + 0.7, y)
+                tr = Affine2D().translate(-bb.x0, -bb.y0).scale((cw - 1.2) / bb.width, -h / bb.height).translate(
+                    lx0 + j * cw + 0.6, y)
                 ov.add_patch(PathPatch(tr.transform_path(tp), fc=LETTER_C['ACGT'[k]], ec='none', zorder=2))
             y -= h
     ov.plot([lx0 - 1, lx0 + 8 * cw + 1], [ly0 + 1, ly0 + 1], color=INK2, lw=0.5)
     vj = 3                                                          # CCA[A]TCAC: variant = motif position 4
-    ov.add_patch(Rectangle((lx0 + vj * cw, ly0 - 2 * bit - 2), cw, 2 * bit + 5, fc='none', ec=VAR_C, lw=0.8,
-                           ls=(0, (2.5, 1.2)), zorder=3))
-    ov.text(lx0 + (vj + 0.5) * cw, ly0 + 4.5, 'c.-169A>G', fontsize=6.3, fontweight='bold', color=VAR_C,
+    ov.add_patch(Rectangle((lx0 + vj * cw, ly0 - 2 * bit - 1.5), cw, 2 * bit + 4, fc='none', ec=VAR_C, lw=0.7,
+                           ls=(0, (2.2, 1.1)), zorder=3))
+    ov.text(lx0 + (vj + 0.5) * cw, ly0 + 3.5, 'c.-169A>G', fontsize=FS, fontweight='bold', color=VAR_C,
             ha='center', va='top')
-    ov.text(lx0 + 8 * cw + 5, ly0 - bit, 'NF-Y motif', fontsize=6.3, fontweight='bold', color=INK, va='center')
+    ov.text(lx0 + 4 * cw, ly0 - 2 * bit - 3, 'NF-Y motif', fontsize=FS, fontweight='bold', color=INK, ha='center',
+            va='bottom')
 
-    # ---- b: luciferase (Fig. S15A, HEK293T)
-    b_sc = B_H / S15_CROP[3]
-    b_slot = (Wpt - S15_CROP[2] * b_sc - 2, 2.0)                     # S15 vector embedded here after saving
-    letter_lab('b', b_slot[0] - 14, 2)
+    # ---- b: luciferase (HEK293T; points and box geometry from the vector Fig. S15A)
+    letter_lab('b', 176, 1)
+    bax = axpt(206, Y0 + 4, 250, 88)
+    for i, (g, col) in enumerate((('WT', WT_C), ('Var', VAR_C))):
+        b = box.loc[g]
+        bw = 0.56
+        bax.add_patch(Rectangle((i - bw / 2, b.q1), bw, b.q3 - b.q1, fc=col, alpha=0.35, ec=col, lw=0.7, zorder=1))
+        bax.add_patch(Rectangle((i - bw / 2, b.q1), bw, b.q3 - b.q1, fc='none', ec=col, lw=0.7, zorder=2))
+        bax.plot([i - bw / 2, i + bw / 2], [b['median']] * 2, color=INK, lw=1.2, zorder=3)
+        for lo, hi in ((b.whisker_lo, b.q1), (b.q3, b.whisker_hi)):
+            bax.plot([i, i], [lo, hi], color=col, lw=0.7, zorder=1)
+        for yw in (b.whisker_lo, b.whisker_hi):
+            bax.plot([i - bw / 4, i + bw / 4], [yw, yw], color=col, lw=0.7, zorder=1)
+        g_pts = pts[pts.group == g]
+        bax.scatter(i + g_pts.x_offset * bw, g_pts.value, s=7, color=col, edgecolor='white', lw=0.3, zorder=4)
+    yt = box.whisker_hi.max() + 0.25                                # p bracket (as in S15A: 'p < 0.01')
+    bax.plot([0, 0, 1, 1], [box.loc['WT', 'whisker_hi'] + 0.08, yt, yt, box.loc['Var', 'whisker_hi'] + 0.08],
+             color=INK2, lw=0.6)
+    bax.text(0.5, yt + 0.04, 'p < 0.01', fontsize=FS, color=INK2, ha='center', va='bottom')
+    bax.set_xlim(-0.6, 1.6)
+    bax.set_ylim(0, 2.15)
+    bax.set_yticks([0, 1, 2])
+    bax.set_xticks([0, 1], ['WT', 'c.-169A>G'], rotation=35, ha='right', rotation_mode='anchor')
+    bax.get_xticklabels()[0].set_color(WT_C)
+    bax.get_xticklabels()[1].set_color(VAR_C)
+    bax.spines[['top', 'right']].set_visible(False)
+    bax.set_ylabel('Luciferase activity\n(firefly/renilla)', fontsize=FS, labelpad=1.5, linespacing=1.1)
 
     svg = out / 'fig2.svg'
     fig.savefig(svg, facecolor='white', dpi=300)
     plt.close(fig)
     s = expand_fonts(svg.read_text().replace("'Arimo'", 'Arial, Helvetica, sans-serif').replace('Arimo', 'Arial'))[0]
-    body = re.sub(r'^.*?<svg[^>]*>', '', Path(a.s15).read_text(), count=1, flags=re.S).rsplit('</svg>', 1)[0]
-    body = re.sub(r'id="([^"]+)"', r'id="s15-\1"', body)
-    body = re.sub(r'url\(#([^)]+)\)', r'url(#s15-\1)', body)
-    body = re.sub(r'href="#([^"]+)"', r'href="#s15-\1"', body)
-    cx, cy, cw, ch = S15_CROP
-    group = (f'<g id="panel-b-luciferase-S15A" transform="translate({b_slot[0]:.3f} {b_slot[1]:.3f}) '
-             f'scale({b_sc:.5f}) translate({-cx:.3f} {-cy:.3f})"><defs><clipPath id="s15-crop"><rect x="{cx}" '
-             f'y="{cy}" width="{cw}" height="{ch}"/></clipPath></defs><g clip-path="url(#s15-crop)">{body}</g>'
-             f'<line id="s15-frame-right" x1="{cx + cw - 0.5}" y1="{S15_FRAME_Y[0]}" x2="{cx + cw - 0.5}" '
-             f'y2="{S15_FRAME_Y[1]}" stroke="#231f20" stroke-width="1"/></g>')
-    s = s.replace('</svg>', group + '\n</svg>')
     if 'xmlns:inkscape' not in s.split('>', 2)[1]:
         s = re.sub(r'<svg ', '<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" ', s, count=1)
     svg.write_text(s)

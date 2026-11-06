@@ -8,6 +8,7 @@ Subcommands, each writing under --output (one network request at a time, klone p
   clinvar     NCBI E-utilities esearch '<chr>[chr] AND <start>:<end>[chrpos38]' + esummary per window
               -> clinvar/<window>.json (truth_set_rules.json)
 Usage: python tools/promoter_variant_census/fetch.py {gnomad,gtex,promoterai,clinvar} --output <dir> [--scores <file>]
+       [--windows-tsv <file>]   (default windows.tsv next to this script) [--batched] (gtex: batched lookups)
 """
 import argparse
 import json
@@ -18,6 +19,8 @@ import urllib.request
 from pathlib import Path
 
 import pandas as pd
+
+import census_lib as cl
 
 HERE = Path(__file__).parent
 PAD = 50
@@ -32,7 +35,7 @@ QUERY = """{ region(chrom: "%s", start: %d, stop: %d, reference_genome: GRCh38) 
 
 
 def windows():
-    return pd.read_csv(HERE / 'windows.tsv', sep='\t')
+    return cl.windows()
 
 
 def get(url, data=None, tries=4):
@@ -62,10 +65,12 @@ def gnomad(out, only=None):
         time.sleep(1)
 
 
-def gtex_paged(path, **params):
+def gtex_paged(path, items=(), **params):
+    """All pages of a Portal API query; items = extra (key, value) pairs for repeated array parameters."""
     rows, page = [], 0
     while True:
-        r = get(f'{GTEX}/{path}?' + urllib.parse.urlencode({**params, 'page': page, 'itemsPerPage': 250}))
+        q = list(params.items()) + list(items) + [('page', page), ('itemsPerPage', 250)]
+        r = get(f'{GTEX}/{path}?' + urllib.parse.urlencode(q))
         rows += r['data']
         page += 1
         if page >= r['paging_info']['numberOfPages']:
@@ -73,7 +78,40 @@ def gtex_paged(path, **params):
         time.sleep(0.5)
 
 
-def gtex(out):
+def gtex_lookup_batched(path, ids, n=100):
+    """Same columns as the per-variant lookup, from position-batched queries (chromosome + up to n pos per request)
+    and variant-batched eQTL queries; writes the whole table at once."""
+    by_chrom = {}
+    for vid in ids:
+        c, p = vid.split('_')[:2]
+        by_chrom.setdefault(c, set()).add(int(p))
+    table = {}
+    for ds in ('gtex_v10', 'gtex_v8'):
+        for c, ps in sorted(by_chrom.items()):
+            ps = sorted(ps)
+            for i in range(0, len(ps), n):
+                for x in gtex_paged('dataset/variant', [('pos', p) for p in ps[i:i + n]], datasetId=ds, chromosome=c):
+                    table[(ds, x['variantId'])] = bool(x.get('maf01'))
+                time.sleep(0.3)
+        print(ds, sum(k[0] == ds for k in table), 'variant-table rows at the queried positions', flush=True)
+    rows = [dict(variant_id=v, v10_sig_genes='', v10_sig_pairs=0,
+                 **{f'{ds}_{k}': f(table.get((ds, v))) for ds in ('gtex_v10', 'gtex_v8')
+                    for k, f in (('present', lambda m: m is not None), ('maf01', bool))}) for v in sorted(ids)]
+    present = [r['variant_id'] for r in rows if r['gtex_v10_present']]
+    hits = {}
+    for i in range(0, len(present), 50):          # eQTLs for any gene; only variants in the V10 table can have one
+        for x in gtex_paged('association/singleTissueEqtl', [('variantId', v) for v in present[i:i + 50]],
+                            datasetId='gtex_v10'):
+            hits.setdefault(x['variantId'], []).append(x['geneSymbol'])
+        time.sleep(0.3)
+    for r in rows:
+        e = hits.get(r['variant_id'], [])
+        r['v10_sig_genes'] = ';'.join(sorted(set(e)))
+        r['v10_sig_pairs'] = len(e)
+    pd.DataFrame(rows)[LOOKUP_COLS].to_csv(path, sep='\t', index=False)
+
+
+def gtex(out, batched=False):
     d = out / 'gtex'
     d.mkdir(parents=True, exist_ok=True)
     # target-gene GENCODE ids per release (V10 = GENCODE v39, V8 = v26); gene-level tables are fetched once
@@ -105,6 +143,9 @@ def gtex(out):
                 c, p, ref, alt = v['variant_id'].split('-')
                 ids.add(f'chr{c}_{p}_{ref}_{alt}_b38')
     path = d / 'variant_lookup.tsv'
+    if batched:
+        print(len(ids), 'variants, batched lookup', flush=True)
+        return gtex_lookup_batched(path, ids)
     done = set(pd.read_csv(path, sep='\t').variant_id) if path.exists() else set()
     todo = sorted(ids - done)
     print(len(ids), 'variants;', len(todo), 'to look up', flush=True)
@@ -167,12 +208,16 @@ def main():
     ap.add_argument('--windows', nargs='*', help='gnomad/clinvar: only these windows (default all)')
     ap.add_argument('--scores', default='/gscratch/stergachislab/bmallo/large_home/projects/LDLR_MPRA/promoterai/'
                                         'promoterAI_tss500.tsv.gz')
+    ap.add_argument('--batched', action='store_true', help='gtex: position-batched variant-table lookups (fast)')
+    ap.add_argument('--windows-tsv', help='window table (default windows.tsv next to this script)')
     a = ap.parse_args()
+    if a.windows_tsv:
+        cl.WINDOWS_TSV = Path(a.windows_tsv)
     out = Path(a.output)
     if a.step == 'gnomad':
         gnomad(out, a.windows)
     elif a.step == 'gtex':
-        gtex(out)
+        gtex(out, a.batched)
     elif a.step == 'clinvar':
         clinvar(out, a.windows)
     else:

@@ -1,0 +1,33 @@
+{
+ "_written": "2026-11-05, before any variant in these five windows was retrieved or counted. Same definitions as the promoter variant census (tools/promoter_variant_census/rules.json, approved 2026-11-04) unless stated here. AlphaGenome deferred (user: run the other sources first).",
+ "windows": "windows.tsv (1-based inclusive hg38), from the user 2026-11-05: CARD11 chr7:3042999-3044186, JAK1 chr1:64965924-64966998, JAK3 chr19:17847600-17848217, STAT1 chr2:191013736-191014488, STAT3 chr17:42387768-42389130. All five genes are on the minus strand; TSS and transcript as given by the user (each TSS = PromoterAI file tss_pos + 1 for that transcript). Offsets: upstream negative.",
+ "denominator": "all possible SNVs = 3 x window length",
+ "gnomad": "as census: v4.1 genomes PASS (primary); SNV vs indel; indel-in-window rule; AF > 1% overall and in any ancestry group with AN >= 2000. Also reported: exome-only variants, and the joint genomes + exomes AF (AC sum / AN sum, as Figure 3 panel b) for every variant",
+ "gtex": "as census: GTEx V10 significant single-tissue eQTL for the window's gene (significant / tested, not significant (maf01) / not tested); significant for any gene (V10 per-variant lookup); V8 significant and V8 fine-mapped for the target gene. Also: every significant V10 target-gene eQTL anywhere in the window regardless of gnomAD, and the nearest V10 target-gene eQTL to the TSS",
+ "promoterai": {
+  "source": "as census (promoterAI_tss500.tsv.gz, md5 f6ac61c2ea66313222c4ba2d1c94033e)",
+  "transcript": "the window's transcript (windows.tsv); max |score| over all transcripts of the gene as a sensitivity column",
+  "coverage": "the file scores only TSS +/- 500 bp per transcript; window positions outside that range for the window's transcript are reported as not scored (not counted as no effect)",
+  "large_effect": "|score| >= 0.1, >= 0.2 and >= 0.5 (PromoterAI README thresholds), split by sign (negative = predicted lower expression)"
+ },
+ "clinvar": {
+  "_written": "2026-11-05, after the gnomAD/GTEx/PromoterAI scan results had been seen (user: add ClinVar before AlphaGenome) and before ClinVar was queried",
+  "source": "NCBI E-utilities esearch <chrom>[chr] AND <start>:<end>[chrpos38] per window + esummary (census fetch.py clinvar)",
+  "classes": "as tools/promoter_variant_census/truth_set_rules.json: P/LP = germline Pathogenic, Likely pathogenic or Pathogenic/Likely pathogenic (not Conflicting), any review status; B/LB likewise; VUS, conflicting and other counted alongside. Small variants = SPDI change <= 50 bp lying in the window (SNVs and indels separately); longer or no-SPDI records counted as structural, not in the small counts",
+  "reported": "per window counts by class and review status; overlap of ClinVar B/LB with the candidate benign SNVs and of ClinVar P/LP with common (B1) SNVs; ClinVar class per gnomAD variant in variants.tsv and common.tsv"
+ },
+ "candidate_benign": "B1 (AF > 1% any group) and B2 (not a V10 eQTL for the target gene; not tested passes and is flagged; strict version requires tested) and PromoterAI |score| < 0.1. AlphaGenome not yet applied, so these are provisional; ClinVar is context, not a filter",
+ "outputs": "results/immune_promoter_scan_20261105/: raw pulls (gnomad/, gtex/, promoterai/, reference/), variants.tsv (one row per gnomAD variant), all_snvs.tsv (every possible SNV with PromoterAI), counts.tsv (per window), common.tsv (AF > 1% any group), eqtl_target.tsv (V10 target-gene eQTLs in or near the windows), summary.json",
+ "tert": {
+  "_written": "2026-11-05, user asked to run the same analyses on the TERT promoter; before any TERT variant was retrieved",
+  "window": "windows_tert.tsv: chr5:1294953-1295254 (302 bp, from the user), minus strand, TSS 1295068 = MANE Select ENST00000310581 / NM_198253.3 (PromoterAI tss_pos + 1; offsets -186..+115). The other TERT transcript in the PromoterAI file (ENST00000334602) only enters the max-over-transcripts column",
+  "rules": "identical to the five immune promoters (gnomAD, GTEx with target gene TERT, PromoterAI, ClinVar); output results/tert_promoter_scan_20261105/",
+  "note": "ClinVar here may include somatic records (TERT promoter hotspots); only the germline classification is used, as everywhere"
+ },
+ "alphagenome": {
+  "_written": "2026-11-05, user asked to run AlphaGenome in the background; before any score was seen",
+  "run": "tools/promoter_variant_census/ag_score.py as the census: every possible SNV plus gnomAD indels with genome AC >= 1, one 1 Mb interval centred on each window, recommended RNA_SEQ (target gene) / CAGE / DNASE scorers; per-track scores kept for the biosamples below, max |quantile| over all tracks kept for every variant",
+  "biosamples_kept": "census set plus immune: T-cell CL:0000084, CD4 CL:0000624, CD8 CL:0000625, naive CD4 CL:0000895, B cell CL:0000236, NK CL:0000623, monocyte CL:0000576, CD14 monocyte CL:0001054, PBMC CL:2000001, Jurkat CLO:0007045 / EFO:0002796, GM12878 EFO:0002784, spleen UBERON:0002106, thymus UBERON:0002370, lymph node UBERON:0000029; TERT: H1 EFO:0003042, H9 EFO:0003045, HeLa-S3 EFO:0002791, A549 EFO:0001086, MCF-7 EFO:0001203, SK-N-SH EFO:0003072 (+ K562, HepG2 already kept)",
+  "call": "the large-change call (track set and threshold) is fixed in this file before the scores are looked at"
+ }
+}

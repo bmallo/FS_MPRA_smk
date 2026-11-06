@@ -1,0 +1,46 @@
+{
+ "_written": "2026-11-05, before any AlphaGenome score for the immune promoters or TERT was looked at (TERT and immune AlphaGenome runs in progress). ClinVar, gnomAD, GTEx and PromoterAI results for all elements had been seen. Definitions chosen by the user 2026-11-05: confident ClinVar = >= 2 stars; universe = all possible SNVs; likely pathogenic = rare + both predictors; elements = all except GATA2 (replaced by TERT).",
+ "purpose": "show, per element, (A) how many confident ClinVar P/LP and B/LB variants exist as truth-set seeds, to which MPRA and plasmid Fiber-seq evidence will be added, and (B) among the remaining possible SNVs, how many non-ClinVar evidence marks as likely benign or likely pathogenic candidates, which MPRA and Fiber-seq would then test before classification",
+ "elements": {
+  "LDLR, HBB, SLC39A4 (W1+W2, each SNV once)": "promoter variant census, results/promoter_variant_census_20261104 (windows tools/promoter_variant_census/windows.tsv)",
+  "CARD11, JAK1, JAK3, STAT1, STAT3": "results/immune_promoter_scan_20261105 (tools/immune_promoter_scan/windows.tsv)",
+  "TERT": "results/tert_promoter_scan_20261105 (tools/immune_promoter_scan/windows_tert.tsv)",
+  "excluded": "GATA2 IS, IG and +9.5 enhancer (user: removed, replaced by TERT)"
+ },
+ "universe": "all possible SNVs in the element (3 x bp; SLC39A4 union 1,626). Indels are reported in the tables (ClinVar confident indels counted separately) but are not in the bars",
+ "arm_A_clinvar_confident": {
+  "rule": "ClinVar germline classification P/LP (Pathogenic, Likely pathogenic, Pathogenic/Likely pathogenic) or B/LB (Benign, Likely benign, Benign/Likely benign), review status >= 2 stars: 'criteria provided, multiple submitters, no conflicts', 'reviewed by expert panel' or 'practice guideline'",
+  "also_reported": "1-star (single submitter) and 0-star P/LP and B/LB, VUS and conflicting counts in the table, not in arm A"
+ },
+ "arm_B_not_confident_clinvar": {
+  "set": "every possible SNV without a confident (arm A) P/LP or B/LB record. SNVs with other ClinVar records (VUS, conflicting, 1-star or 0-star P/LP or B/LB, unclassified) stay in arm B and are flagged; ClinVar is not used as evidence in arm B",
+  "likely_benign_candidate": "all of: B1 gnomAD v4.1 genomes PASS, alt AF > 1% in any ancestry group with AN >= 2000 (or overall); B2 not a significant GTEx V10 single-tissue eQTL for ANY gene (not tested passes, flagged; as truth_set_rules.json); B3 no AlphaGenome large change (below) AND PromoterAI score present with |score| < 0.1 (an SNV PromoterAI does not score cannot pass)",
+  "likely_pathogenic_candidate": "all of: rare = absent from gnomAD v4.1 (genomes and exomes) or joint genomes + exomes AF < 1e-4 (0.01%), with genome FILTER failures treated as absent; PromoterAI |score| >= 0.2 (window transcript); AlphaGenome large change (below)",
+  "no_call": "every other arm-B SNV"
+ },
+ "alphagenome_large_change": {
+  "rule": "as truth_set_rules.json B3: mean raw score over the element's track set, separately for RNA_SEQ (target gene, gene-mask LFC) and DNASE (501-bp center mask); large = |mean| in the top 20% of the element's possible SNVs, for RNA OR DNase",
+  "track_sets": {
+   "LDLR": "HepG2 (EFO:0001187), RNA and DNase (census / Figure 3)",
+   "HBB": "RNA K562 (EFO:0002067) + venous blood (UBERON:0013756); DNase K562 (census)",
+   "SLC39A4": "small intestine (UBERON:0002108) + Caco-2 (EFO:0001099), RNA and DNase (census)",
+   "CARD11, JAK1, JAK3, STAT1, STAT3": "T-cell CL:0000084, CD4 T cell CL:0000624, CD8 T cell CL:0000625, B cell CL:0000236, CD14 monocyte CL:0001054, GM12878 EFO:0002784, Jurkat E6-1 CLO:0007045; RNA and DNase (each has both)",
+   "TERT": "H1 EFO:0003042, H9 EFO:0003045, K562 EFO:0002067, HepG2 EFO:0001187, HeLa-S3 EFO:0002791; RNA and DNase"
+  }
+ },
+ "figure": "panel a: per element, arm A counts (P/LP left, B/LB right); panel b: per element, arm B likely pathogenic and likely benign candidate counts, with all possible SNVs as the denominator; panel c: the evidence steps (funnels) pooled over elements; an evidence matrix showing which layers each arm uses and that MPRA and plasmid Fiber-seq are to be added",
+ "outputs": "results/truth_set_figure_20261105/: snv_evidence.tsv (one row per element x possible SNV, all evidence), clinvar_confident.tsv, counts.tsv, funnel.tsv, figure PNG/PDF, summary.json",
+ "draft1_no_alphagenome": {
+  "_written": "2026-11-05, user asked for a first draft without AlphaGenome while the immune/TERT AlphaGenome runs; before the draft was made",
+  "rule": "same as above with the AlphaGenome condition removed: likely benign = B1 and B2 and PromoterAI |score| < 0.1; likely pathogenic = rare and PromoterAI |score| >= 0.2. AlphaGenome is not loaded for any element (census elements included, so all nine are treated alike); the figure marks AlphaGenome as pending",
+  "output": "results/truth_set_figure_20261105/draft1_no_alphagenome/"
+ },
+ "draft3": {
+  "_written": "2026-11-05, user asked for three changes after seeing draft 2; before draft 3 was made",
+  "arm_A": "ClinVar P/LP or B/LB with review status >= 1 star: adds 'criteria provided, single submitter' to the >= 2-star set. Excluded: 0 stars (no assertion criteria, no classification) and conflicting",
+  "likely_benign_candidate": "in gnomAD v4.1 at any frequency (genomes or exomes, FILTER PASS, joint AC >= 1) AND PromoterAI |score| < 0.1 AND no AlphaGenome large change. No minimum allele frequency (B1 dropped) and no GTEx condition (B2 dropped)",
+  "likely_pathogenic_candidate": "unchanged (rare + PromoterAI |score| >= 0.2 + AlphaGenome large change); GTEx is not used anywhere in draft 3",
+  "note": "an SNV can be in gnomAD and rare at the same time; the benign and pathogenic predictor conditions are mutually exclusive, so no SNV is both",
+  "output": "results/truth_set_figure_20261105/draft3/"
+ }
+}

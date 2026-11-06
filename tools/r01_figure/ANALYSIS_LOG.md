@@ -929,3 +929,95 @@ GTEx V10 lists 219 significant LDLR eQTL variants in 13 tissues (none in Liver);
 1.6 kb upstream of the TSS, so no GTEx per-variant data exist for any control. (3) 'Rare in gnomAD' margin column
 removed. (4) 'Any readout' row removed. Height 10.51 in. Output results/r01_figure_20261102/fig3_v14/; the
 grant bundle still holds draft 11.
+
+## 2026-11-05 — Figure 2 draft 9 (fig2_v9): promoter + luciferase window, peak-to-variant line
+- User: dotted line through the peak to the variant; mark the map clearly as a plasmid map; cut the window so "SLC39A4 promoter" fits inside its feature; show only the promoter and luciferase; remove the HEK293T labels from both panels. Rules: `fig2_rules.json` → `revision_draft9` (layout only, written before the build).
+- a: x window −100..3,460 bp from the promoter's 5′ end (promoter 0–1,058, luciferase 1,705–3,357); backbone ends drawn as // breaks; "Reporter plasmid" label left of the map; "SLC39A4 promoter" inside its feature; dotted red line at c.-169 from the top of the track through the peak to the variant tick. The track outside this window (rest of the backbone) is no longer drawn; the whole-plasmid specificity stays in summary.json for the legend.
+- Cell-line labels removed: "HEK293T" in panel a, and the S15A "Hek293T" heading (the one tspan, removed from the embedded crop by an exact-match replace, asserted once). The cell line goes in the legend.
+- No new numbers: the delta and site_stats tables are byte-identical to draft 8. Page 7.2 × 2.1 in, smallest text 6 pt; SVG text live Arial. Nothing committed; the grant bundle still holds draft 4.
+
+## 2026-11-05 — Figure 2 draft 10 (fig2_v10): half-page width, luciferase redrawn
+- User: try half-page width. Rules: `fig2_rules.json` → `revision_draft10` (written before extraction and build). Laid out at final size, 3.5 × 1.62 in; all text 7 pt, panel letters 9 pt (SVG: 17 runs at 7, 2 at 9; live Arial).
+- Panel b redrawn natively. Raw firefly/renilla values are not on klone, so `fig2_luc_digitize.py` reads the S15A HEK293T points and box geometry from the vector Supplemental.pdf p.27 (md5 bb501840e8f9a6b46d4ef9dbafb1aab3; PyMuPDF 1.28.6) → `results/r01_figure_20261102/fig2/luciferase/` (points.tsv md5 1fdd9f40bbd2957cbcb16710916d832f, box.tsv a13d49bf61688b52ad75630ea89a1954). y calibrated on the 0.0 / 2.0 tick marks (81.50 pt per unit; tick labels checked).
+  - WT (n = 8): 0.792, 0.817, 0.959, 0.982, 1.018, 1.051, 1.101, 2.053; median 1.000 (= drawn median; S15A is WT-normalised); 2.053 is the one point beyond the whiskers (drawn as an outlier in S15A too).
+  - c.-169A>G (n = 8): 0.103, 0.140, 0.155, 0.160, 0.240, 0.264, 0.342, 0.417; median 0.200 (= drawn median).
+  - Quartiles match R's default (type 7) quantiles of these points (WT q1 0.9235), so the read-out is exact to the plotting precision. Ratio of means 0.228 / 1.097 = 0.21, matching the 21% in Zalusky et al. 2024.
+  - p shown as in S15A ("p < 0.01"); the test is not recomputed. Replace with the raw table when available.
+- Panel a: same data and window. y label "Footprint loss (%)" (= WT − variant, 20–60 bp footprints; define in the legend), y ticks 0/4/8, track 1.0 pt. "SLC39A4 promoter" moved below its feature (it can't fit inside at 7 pt and this width). "Reporter plasmid" below the map at right. 1-kb bar dropped (scale goes in the legend). "NF-Y motif" above the logo.
+- No new Fiber-seq numbers: the delta and site_stats tables are byte-identical to draft 9. Nothing committed; the grant bundle still holds draft 4.
+
+## 2026-11-05 — Figure 2 draft 11 (fig2_v11): dotted line behind the peak
+- User: the red dotted line hid the peak; make it thinner and put it behind. Rules: `fig2_rules.json` → `revision_draft11` (layout only). Line 0.8 → 0.5 pt, finer dots; inside the track it is drawn below the teal line, and it continues from the axis bottom to the variant tick on the map.
+- No new numbers: the delta and site_stats tables are byte-identical to draft 10. Nothing committed; the grant bundle still holds draft 4.
+
+## 2026-11-05 — Figure 2 draft 12 (fig2_v12): "SLC39A4" inside the promoter feature
+- User: just "SLC39A4" inside the feature. Rules: `fig2_rules.json` → `revision_draft12` (layout only). Label 7 pt bold right of the variant tick (30.5 pt wide; fits with the last character at the arrow tip); the "SLC39A4 promoter" label under the map removed ("promoter" goes in the legend).
+- No new numbers: the delta and site_stats tables are byte-identical to draft 11. Nothing committed; the grant bundle still holds draft 4.
+
+## 2026-11-05 — Figure 2 draft 13 (fig2_v13): plasmid loop with "Reporter plasmid" inside
+- User: remove the solid red tick on the feature (keep the dotted line), centre "SLC39A4", and loop the backbone back round with "Reporter plasmid" between the lines. Rules: `fig2_rules.json` → `revision_draft13` (layout only).
+- The dotted line runs from the top of the track, behind the peak, to the top edge of the promoter feature. It stops there rather than crossing the centred "SLC39A4". The backbone closes into a loop below the features: half-ellipse ends, 5 × 9 pt, with the return line 18 pt below. The loop is not to scale; the features are to scale along the top edge. The // breaks are removed.
+- No new numbers: the delta and site_stats tables are byte-identical to draft 12. Nothing committed; the grant bundle still holds draft 4.
+
+## 2026-11-05 — Figure 2 draft 14 (fig2_v14): y label says WT − variant
+- User: the panel-a y label is unclear; say WT − variant. Rules: `fig2_rules.json` → `revision_draft14` (layout only). Label now "Footprint loss (%)" over "(WT − variant)", both 7 pt. The track axes start 7 pt further right to make room; the map stays to scale on the narrower axis, and "SLC39A4" still fits inside its feature.
+- No new numbers: the delta and site_stats tables are byte-identical to draft 13. Nothing committed; the grant bundle still holds draft 4.
+
+## 2026-11-05 — Figure 1 WASF1 draft 7 (fig1_wasf1_v7): half page, Figure 2 format
+- User: make Figure 1 a similar size and format to Figure 2 (draft 14). Rules: `fig1_rules.json` → `wasf1.draft7_halfpage` (written before the build; layout only).
+- Laid out at final size, 3.5 × 3.4 in. All text 7 pt and panel letters 9 pt, as in Figure 2.
+- a: the same workflow schematic across the full width, scale 1.308. Its 5-pt labels are raised to 5.351 pt in the embedded copy, so they print at 7.0 pt.
+- b: one shared hg38 axis (X0–X1 as draft 6). From top: WASF1 gene model with the GC box and a 200-bp bar; endogenous Fiber-seq (nucleosome + FIRE); 300-bp plasmid (all bins, footprints ×2, stated in the row label); the same 15 4.5-kb construct molecules (same seed, selection and order). Row labels on the left; 0/1 ticks and "Share of molecules" on the right. Two-row legend below, including the SP/KLF GC box.
+- Dropped from the figure: the arrow from the sequencer to the molecules, the molecule-selection caption ("15 of 47; 1,144 total"), and the footnote ("Endogenous track: nucleosomes and FIRE only … calls <20 bp not shown"). These go in the legend.
+- No new numbers: panel_a_reads.tsv and tracks.tsv are byte-identical to draft 6. summary.json differs only in commit and date. --fp-scale 2 as before. Nothing committed; the grant bundle still holds draft 6.
+
+## 2026-11-05 — Figure 1 WASF1 draft 8 (fig1_wasf1_v8): 300-bp molecules, footprints 1×, layout fixes
+- User (7 points): arrow from the PacBio sequencer to b; 200-bp bar at the top right of the endogenous track; fix the overlapping right-axis tick labels; footprints 1× not 2×; clearer right-axis label; single molecules from the full-length 300-bp plasmid reads, clustered, 10 shown; legend in groups of 2. Rules: `fig1_rules.json` → `wasf1.draft8_halfpage` (written before selecting reads).
+- Molecules now come from the 300-bp construct (WASF12). All 8,672 kept reads span the element; the 1,326 that don't were removed upstream (`profiles/WASF12.filters.tsv`).
+  - Same selection rule as drafts 3–7: a 20–80 bp call overlapping the GC box by ≥ 10 bp, plus a separate 20–30 bp call with midpoint within 110180148 ± 10. 409 of 8,672 qualify; an independent recount also gives 409.
+  - 10 drawn at random (seed 20261102), ordered by Ward clustering over the element. FIRE from `fire/WASF12.extract.tsv.gz`: 9 of the 10 shown have a FIRE element.
+  - Drawn in a zoom on the 300-bp element under the 300-bp track (guide lines from the element edges), with a 50-bp bar. List in `molecules_shown.tsv`, which replaces `panel_a_reads.tsv`.
+- Footprint shares now drawn at 1× (`--fp-scale 1`). The right axis reads "Fraction of molecules with each feature". 0/1 tick labels sit inside each track. Legend is 3 columns × 2 rows.
+- No new track numbers: tracks.tsv is byte-identical to draft 7. Size 3.5 × 3.58 in; all text 7 pt (schematic labels 5.351 × 1.308). Nothing committed; the grant bundle still holds draft 6.
+
+## 2026-11-05 — Figure 1 WASF1 draft 9 (fig1_wasf1_v9): molecules on the shared axis; every footprint colour; nucleosome-covered reads
+- User: show enough of each read to line up the 300-bp element with the tracks, the rest spanning the box width; the reads shown should include at least one of each footprint colour inside the element; add 2–3 reads with the element nucleosome-covered. Rules: `fig1_rules.json` → `wasf1.draft9_halfpage`. The counts below were looked at before the rules were written; the 80% cutoff is a post hoc display choice.
+- Counts (WASF12, 8,672 kept molecules):
+  - Footprint selection (rule unchanged): 409 molecules. Of these, 118 have a 51–80 bp call inside the element and 264 a 31–50 bp call.
+  - Nucleosome calls covering ≥ 50/70/80/90/100% of the element: 2,059 / 1,161 / 802 / 439 / 81 molecules.
+- Molecules now drawn on the shared X0–X1 axis (no zoom). Outside the element each read is plasmid sequence, placed in construct coordinates + the insert offset; the element edges are dashed through the reads.
+- 10 footprinted molecules. Whole random draws (seed 20261102) were repeated until the set held a 20–30, 31–50 and 51–80 bp call inside the element; it took 2 draws.
+- 3 nucleosome-covered molecules (nucleosome calls over ≥ 80% of the element; 802 candidates), drawn next from the same generator. Their element coverage is 0.904, 0.934 and 1.0. They sit below the 10 after a gap.
+- Each group is Ward ordered. 12 of the 13 molecules carry a FIRE element somewhere along the read, and 11 elements fall in the window. List in `molecules_shown.tsv` (group, element nucleosome coverage).
+- No new track numbers: tracks.tsv is byte-identical to draft 8. Nothing committed; the grant bundle still holds draft 6.
+
+## 2026-11-05 — Figure 1 WASF1 draft 10 (fig1_wasf1_v10): typical-chromatin reads, bent arrow, centred legend
+- User: the PacBio arrow pointed at nothing (bend it onto the top of the endogenous box); the molecules should have more consistent nucleosomes outside the element; centre the legend. Rules: `fig1_rules.json` → `wasf1.draft10_halfpage` (written before any similarity was computed).
+- Molecule choice (display selection, replaces the random draws):
+  - Method: nucleosome occupancy per base over X0–X1 outside the element; Hamming distance to the medoid of the 409 footprinted candidates.
+  - Footprinted: the 10 nearest the medoid (distances 0–0.089). These already hold 20–30, 31–50 and 51–80 bp calls inside the element, so no swaps.
+  - Nucleosome-covered: the 3 of the 802 candidates nearest the same medoid (distances 0.047, 0.061, 0.067; element nucleosome coverage 0.83, 0.94, 0.93).
+  - Result: mean pairwise flank distance of the 10 shown is 0.090. For 1,000 random sets of 10 from the 409 (seed 20261102) the median is 0.362 and the minimum 0.227.
+  - The legend should say the molecules were chosen as typical of the flank chromatin.
+- Arrow: down from the sequencer label, left above the endogenous track, down onto its top edge. The 200-bp bar moved to X1−450…X1−250, after the first render showed it reading as part of the arrow.
+- Legend: columns packed by text width (10-pt gaps) and centred on the figure.
+- No new track numbers: tracks.tsv is byte-identical to draft 9. Molecule list in `molecules_shown.tsv`; distances in summary.json (`typical_selection`). Nothing committed; the grant bundle still holds draft 6.
+
+## 2026-11-05 — Figure 1 WASF1 draft 11 (fig1_wasf1_v11): footprints at all three sub-nucleosome peaks
+- User: 200-bp bar back toward the arrow; right-axis label closer; no gap between the read groups; the footprinted reads should together show footprints at all three sub-nucleosome peaks. Rules: `fig1_rules.json` → `wasf1.draft11_halfpage` (written before re-selecting).
+- Peaks of the 300-bp track: find_peaks, prominence 0.01, on the summed 20–80 bp smoothed shares. They sit at 110179959 (left), 110180071 (GC box) and 110180151 (the 20–30 bp site). The selection rule already requires the GC box and the site on every footprinted read.
+- New set-level constraint: at least one footprinted read has a 20–80 bp call with midpoint within 110179959 ± 10. The 10 nearest the medoid had none, so 1 swap was made: the farthest read that wasn't the only carrier of another constraint left, and the nearest left-peak carrier (flank distance 0.107) came in.
+- Mean pairwise flank distance of the 10 is 0.097, against a random-set median of 0.362. Nucleosome-covered reads are unchanged.
+- Layout: no gap between groups; 200-bp bar at X1−370…X1−170; right-axis label 18 pt right of the axis.
+- No new track numbers: tracks.tsv is byte-identical to draft 10. Nothing committed; the grant bundle still holds draft 6.
+
+## 2026-11-05 — Figure 1 WASF1 draft 12 (fig1_wasf1_v12): 31–50 bp footprint on the left peak; letters moved in
+- User: at least one read with a 31–50 bp footprint over the far-left sub-nucleosome peak; move the a/b letters right. Rules: `fig1_rules.json` → `wasf1.draft12_halfpage` (written before re-selecting).
+- Added the constraint that a 31–50 bp call covers 110179959. 2 swaps in total under the draft-11 rule. One read (flank distance 0.114) replaced the farthest pick that wasn't a sole carrier. Mean pairwise flank distance of the 10 is 0.101; the random-set median is 0.362. Nucleosome-covered reads are unchanged.
+- Letters a/b moved from x 0 to 7 pt. Under the schematic, the "a" was hidden by the schematic's white page-background rectangle (patch_1), so that one rectangle is removed from the embedded copy (asserted once).
+- No new track numbers: tracks.tsv is byte-identical to draft 11. Nothing committed; the grant bundle still holds draft 6.
+
+## 2026-11-05 — Figure 1 WASF1 draft 13 (fig1_wasf1_v13): scale bar under the molecules; tighter gene row
+- User: move the 200-bp bar below the single molecules; bring the WASF1 gene row down next to the endogenous track; move the GC box down. Rules: `fig1_rules.json` → `wasf1.draft13_halfpage` (layout only).
+- 200-bp bar right-aligned under the molecules, 7 pt. Gene row 20 → 14 pt, 7 pt above the endogenous track (was 9). The GC box swatch now sits on the gene line, labelled to its right. The arrow's horizontal run passes under that label.
+- No new numbers: tracks.tsv and molecules_shown.tsv are byte-identical to draft 12. Size 3.5 × 3.55 in. Nothing committed; the grant bundle still holds draft 6.

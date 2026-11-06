@@ -6,7 +6,7 @@ context (census_lib.CONTEXT; SLC39A4 W1/W2 share one), recommended RNA_SEQ / CAG
   alphagenome/maxabs.tsv  per variant x output type, max |quantile_score| and |raw_score| over ALL tracks (RNA_SEQ:
                           target gene only) with the track holding the max
 Runs in the alphagenome venv; the key is read from ~/.config/alphagenome/key and never printed. Requests sequential.
-Usage: python tools/promoter_variant_census/ag_score.py --output <dir>
+Usage: python tools/promoter_variant_census/ag_score.py --output <dir> [--windows-tsv <file>]
 """
 import argparse
 import sys
@@ -24,7 +24,14 @@ KEEP = {
     'UBERON:0002371': 'bone marrow', 'UBERON:0012168': 'umbilical cord blood', 'CL:0002092': 'bone marrow cell',
     'CL:0001059': 'CMP CD34+', 'CL:0000837': 'hematopoietic multipotent progenitor',
     'UBERON:0002108': 'small intestine', 'UBERON:0002114': 'duodenum', 'EFO:0001099': 'Caco-2',
-    'CL:0002563': 'intestinal epithelial cell'}
+    'CL:0002563': 'intestinal epithelial cell',
+    # immune promoters and TERT (tools/immune_promoter_scan/rules.json "alphagenome")
+    'CL:0000084': 'T-cell', 'CL:0000624': 'CD4 T cell', 'CL:0000625': 'CD8 T cell', 'CL:0000895': 'naive CD4 T cell',
+    'CL:0000236': 'B cell', 'CL:0000623': 'NK cell', 'CL:0000576': 'monocyte', 'CL:0001054': 'CD14 monocyte',
+    'CL:2000001': 'PBMC', 'CLO:0007045': 'Jurkat E6-1', 'EFO:0002796': 'Jurkat', 'EFO:0002784': 'GM12878',
+    'UBERON:0002106': 'spleen', 'UBERON:0002370': 'thymus', 'UBERON:0000029': 'lymph node',
+    'EFO:0003042': 'H1', 'EFO:0003045': 'H9', 'EFO:0002791': 'HeLa-S3', 'EFO:0001086': 'A549', 'EFO:0001203': 'MCF-7',
+    'EFO:0003072': 'SK-N-SH'}
 TYPES = ('RNA_SEQ', 'CAGE', 'DNASE')
 COLS = ['key', 'context', 'output_type', 'gene_name', 'track_name', 'track_strand', 'ontology_curie', 'biosample_name',
         'raw_score', 'quantile_score']
@@ -34,15 +41,18 @@ def variants(out):
     s = cl.all_snvs(out)[['window', 'gene', 'chrom', 'pos', 'ref', 'alt', 'key']]
     g = cl.gnomad_table(out)
     ind = g[(g.kind == 'indel') & (g.g_ac > 0)][s.columns]
-    v = pd.concat([s, ind]).assign(context=lambda d: d.window.map(cl.CONTEXT))
+    v = pd.concat([s, ind]).assign(context=lambda d: d.window.map(cl.context))
     return v.drop_duplicates(['context', 'key'])
 
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--output', required=True)
+    ap.add_argument('--windows-tsv', help='window table (default windows.tsv next to this script)')
     ap.add_argument('--limit', type=int, default=0, help='score only the first N pending variants (testing)')
     a = ap.parse_args()
+    if a.windows_tsv:
+        cl.WINDOWS_TSV = Path(a.windows_tsv)
     out = Path(a.output)
     d = out / 'alphagenome'
     d.mkdir(parents=True, exist_ok=True)

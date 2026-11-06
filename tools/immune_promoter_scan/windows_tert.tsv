@@ -1,0 +1,2 @@
+window	gene	chrom	start	end	strand	tss	transcript	refseq	tss_offsets	fire_peaks	note
+TERT	TERT	chr5	1294953	1295254	-	1295068	ENST00000310581	NM_198253.3	-186..+115		window from user 2026-11-05 (302 bp); TSS = MANE ENST00000310581 (PromoterAI tss_pos + 1)

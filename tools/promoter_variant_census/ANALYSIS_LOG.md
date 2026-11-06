@@ -75,3 +75,8 @@ variants are in gnomAD, at AF > 1%, not GTEx eQTLs, and predicted "no effect" by
   incl. +533, +534, +535 in the E-box; 35/79 B/LB SNVs have a top-20% AlphaGenome change (29% of all SNVs).
   gnomAD 128 SNVs, 14 indels; common 2 (rs62270945 overall 1.77%, GTEx eQTL for IFT122; rs116644718 afr 1.05%, not
   tested) -> candidate benign 1 (rs116644718). truth_sets.tsv md5 4c52dcc2...
+
+## 2026-11-05 — fetch.py: other window tables and batched GTEx lookup
+
+- `census_lib.WINDOWS_TSV` (default `windows.tsv`) can be reassigned, and `fetch.py --windows-tsv <file>` uses it, so the same fetch code serves other window sets (first use: `tools/immune_promoter_scan`).
+- `fetch.py gtex --batched`: GTEx variant-table lookups by chromosome + up to 100 positions per request, and eQTL lookups by up to 50 variant ids per request, instead of one request per variant. Checked against the census per-variant `variant_lookup.tsv` on LDLR + HBB (193 variants) and SLC39A4 W1/W2 + GATA2_IG + GATA2_E95_W1 (430 variants, 3 with eQTLs, 65 pairs): 0 mismatches in every column. The census results were not rerun.

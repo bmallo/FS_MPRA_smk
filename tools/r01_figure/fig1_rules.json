@@ -119,6 +119,53 @@
    "_written": "2026-11-03, before FIRE was run on the 4.5-kb reads (user: 'if we are showing FIRE on the occupancy plot, we can also show FIRE on the individual reads').",
    "fire_reads": "fig1_fire.sh on the staged 4.5-kb construct reads (WASF1_full; same ft 0.13 add-nucleosomes | fire, no --fire-filter); per drawn read, FIRE elements from ft extract --all ref_fire_starts/lengths, lifted to hg38 with inserts.tsv (WASF1, + strand) and clipped to X0-READ_X1",
    "drawing": "on each read, same layer order as the tracks: nucleosomes, then FIRE elements (FIRE colour, alpha 0.65), then 20-80 bp footprints; reads, selection and tracks unchanged"
+  },
+  "draft7_halfpage": {
+   "_written": "2026-11-05, after the user asked for Figure 1 in the Figure 2 size and format, before building; layout only, no new numbers",
+   "size": "3.5 in wide (half page), laid out at final size; text >= 7 pt (panel letters 9 pt), as Figure 2 draft 14",
+   "a": "workflow schematic (same HPRC vector crop) across the top, scaled so its 5-pt labels print at 7 pt (font-size raised inside the embedded copy to reach 7 pt at the chosen scale)",
+   "b": "one shared hg38 x axis (X0-X1, as draft 6) stacking: WASF1 gene model with the GC box and a 200-bp bar; endogenous Fiber-seq track (nucleosome + FIRE); 300-bp plasmid track (all bins, footprints x2 as draft 6, the scale stated in the row label); the same 15 4.5-kb construct molecules (same seed, selection and order as draft 6) drawn to X0-READ_X1. Row labels on the left, 0/1 ticks and 'Share of molecules' on the right. Legend in two rows below. The arrow from the sequencer to the reads and the footnote line are dropped (their content goes in the legend).",
+   "unchanged": "selection, bins, smoothing, FIRE, fp scale 2; panel_a_reads.tsv and tracks.tsv must be byte-identical to fig1_wasf1_v6"
+  },
+  "draft8_halfpage": {
+   "_written": "2026-11-05, after the user's draft-7 review, before selecting reads or building",
+   "molecules": "single molecules now from the 300-bp construct (WASF12), not the 4.5-kb construct. All 8,672 kept WASF12 reads are full length over the element (profiles/WASF12.filters.tsv: 1,326 not-spanning reads were already removed upstream). Same selection rule as before (a 20-80 bp call overlapping the GC box by >= 10 bp and a separate 20-30 bp call with midpoint within SMALL_SITE +/- 10), N_SHOW = 10 drawn at random (seed 20261102), ordered by Ward clustering of one-hot per-base call class over the 300-bp element. FIRE elements from fire/WASF12.extract.tsv.gz. Drawn over the 300-bp element only, in a zoom axis below the 300-bp track (guide lines from the element edges), with a 50-bp bar.",
+   "fp_scale": "1 (footprints no longer x2), user request",
+   "layout": "arrow from the PacBio sequencer down into panel b; 200-bp bar at the top right of the endogenous track; right-axis 0/1 labels aligned inside each track (no overlap between tracks); right-axis label 'Fraction of molecules' / 'with each feature'; legend 3 columns x 2 rows (nucleosome/FIRE, 20-30/31-50 bp footprint, 51-80 bp footprint/GC box)",
+   "unchanged": "tracks (tracks.tsv must be byte-identical to draft 7), bins, smoothing, FIRE profiles, window"
+  },
+  "draft9_halfpage": {
+   "_written": "2026-11-05, after the user's draft-8 review, before drawing reads (counts in the next line were looked at first)",
+   "counts_seen": "WASF12 kept molecules 8,672; footprint selection (draft 3-8 rule) 409, of which 118 have a 51-80 bp call and 264 a 31-50 bp call inside the element; nucleosome calls covering >= 50/70/80/90/100% of the element: 2,059/1,161/802/439/81",
+   "read_window": "molecules drawn on the shared axis X0-X1 (no zoom), so the 300-bp element lines up with the tracks; the read outside the element is plasmid sequence in the same construct coordinates (hg38 = construct + offset), with the element marked by its dashed edges",
+   "footprinted_reads": "N_SHOW = 10 from the 409 (same rule), drawn at random (seed 20261102) with the constraint that the 10 together contain at least one 20-30, one 31-50 and one 51-80 bp call inside the element: whole draws of 10 are repeated until the constraint holds (number of draws recorded); Ward ordering as before",
+   "nucleosome_reads": "N_NUC = 3 molecules whose nucleosome calls (>= 81 bp) cover >= 80% of the 300-bp element (802 of 8,672; display threshold chosen post hoc after the counts above), drawn at random from the same generator after the footprinted draw, Ward ordered, placed below the footprinted reads after a small gap",
+   "unchanged": "tracks.tsv byte-identical to draft 8; fp scale 1; legend, arrow, axes as draft 8; the zoom guides and 50-bp bar are dropped"
+  },
+  "draft10_halfpage": {
+   "_written": "2026-11-05, after the user's draft-9 review, before computing any similarity",
+   "reads": "replace the random draws with molecules whose chromatin outside the element is alike. Feature per molecule: nucleosome occupancy (calls >= 81 bp) per base over the shown window X0-X1 outside the 300-bp element. Distance: share of those bases where two molecules disagree (Hamming). Reference = the medoid of the 409 footprinted candidates (least mean distance to the other 408). Footprinted reads: the 10 candidates nearest the reference, then, if a footprint bin (20-30 / 31-50 / 51-80 bp inside the element) is missing, the farthest of the 10 is swapped for the nearest candidate carrying that bin (repeated per missing bin). Nucleosome-covered reads: the 3 of the 802 candidates (>= 80% of the element under nucleosome calls) nearest the same reference. Ward ordering within each group as before. Report mean pairwise distance of the shown reads vs the draft-9 reads and vs random sets. This is a display selection (typical flank chromatin), stated in the legend.",
+   "arrow": "PacBio arrow bent: down from the sequencer label, left above the endogenous track, then down onto the top edge of the endogenous box; the 200-bp bar moves left along the top of that box (X1-300 to X1-100) to leave room; after the first render the bar read as part of the arrow, so it moved to X1-450 to X1-250",
+   "legend": "3 x 2 legend columns packed by their text widths (10-pt gaps) and centred on the figure width",
+   "unchanged": "tracks.tsv byte-identical to draft 9; everything else as draft 9"
+  },
+  "draft11_halfpage": {
+   "_written": "2026-11-05, after the user's draft-10 review, before re-selecting reads",
+   "peaks": "sub-nucleosome footprint peaks of the 300-bp track (find_peaks, prominence 0.01, on the summed 20-30/31-50/51-80 bp smoothed shares in fig1_wasf1_v10/tracks.tsv): 110179959 (left), 110180071 (GC box), 110180151 (20-30 bp site). The GC box and the 20-30 bp site are already required on every footprinted read by the selection rule.",
+   "reads": "draft-10 typical-chromatin selection kept, with one more set-level constraint: at least one footprinted read has a 20-80 bp call with midpoint within LEFT_SITE (110179959) +/- 10 bp. If the 10 nearest the medoid miss a constraint (a footprint bin, or the left peak), the farthest pick that is not the only carrier of another met constraint is swapped for the nearest candidate that meets it.",
+   "layout": "no gap between footprinted and nucleosome-covered reads; 200-bp bar back toward the arrow (X1-370 to X1-170); right-axis label closer to the 0/1 ticks",
+   "unchanged": "tracks.tsv byte-identical to draft 10"
+  },
+  "draft12_halfpage": {
+   "_written": "2026-11-05, after the user's draft-11 review, before re-selecting reads",
+   "reads": "one more set-level constraint on the footprinted reads: at least one 31-50 bp call whose span covers LEFT_SITE (110179959). Same swap rule as draft 11 (farthest pick that is not the only carrier of another met constraint out, nearest candidate meeting the new one in).",
+   "layout": "panel letters a and b moved right (x 0 -> 7 pt), next to their content",
+   "unchanged": "tracks.tsv byte-identical to draft 11"
+  },
+  "draft13_halfpage": {
+   "_written": "2026-11-05, after the user's draft-12 review; layout only",
+   "layout": "200-bp bar moved below the single molecules (right-aligned, 7 pt); WASF1 gene row shortened (20 -> 14 pt) and moved down next to the endogenous track; GC box swatch moved down onto the gene line with its label to the right; arrow path adjusted to pass under that label",
+   "unchanged": "reads, tracks (tracks.tsv and molecules_shown.tsv byte-identical to draft 12)"
   }
  },
  "ef1a": {

@@ -49,5 +49,35 @@
   "dropped": "draft-7 panels c (occupancy around the motif) and d (per-replicate site occupancy, HEK293T and HepG2). Their tables (site_stats_<cell>.tsv) and the HepG2 whole-plasmid numbers are still written for the legend.",
   "cell_lines": "HEK293T only on the figure (the luciferase cell line, as in draft-4 panel e); HepG2 not drawn",
   "min_text_pt": 6
+ },
+ "revision_draft9": {
+  "_written": "2026-11-05, after the user's draft-8 review, before building draft 9; layout only, no new numbers",
+  "panel_a_window": "x cut to the promoter and luciferase only: gene-orientation bp -100..3460 from the promoter's 5' end (promoter 0-1058, luciferase 1705-3357); backbone ends drawn as // breaks. The rest of the plasmid is not drawn; the whole-plasmid specificity numbers stay in the legend (summary.json).",
+  "panel_a_marks": "dotted variant-coloured vertical line at c.-169 from the top of the track through the peak to the variant tick on the map; 'SLC39A4 promoter' label inside its feature (right of the variant tick); map labelled 'Reporter plasmid' to its left",
+  "cell_line_labels": "'HEK293T' text removed from panel a, and the 'Hek293T' heading removed from the embedded S15A crop (panel b); the cell line goes in the legend",
+  "rest": "track values (whole_plasmid_delta_HEK293T.tsv), logo and luciferase scaling unchanged"
+ },
+ "revision_draft10": {
+  "_written": "2026-11-05, after the user asked for half-page width, before extracting or building anything",
+  "size": "3.5 in wide (half page), laid out at final size; all text >= 7 pt (panel letters 9 pt)",
+  "panel_b_source": "redrawn natively instead of embedding the S15A crop. Raw luciferase values are not on klone, so the 8 WT and 8 c.-169A>G points (vector circles) and the box geometry (box, median, whiskers) are read from Supplemental.pdf p.27 with PyMuPDF (fig2_luc_digitize.py), y calibrated on the S15A tick marks (0.0 and 2.0). Checks before use: WT median = 1.000 (normalised to WT), 8 points per group, the median of the points equals the drawn median, and every point inside the whiskers except drawn outliers. p shown as in S15A ('p < 0.01'; the test is not recomputed). To be replaced by the raw table when available.",
+  "panel_b_style": "box (from the S15A geometry) + points, WT #2E3192 / variant #E3191F, horizontal y ticks 0/1/2, y label 'Luciferase (firefly/renilla)', x labels 'WT' and 'c.-169A>G' (no 'SLC39A4'), no cell-line heading",
+  "panel_a": "unchanged data and window (-100..3460 bp). y label shortened to 'Footprint loss (%)' (= WT - variant, 20-60 bp footprints; defined in the legend); y ticks 0/4/8; track 1.0 pt; 'SLC39A4 promoter' below its feature (it cannot fit inside at this width at 7 pt); 'Reporter plasmid' below the map at right; 1-kb scale bar dropped (scale goes in the legend); NF-Y label above the logo"
+ },
+ "revision_draft11": {
+  "_written": "2026-11-05, after the user's draft-10 review; layout only",
+  "panel_a": "peak-to-variant dotted line thinner (0.8 -> 0.5 pt) and drawn behind the track (inside the track axes below the line; overlay only between the axes and the map)"
+ },
+ "revision_draft12": {
+  "_written": "2026-11-05, after the user's draft-11 review; layout only",
+  "panel_a": "promoter feature labelled 'SLC39A4' inside the arrow (7 pt bold, right of the variant tick; 30.5 pt wide in ~29 pt + tip); the 'SLC39A4 promoter' label below the map removed ('promoter' goes in the legend)"
+ },
+ "revision_draft13": {
+  "_written": "2026-11-05, after the user's draft-12 review; layout only",
+  "panel_a": "solid red variant tick on the promoter removed; the dotted line (peak -> top of the promoter feature) is the only variant mark on the map. 'SLC39A4' centred in the promoter feature. Backbone closes into a loop below the features (half-ellipse ends, return line below; loop not to scale, features to scale along the straight edge), 'Reporter plasmid' centred between the two lines; // breaks removed."
+ },
+ "revision_draft14": {
+  "_written": "2026-11-05, after the user's draft-13 review; layout only",
+  "panel_a": "y label 'Footprint loss (%)' gets a second line '(WT − variant)'; track axes start 7 pt further right (x0 24 -> 31 pt) to make room"
  }
 }
