@@ -62,7 +62,8 @@ ATG_A = 5951                              # 1-based plasmid position of the ATG 
 MOTIF_P = ATG_A + 170                     # NF-Y CCAAT core centre (c.-170)
 TF = (20, 60)
 SIGMA = 3
-W_IN, H_IN = 3.5, 1.62
+TOP = 9.0                                     # title band above both panels (pt; draft 15)
+W_IN, H_IN = 3.5, 1.62 + TOP / 72
 WIN = (-100, 3460)                            # panel a window, bp from the promoter's 5' end (promoter + luciferase)
 
 
@@ -146,12 +147,13 @@ def main():
     def axpt(x0, y0, x1, y1, **kw):
         return fig.add_axes([x0 / Wpt, 1 - y1 / Hpt, (x1 - x0) / Wpt, (y1 - y0) / Hpt], **kw)
 
-    def letter_lab(ch, x, y):
-        fig.text(x / Wpt, 1 - y / Hpt, ch, fontsize=9, fontweight='bold', va='top', ha='left')
+    def letter_lab(ch, x, title):                                  # letter + panel title on one baseline
+        fig.text(x / Wpt, 1 - 8.0 / Hpt, ch, fontsize=9, fontweight='bold', va='baseline', ha='left')
+        fig.text((x + 8.5) / Wpt, 1 - 8.0 / Hpt, title, fontsize=FS, fontweight='bold', va='baseline', ha='left')
 
     # ---- a: WT - variant track over the plasmid map, promoter + luciferase window (shared x, to scale)
-    letter_lab('a', 0, 1)
-    X0, X1, Y0, Y1 = 31.0, 168.0, 6.0, 78.0                        # track axes (pt)
+    letter_lab('a', 0, 'Plasmid Fiber-seq')
+    X0, X1, Y0, Y1 = 31.0, 168.0, 6.0 + TOP, 78.0 + TOP         # track axes (pt)
     ylo, yhi = -1.5, 8.5
     tax = axpt(X0, Y0, X1, Y1)
     tax.axhline(0, color=INK2, lw=0.5, zorder=1)
@@ -214,8 +216,8 @@ def main():
             va='bottom')
 
     # ---- b: luciferase (HEK293T; points and box geometry from the vector Fig. S15A)
-    letter_lab('b', 176, 1)
-    bax = axpt(206, Y0 + 4, 250, 88)
+    letter_lab('b', 176, 'Reporter Assay')
+    bax = axpt(206, Y0 + 4, 250, 88 + TOP)
     for i, (g, col) in enumerate((('WT', WT_C), ('Var', VAR_C))):
         b = box.loc[g]
         bw = 0.56

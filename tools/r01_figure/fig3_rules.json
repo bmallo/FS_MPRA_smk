@@ -167,5 +167,38 @@
   "gtex_row": "'n.t.' = in the GTEx V10 variant table but MAF < 1% in GTEx donors, so not tested for eQTLs; '·' = not in the GTEx V10 variant table; (filled/open circle for eQTL/tested kept, none occur). Margin = eQTLs per class",
   "removed": "'Rare in gnomAD' margin column; 'Any readout' row and its footnote text",
   "other_panels": "unchanged"
+ },
+ "panel_b_isolated_draft15": {
+  "_written": "2026-11-06, from the user's requests after seeing fig3_v14, before any new variant was retrieved, scored or counted",
+  "figure": "panel b of Fig 3 as its own figure (fig3b.py); panels a, c, d untouched",
+  "region": "the whole LDLR element measured by Kircher 2019: chr19:11,089,231-11,089,548 (hg38, 318 bp = c.-318 to c.-1, NM_000527.5), 954 SNVs; previously the 211-bp plasmid-library region (oligo 21-231, 633 SNVs)",
+  "controls": "ClinVar germline P/LP and B/LB SNVs in the region (same class mapping as panel b drafts 5-14: description contains pathogenic or benign, not conflicting/uncertain; any review status, star count reported). Source: results/proxy_benign_20261106/clinvar/LDLR.json (NCBI E-utilities, fetched 2026-11-06, 1-kb window containing the region); md5 logged",
+  "population_rows": {
+   "gnomAD": "yes/no: in gnomAD v4.1 genomes (AC >= 1, PASS) or exomes (AC >= 1, PASS); same source/definition family as the census (genomes) extended to exomes as in draft 14",
+   "GTEx": "yes/no (user 2026-11-06): yes = tested for eQTL in GTEx V10 (variant in the V10 table with maf01 = true); genotyped-but-untested and absent = no. Looked up per control variant through the GTEx API",
+   "Primate": "yes/no (user 2026-11-06, approximation): yes = the human alt allele is the reference base of >= 1 non-human primate genome in the Ensembl EPO primate multiple alignment (Ensembl REST alignment/region, method EPO, species_set_group primates), at the aligned column. A reference genome is one individual: this is a proxy for 'observed homozygous in a non-human primate', not a population homozygote call. PrimateAI-3D not used (missense only)"
+  },
+  "functional_rows": "AlphaGenome HepG2 RNA (LDLR gene-mask LFC) and DNase (501-bp centre DIFF_LOG2_SUM), same scorer, interval and tracks as alphagenome_rules.json (extra 321 SNVs scored with tools/r01_figure/alphagenome_score.py); PromoterAI (same source table as evidence_v3); MPRA = Kircher 2019 LDLR Value (GRCh38_LDLR.tsv); Plasmid Fiber-seq HepG2 and HEK293T as draft 14 (only the 633 library SNVs; others shown as not in the library)",
+  "large_change": "unchanged rule (|variant - WT| in the row's top 20%), but the quantile is now taken over every SNV of the 318-bp region that the row scores (954 for MPRA, AlphaGenome, PromoterAI; Fiber-seq rows keep their library SNVs). Post hoc consequence: MPRA/AlphaGenome/PromoterAI cutoffs change from draft 14",
+  "margins": "per row: P/LP and B/LB counts with yes (population) or with a large change (functional), denominators = controls the row covers"
+ },
+ "panel_ab_draft16": {
+  "_written": "2026-11-06, user request after fig3b_v15, before building",
+  "panels": "a (MPRA along the promoter, as Fig 3 a) added back above the standalone b; panels c and d of fig3_v14 stay out",
+  "panel_a_region": "extended to the whole Kircher 2019 element (c.-318 to c.-1, 954 SNVs) so every panel-b control appears in a; draft 14 showed the 633 library SNVs. ClinVar class per SNV from the same 2026-11-06 ClinVar query as b (class mapping unchanged; 'other' drawn as not in ClinVar). Regions and TSS as Fig 3 a",
+  "key": "the explanatory text under b is removed; one line defining the symbols is kept (user)",
+  "format": "7.2 in wide, 7 pt text, 6 pt secondary text, 9 pt panel letters"
+ },
+ "panel_b_draft17": {
+  "_written": "2026-11-06, user request after fig3_v16, before building; layout/colour only",
+  "rows": "primate row ('Non-human primates', alt allele in a primate genome) removed from panel b; fig3b_data primate.tsv kept on disk, not drawn",
+  "section_colour": "each row group gets its own hue: heading text, symbols (yes / large-change triangles) and a light tint band behind its rows. Population #9A6A12 (ochre), Predicted #6A55B5 (violet), Measured #00809A (teal-blue); validated with the dataviz validate_palette.js (light, all pairs: CVD dE 8.3, normal-vision dE 15.3, contrast >= 3:1). Section identity is also given by the heading text (secondary encoding). Grey dots and margins unchanged"
+ },
+ "compact_draft18": {
+  "_written": "2026-11-06, user request after fig3_v17 ('compact so it fits within a grant'), before building; layout only",
+  "size": "keep 7.2 in width (full-width counterpart of the 3.5-in Figs 1-2); cut height from 5.92 in to ~3.9 in; text stays 7 pt main / 6 pt secondary, letters 9 pt",
+  "panel_a": "axes 88 -> 58 pt; region labels one line (short names; 'no motif match' and the TF names move to the legend text); shorter x label",
+  "panel_b": "section headings move into the band as a left label (name + 'yes / no' or 'variant − WT'); each row label on one line (detail in parentheses); row height 15 -> 10.5 pt; column labels and region names kept",
+  "data": "unchanged (same inputs, cutoffs and flags as draft 17)"
  }
 }

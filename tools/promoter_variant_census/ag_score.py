@@ -31,7 +31,9 @@ KEEP = {
     'CL:2000001': 'PBMC', 'CLO:0007045': 'Jurkat E6-1', 'EFO:0002796': 'Jurkat', 'EFO:0002784': 'GM12878',
     'UBERON:0002106': 'spleen', 'UBERON:0002370': 'thymus', 'UBERON:0000029': 'lymph node',
     'EFO:0003042': 'H1', 'EFO:0003045': 'H9', 'EFO:0002791': 'HeLa-S3', 'EFO:0001086': 'A549', 'EFO:0001203': 'MCF-7',
-    'EFO:0003072': 'SK-N-SH'}
+    'EFO:0003072': 'SK-N-SH',
+    # proxy benign elements (tools/proxy_benign/rules.json)
+    'EFO:0009747': 'WTC11', 'EFO:0007598': 'HAP-1'}
 TYPES = ('RNA_SEQ', 'CAGE', 'DNASE')
 COLS = ['key', 'context', 'output_type', 'gene_name', 'track_name', 'track_strand', 'ontology_curie', 'biosample_name',
         'raw_score', 'quantile_score']
@@ -61,6 +63,9 @@ def main():
     m = dna_client.create(Path('~/.config/alphagenome/key').expanduser().read_text().strip())
     L = dna_client.SEQUENCE_LENGTH_1MB
     ctx = cl.contexts()
+    w = cl.windows()                                     # optional ag_center column: interval centre per context
+    centre = {} if 'ag_center' not in w else {cl.context(x): int(c) for x, c in zip(w.window, w.ag_center)
+                                               if pd.notna(c) and str(c) != ''}
     scorers = [vs.RECOMMENDED_VARIANT_SCORERS[k] for k in TYPES]
     v = variants(out)
     tp, mp = d / 'tracks.tsv', d / 'maxabs.tsv'
@@ -72,7 +77,7 @@ def main():
     t0 = time.time()
     for i, r in enumerate(todo):
         chrom, gene, lo, hi = ctx[r.context]
-        mid = (lo + hi) // 2
+        mid = centre.get(r.context, (lo + hi) // 2)
         iv = genome.Interval(chrom, mid - L // 2, mid + L // 2)
         for attempt in range(5):
             try:

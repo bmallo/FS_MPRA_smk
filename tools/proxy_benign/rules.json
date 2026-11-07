@@ -1,0 +1,41 @@
+{
+ "_written": "2026-11-06, decisions by the user (grant Aim 1B proxy benign classes), before element coordinates were given and before any variant was retrieved or counted",
+ "purpose": "one added column on the user's gene table (GATA2, SHH, APC, MLH1, MSH2, GALT, VHL, HBB, LDLR, TERT, PAH, ANKRD26, HBG1, SLC39A4, NIPBL, RBM8A): per element, a stacked bar of proxy benign SNVs coloured by how many proxy benign classes support each SNV",
+ "elements": "elements.tsv (hg38, 1-based inclusive), from the user 2026-11-06: GATA2 = +9.5 intronic enhancer, SHH = ZRS enhancer (LMBR1 intron), the rest as given. Target gene for AlphaGenome RNA = the row gene",
+ "universe": "every possible SNV in the element, excluding SNVs with a ClinVar P/LP or B/LB record of >= 1 star (the benchmark, shown in the table's own P/LP and B/LB columns). Indels not counted",
+ "classes": {
+  "gnomad": "present in gnomAD v4.1, genomes or exomes, FILTER PASS, AC >= 1; no allele-frequency cutoff",
+  "gtex": "tested in GTEx V10 (in the V10 variant table with maf01 = true) AND not a significant single-tissue eQTL for any gene in any tissue. Variants not tested do NOT count",
+  "alphagenome": "no large AlphaGenome change: |mean raw score| over the element's track set not in the element's top 20% of possible SNVs, for RNA_SEQ (target gene, gene-mask LFC) and for DNASE (501-bp centre mask); both must be below the cutoff. Track set = the gene's Fiber-seq cell lines available in AlphaGenome: WTC11 EFO:0009747 (RNA, DNase), Jurkat E6-1 CLO:0007045 (RNA, DNase), K562 EFO:0002067 (RNA, DNase), HAP-1 EFO:0007598 (DNase only). HEK293T, HEL 92.1.7 and HUDEP-2 are not in AlphaGenome (HEK293 has CAGE only); erythroid genes with only HEL/HUDEP-2 use K562",
+  "not_used": "PromoterAI (user: AlphaGenome only); primate homozygotes (not run)"
+ },
+ "evidence_level": "number of classes supporting the SNV, 0-3; the bar stacks levels 1, 2 and 3",
+ "benchmark": "ClinVar germline P/LP and B/LB, review status >= 1 star (criteria provided), queried by window as the census",
+ "alphagenome_detail": {
+  "_written": "2026-11-06, with the coordinates, before any score",
+  "track_sets": "per element in elements.tsv (ag_rna, ag_dnase), from the table's Fiber-seq cell lines available in AlphaGenome; ANKRD26 uses its four non-erythroid lines (K562 substitution only when HEL/HUDEP-2 are the only lines, i.e. HBB)",
+  "interval": "1 Mb (1,048,576 bp) centred on the element, except SHH: centred at 156,318,288 so the interval (155,794,000-156,842,576) contains both the SHH gene and the ZRS (~980 kb apart); RNA = SHH gene-mask LFC",
+  "run": "tools/promoter_variant_census/ag_score.py, one Slurm array task per element (cpu-g2, at most 8 at once to limit concurrent API connections)"
+ },
+ "bar_scale": "percent of the element's possible SNVs (counts also written); user did not choose, the recommended option was used",
+ "outputs": "results/proxy_benign_20261106/",
+ "v2_alphagenome_350bp": {
+  "_written": "2026-11-06, user: gnomAD and GTEx not helpful; show AlphaGenome-only proxy benigns in a 350 bp window, only if no AlphaGenome rerun is needed; before any 350 bp count was made",
+  "proxy_benign": "no large AlphaGenome change (RNA and DNase both outside the top 20%), with the cutoffs computed over the full 1 kb element (as v1) and applied to the SNVs inside the 350 bp window. gnomAD and GTEx not used",
+  "window": "350 bp centred on the TSS: 175 bp upstream + TSS + 174 bp downstream in transcript orientation. TSS = 5' end of the Ensembl canonical (MANE Select) transcript of the gene, Ensembl REST, GRCh38. Enhancers (GATA2 +9.5, SHH ZRS) have no TSS: 350 bp centred on the 1 kb element (start + 325 .. start + 674; SHH 1,143 bp element: centre +/- 175 likewise). The 350 bp window must lie inside the 1 kb element (AlphaGenome scores exist only there); a gene where it does not is reported and clipped to the element, not re-scored",
+  "universe": "all 1,050 possible SNVs in the 350 bp window; SNVs with a >= 1-star ClinVar P/LP or B/LB record excluded (benchmark), as v1",
+  "display": "one column: count of proxy benign SNVs per gene (same denominator for every gene), single colour",
+  "output": "results/proxy_benign_20261106/v2_350bp/",
+  "window_revised": {
+   "_written": "2026-11-06, after the TSS lookup showed that TSS-centred windows run 50-175 bp past most 1 kb elements (no AlphaGenome scores there) and that APC and NIPBL have no MANE Select TSS inside; user chose, before any 350 bp count was made",
+   "rule": "350 bp TSS-centred window (175 up, 174 down; TSS = MANE Select 5' end from the UCSC mane track), slid inward until it lies inside the 1 kb element, so it is the TSS-side 350 bp and still contains the TSS. APC: promoter 1B TSS (NM_001127511.3, chr5:112707498, +). NIPBL: the 350 bp at the element's 3' edge (the NIPBL TSS lies just outside; the only TSS inside is NIPBL-DT). GATA2 and SHH (enhancers): centred on the element. Every window = 1,050 possible SNVs",
+   "tss_source": "UCSC hg38 mane track (MANE Select), queried 2026-11-06; Ensembl REST was too slow"
+  },
+  "cutoff_350_comparison": {
+   "_written": "2026-11-06, user asked to compare against cutoffs computed inside the 350 bp window; before that count was made",
+   "rule": "same windows and SNVs as v2; large = |mean raw| in the top 20% of the 1,050 possible SNVs of the 350 bp window (all SNVs, benchmark included, as for the 1 kb cutoff), separately for RNA and DNase; proxy benign = both below. Compared with the 1 kb-cutoff version by count per gene and by overlap (SNVs called by both, by one only)",
+   "output": "results/proxy_benign_20261106/v2_350bp/cutoff_comparison.tsv, snv_350bp_cutoffs.tsv, table_proxy_benign_350bp_cut350.png",
+   "decision": "2026-11-06, user: keep the 1 kb cutoff. Final table = v2_350bp/table_proxy_benign_350bp.png/.pdf; the 350 bp-cutoff version stays as a comparison only"
+  }
+ }
+}

@@ -1021,3 +1021,69 @@ grant bundle still holds draft 11.
 - User: move the 200-bp bar below the single molecules; bring the WASF1 gene row down next to the endogenous track; move the GC box down. Rules: `fig1_rules.json` → `wasf1.draft13_halfpage` (layout only).
 - 200-bp bar right-aligned under the molecules, 7 pt. Gene row 20 → 14 pt, 7 pt above the endogenous track (was 9). The GC box swatch now sits on the gene line, labelled to its right. The arrow's horizontal run passes under that label.
 - No new numbers: tracks.tsv and molecules_shown.tsv are byte-identical to draft 12. Size 3.5 × 3.55 in. Nothing committed; the grant bundle still holds draft 6.
+
+## 2026-11-06 — Fig 2 draft 15 (panel titles; layout only)
+- User request: titles over a ("Plasmid Fiber-seq") and b ("Reporter Assay").
+- Titles are 7 pt bold beside the panel letters on the letter baseline. A 9-pt band was added on top (3.5 × 1.745 in, 1050×524 px at 300 dpi), and all content moved down 9 pt (fig2_rules.json revision_draft15).
+- Data unchanged: site_stats_HEK293T.tsv and whole_plasmid_delta_HEK293T.tsv are md5-identical to fig2_v14.
+- Output: results/r01_figure_20261102/fig2_v15/ (fig2.svg/.pdf/.png).
+
+## 2026-11-06 — Fig 3b standalone, draft 15 (fig3_rules.json panel_b_isolated_draft15)
+- User: isolate panel b; controls from the whole LDLR region measured by Kircher 2019; gnomAD and GTEx as yes/no; add a primate class. User choices (2026-11-06): primate = alt allele in a non-human primate reference genome (PrimateAI-3D and the Gao 2023 primate calls are protein-altering only); GTEx yes = tested for eQTL (maf01).
+- Region chr19:11,089,231-11,089,548 (c.-318..c.-1), 954 SNVs from GRCh38_LDLR.tsv (hg38 ref bases all match). The plasmid library covers 633 of them (oligo 21-231).
+- Controls (ClinVar germline, results/proxy_benign_20261106/clinvar/LDLR.json, fetched 2026-11-06, md5 5d0ab405…): 10 P/LP + 8 B/LB SNVs (draft 14: 8 + 6, all retained). New: P/LP c.-35C>G and c.-8C>A, B/LB c.-268G>T and c.-28G>C, all outside the plasmid library. Other ClinVar SNVs in the region: 109 VUS, 7 conflicting, 1 other.
+- New data (tools/r01_figure/fig3b_data.py → results/r01_figure_20261102/fig3b_data/):
+  - AlphaGenome, 321 extra SNVs: alphagenome_score.py with the same settings, 0 lost (3 transient retries).
+  - PromoterAI: MANE ENST00000558518.6, all 954 SNVs.
+  - GTEx V10 API, per control: 0/18 tested; c.-217C>T and c.-268G>T are in the variant table but not tested.
+  - Ensembl REST EPO primates (md5 8957af83…): 7 non-human primate genomes (bonobo, chimpanzee, gorilla, orangutan, 2 macaques, mouse lemur). An earlier pass wrongly counted the 7 inferred-ancestor rows as genomes; fixed before any figure. Alt allele present: mouse lemur only, at c.-35C>G (P/LP) and c.-97G>C (B/LB).
+  - gnomAD: proxy_benign gnomad/LDLR.json (md5 16203526…), genomes or exomes, AC ≥ 1, PASS.
+- Checks against draft-14 inputs (evidence_v3) on the 633 library SNVs:
+  - MPRA and PromoterAI identical; AlphaGenome RNA/DNase within 4e-5 (rounding).
+  - gnomAD differs on 3 non-control SNVs (147T>C, 154G>A, 192G>T): exome AC = 1 but failing gnomAD filters, now counted as absent.
+  - All 18 controls' gnomAD status matches draft 14.
+- Large-change cutoffs are now over all 954 SNVs (post hoc consequence of the region change): MPRA 0.624, AlphaGenome RNA 0.0205, DNase 0.0847, PromoterAI 0.175. Fiber-seq rows are unchanged (HepG2 630 SNVs, 2.06; HEK293T 108, 3.71). Flag changes vs draft 14 for the 14 shared controls: AlphaGenome DNase now flags c.-217C>T (▲).
+- Margins (P/LP, B/LB):
+
+  | Row | P/LP | B/LB |
+  |---|---|---|
+  | gnomAD | 4/10 | 6/8 |
+  | GTEx | 0/10 | 0/8 |
+  | primate | 1/10 | 1/8 |
+  | AlphaGenome RNA | 5/10 | 1/8 |
+  | AlphaGenome DNase | 4/10 | 2/8 |
+  | PromoterAI | 5/10 | 2/8 |
+  | MPRA | 4/10 | 1/8 |
+  | Fiber-seq HepG2 | 3/8 | 0/6 |
+  | Fiber-seq HEK293T | 1/2 | 0/2 |
+
+- Traced c.-136C>T end to end: raw Kircher value −2.62; the cutoff recomputed by awk over 954 SNVs is 0.624, so ▼. PromoterAI −0.932 ≥ 0.175, so ▼.
+- Output: results/r01_figure_20261102/fig3b_v15/ (fig3b.svg/.pdf/.png, matrix.tsv, margins.tsv, summary.json), 7.2 × 3.99 in, 7 pt text with 6 pt details and key. fig3.py and fig3_v14 are untouched.
+
+## 2026-11-06 — Fig 3 draft 16 (fig3_v16): panels a + b (fig3_rules.json panel_ab_draft16)
+- User: add panel a back above the standalone b; remove the text under b but keep the symbol legend.
+- Panel a now spans the whole Kircher element (c.-318..c.-1, all 954 SNVs; draft 14 showed the 633 library SNVs), so every panel-b control appears in it.
+  - ClinVar class for every SNV comes from the same 2026-11-06 query (fig3b_data.py `controls` now also writes clinvar_all.tsv; controls.tsv is md5-identical).
+  - Counts: 820 not in ClinVar, 109 VUS, 7 conflicting, 8 B/LB, 10 P/LP. The 1 "other" record is drawn as not in ClinVar.
+  - Regions, TSS and markers are as in Fig 3 a.
+  - Region labels are anchored at the outer box edges so neighbours don't overlap (layout only).
+- Panel b: the three key lines are replaced by one symbol line. matrix.tsv and margins.tsv are byte-identical to fig3b_v15.
+- Output: 7.2 × 6.13 in, results/r01_figure_20261102/fig3_v16/ (fig3.svg/.pdf/.png; script tools/r01_figure/fig3b.py).
+
+## 2026-11-06 — Fig 3 draft 17 (fig3_v17): primate row removed, coloured row groups (fig3_rules.json panel_b_draft17)
+- User: remove the primate row from panel b, and colour each section.
+- The primate row is no longer drawn. primate.tsv and the matrix.tsv columns are kept; matrix.tsv is byte-identical to draft 16.
+- Section hues for the heading, symbols and a 10% tint band with a 2-pt accent edge: Population #9A6A12, Predicted #6A55B5, Measured #00809A. Validated with the dataviz validate_palette.js (light, all pairs): CVD ΔE 8.3, normal vision ΔE 15.3, contrast ≥ 3:1. Each section is also named by its heading.
+- Grey dots, "–" and margin text unchanged. Margins as draft 15 minus the primate row. 7.2 × 5.92 in. Output results/r01_figure_20261102/fig3_v17/.
+
+## 2026-11-06 — Fig 3 draft 18 (fig3_v18): grant-size layout (fig3_rules.json compact_draft18)
+- User: compact the figure to fit in a grant. Size 7.2 × 3.89 in (was 5.92). Text 7 pt main, 6 pt secondary, letters 9 pt.
+- Panel a:
+  - axes 58 pt tall (was 88);
+  - region labels on one line (short names), so "no motif match" for the dashed protected site and the TF names (SREBP, SP1, CREB/ATF; SP-like = ZFP3 match) now go in the figure legend;
+  - y label "MPRA, HepG2 (log2 change)".
+- Panel b:
+  - section headings moved into the tinted bands as left labels (Population, yes / no; Predicted and Measured, variant − WT);
+  - one-line row labels; "Plasmid Fiber-seq" is shortened to "Fiber-seq", so the legend must say plasmid;
+  - row height 10.5 pt; the final grid line is removed.
+- Data unchanged: matrix.tsv is byte-identical to draft 17.

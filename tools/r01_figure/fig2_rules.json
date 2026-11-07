@@ -79,5 +79,9 @@
  "revision_draft14": {
   "_written": "2026-11-05, after the user's draft-13 review; layout only",
   "panel_a": "y label 'Footprint loss (%)' gets a second line '(WT − variant)'; track axes start 7 pt further right (x0 24 -> 31 pt) to make room"
+ },
+ "revision_draft15": {
+  "_written": "2026-11-06, after the user's draft-14 review; layout only",
+  "titles": "panel titles beside the letters, 7 pt bold on the letter baseline: a 'Plasmid Fiber-seq', b 'Reporter Assay'; a 9-pt title band added on top (height 1.62 -> 1.745 in), all content shifted down 9 pt"
  }
 }
