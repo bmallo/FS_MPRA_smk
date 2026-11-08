@@ -3,7 +3,7 @@ proxy benign SNVs as a stacked bar, coloured by the number of supporting proxy b
 
 Table values are transcribed from the user's figure (2026-11-06); the proxy column comes from proxy.py counts.tsv.
 User edits 2026-11-06: HEL 92.1.7 removed from the Fiber-seq accessible lines; RBM8A row removed (PAH kept, 15
-genes); APC mechanism shown as LOE (was mLOE).
+genes); APC mechanism shown as LOE (was mLOE). 2026-11-07: HUDEP-2 added to GATA2 and HBG1.
 --compact (with --v2): grant-sized version (7 in wide), no footnote.
 --v2: AlphaGenome-only proxy benign counts in the 350 bp TSS-side window (proxy_350.py, rules.json v2), one colour.
 Usage: python tools/proxy_benign/table_figure.py --root results/proxy_benign_20261106 [--counts | --v2 [--compact]]
@@ -20,7 +20,7 @@ import pandas as pd  # noqa: E402
 
 plt.rcParams.update({'font.family': 'DejaVu Sans', 'pdf.fonttype': 42, 'svg.fonttype': 'none'})  # editable text
 ROWS = [  # gene, mechanisms, P/LP, B/LB, Fiber-seq accessible (user's table)
-    ('GATA2', ['LOE'], 2, 85, 'WTC-11'),
+    ('GATA2', ['LOE'], 2, 85, 'WTC-11, HUDEP-2'),
     ('SHH', ['LOE', 'GOE'], 17, 27, 'HAP1, WTC-11'),
     ('APC', ['LOE'], 3, 25, 'HEK293T, HAP1, Jurkat, WTC-11'),
     ('MLH1', ['LOE'], 1, 17, 'HEK293T, HAP1, Jurkat, WTC-11'),
@@ -31,7 +31,7 @@ ROWS = [  # gene, mechanisms, P/LP, B/LB, Fiber-seq accessible (user's table)
     ('LDLR', ['LOE'], 12, 7, 'HEK293T, HAP1, Jurkat, WTC-11'),
     ('TERT', ['GOE'], 1, 7, 'HEK293T, HAP1, Jurkat, WTC-11'),
     ('ANKRD26', ['GOE'], 10, 4, 'HEK293T, HAP1, Jurkat, WTC-11, HUDEP-2'),
-    ('HBG1', ['GOE'], 6, 1, 'K562'),
+    ('HBG1', ['GOE'], 6, 1, 'K562, HUDEP-2'),
     ('SLC39A4', ['LOE'], 1, 1, 'HEK293T, WTC-11'),
     ('NIPBL', ['LOE'], 1, 0, 'HEK293T, HAP1, Jurkat, WTC-11'),
     ('PAH', ['LOE'], 0, 7, 'HEK293T, Jurkat, WTC-11')]

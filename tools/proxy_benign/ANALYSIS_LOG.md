@@ -29,3 +29,4 @@
 - Decision (user): keep the 1 kb cutoff. Final table: `v2_350bp/table_proxy_benign_350bp.png/.pdf`; the cut350 version is kept as a comparison only.
 - User edits to the table: PAH row removed (15 genes) and HEL 92.1.7 removed from the Fiber-seq accessible column (HBB: HUDEP-2; ANKRD26: HEK293T, HAP1, Jurkat, WTC-11, HUDEP-2). Proxy counts unchanged: HBB still uses K562 (HUDEP-2 not in AlphaGenome), ANKRD26 its non-erythroid lines.
 - User edits: RBM8A row replaced by PAH (15 genes); APC mechanism shown as LOE; footnote removed and grant-sized layout added (`table_figure.py --v2 --compact` -> `v2_350bp/table_proxy_benign_350bp_compact.png/.pdf`, 7.0 x 3.45 in, 300 dpi). The proxy rule now lives only in rules.json and this log, so the grant legend must state it.
+- 2026-11-07: HUDEP-2 added to the Fiber-seq column for GATA2 and HBG1 (display only; HUDEP-2 is not in AlphaGenome, so proxy counts are unchanged).
