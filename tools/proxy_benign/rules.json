@@ -37,5 +37,12 @@
    "output": "results/proxy_benign_20261106/v2_350bp/cutoff_comparison.tsv, snv_350bp_cutoffs.tsv, table_proxy_benign_350bp_cut350.png",
    "decision": "2026-11-06, user: keep the 1 kb cutoff. Final table = v2_350bp/table_proxy_benign_350bp.png/.pdf; the 350 bp-cutoff version stays as a comparison only"
   }
+ },
+ "v3_noncoding_clinvar": {
+  "_written": "2026-11-08, user: drop any ClinVar record that changes protein sequence on any transcript, annotate the rest by MANE Select, keep >= 1 star (after the Ellingford et al. 2022 comparison); before any recount",
+  "protein_changing": "a record is dropped if its ClinVar molecular_consequence_list (esummary; consequences on all transcripts ClinVar annotates) contains any of: missense, nonsense / stop gained, stop lost, frameshift, inframe insertion / deletion / indel, initiator codon (start lost). Synonymous, splice site and UTR / intron / non-coding transcript consequences do not change protein sequence and are kept (synonymous kept is a literal reading of the request; flagged in the outputs)",
+  "mane_annotation": "each kept record is labelled by its position on the element gene's MANE Select transcript (UCSC hg38 mane track): upstream (<= 2 kb of the TSS), 5'UTR, intron, 3'UTR, CDS (synonymous only), or other (> 2 kb from the MANE gene, e.g. APC promoter 1B, SHH ZRS); indels by their first changed base. Other MANE genes overlapping the record are listed",
+  "benchmark": ">= 1-star ClinVar P/LP and B/LB records that are not protein-changing; SNVs among them are excluded from the proxy benign counts as before. Everything else (windows, AlphaGenome rule, 1 kb cutoff) unchanged",
+  "output": "results/proxy_benign_20261106/v3_noncoding_clinvar/ (v1/v2 outputs left as they were)"
  }
 }

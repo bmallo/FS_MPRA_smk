@@ -5,7 +5,9 @@ change (element's track set, top-20% rule). SNVs with a >= 1-star ClinVar P/LP o
 left out. Inputs under --root (fetch.py gnomad/gtex --batched/clinvar, ag_array.sbatch): gnomad/, gtex/, clinvar/,
 reference/, ag/<element>/alphagenome/tracks.tsv.
 Writes to --root: snv_proxy.tsv (one row per possible SNV), counts.tsv (per element), summary.json
-Usage: python tools/proxy_benign/proxy.py --root results/proxy_benign_20261106
+--benchmark <clinvar_annotated.tsv> (clinvar_noncoding.py): benchmark = its 'benchmark' rows (v3: protein-changing
+records dropped); --output: where to write (default --root).
+Usage: python tools/proxy_benign/proxy.py --root results/proxy_benign_20261106 [--benchmark <tsv> --output <dir>]
 """
 import argparse
 import hashlib
@@ -54,8 +56,12 @@ def ag_class(root, w, keys):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--root', required=True)
+    ap.add_argument('--benchmark', help='clinvar_annotated.tsv from clinvar_noncoding.py')
+    ap.add_argument('--output', help='output directory (default --root)')
     a = ap.parse_args()
     root = Path(a.root)
+    out_dir = Path(a.output) if a.output else root
+    out_dir.mkdir(parents=True, exist_ok=True)
     W = cl.windows()
     snv = cl.all_snvs(root)
     g = cl.gnomad_table(root)
@@ -66,6 +72,10 @@ def main():
     cv['stars'] = cv.review.map(stars)
     cv = cv[cv.in_window.astype(bool)]
     bench = cv[cv.cls.isin(['plp', 'blb']) & (cv.stars >= 1)]
+    if a.benchmark:
+        ann = pd.read_csv(a.benchmark, sep='\t')
+        cv = ann
+        bench = ann[ann.benchmark]
     out, rows, ntracks = [], [], {}
     for w in W.itertuples():
         s = snv[snv.window == w.window].copy()
@@ -88,6 +98,8 @@ def main():
                  rna_tracks=ntracks[w.window]['rna_tracks'], dnase_tracks=ntracks[w.window]['dnase_tracks'])
         for cls in ('plp', 'blb'):
             x = c[(c.cls == cls) & (c.stars >= 1)]
+            if 'protein_changing' in x:                     # v3: protein-changing records are not benchmark
+                x = x[~x.protein_changing]
             r[f'clinvar_{cls}_1star_snv'] = int((x.kind == 'SNV').sum())
             r[f'clinvar_{cls}_1star_all'] = len(x)
         P = s[s.clinvar_benchmark == '']
@@ -103,10 +115,11 @@ def main():
                   gtex_lookup_missing=int((~(S.chrom + '_' + S.pos.astype(str) + '_' + S.ref + '_' + S.alt + '_b38')
                                            .isin(lk.index) & S.in_gnomad & S.key.isin(
                                                g[g.g_ac > 0].index.get_level_values(1))).sum()))
-    S.to_csv(root / 'snv_proxy.tsv', sep='\t', index=False, float_format='%.6g')
-    counts.to_csv(root / 'counts.tsv', sep='\t', index=False)
-    json.dump(dict(checks=checks, tracks=ntracks, md5={p: md5(root / p) for p in ('snv_proxy.tsv', 'counts.tsv')}),
-              open(root / 'summary.json', 'w'), indent=1)
+    S.to_csv(out_dir / 'snv_proxy.tsv', sep='\t', index=False, float_format='%.6g')
+    counts.to_csv(out_dir / 'counts.tsv', sep='\t', index=False)
+    json.dump(dict(benchmark=a.benchmark or 'built in (>= 1-star P/LP and B/LB)', checks=checks, tracks=ntracks,
+                   md5={p: md5(out_dir / p) for p in ('snv_proxy.tsv', 'counts.tsv')}),
+              open(out_dir / 'summary.json', 'w'), indent=1)
     print(json.dumps(checks))
     print(counts.to_string(index=False))
 

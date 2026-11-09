@@ -3,8 +3,10 @@ proxy benign SNVs as a stacked bar, coloured by the number of supporting proxy b
 
 Table values are transcribed from the user's figure (2026-11-06); the proxy column comes from proxy.py counts.tsv.
 User edits 2026-11-06: HEL 92.1.7 removed from the Fiber-seq accessible lines; RBM8A row removed (PAH kept, 15
-genes); APC mechanism shown as LOE (was mLOE). 2026-11-07: HUDEP-2 added to GATA2 and HBG1.
---compact (with --v2): grant-sized version (7 in wide), no footnote.
+genes); APC mechanism shown as LOE (was mLOE). 2026-11-07: HUDEP-2 added to GATA2 and HBG1. 2026-11-08: PAH dropped,
+RBM8A back; --compact restyled to the user's edited SVG (gene_figure_legend.svg).
+--compact (with --v2): grant figure, 504 x 286.2 pt (7.0 x 3.975 in): Arial (Liberation Sans, metric-compatible, for
+rendering; the SVG names Arial), bold headers 10 pt, bold-italic genes 7.5 pt, 8 pt cells, FIGURE 4 caption below.
 --v2: AlphaGenome-only proxy benign counts in the 350 bp TSS-side window (proxy_350.py, rules.json v2), one colour.
 Usage: python tools/proxy_benign/table_figure.py --root results/proxy_benign_20261106 [--counts | --v2 [--compact]]
 """
@@ -15,10 +17,17 @@ import matplotlib
 
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt  # noqa: E402
+from matplotlib import font_manager  # noqa: E402
 from matplotlib.patches import FancyBboxPatch  # noqa: E402
 import pandas as pd  # noqa: E402
 
 plt.rcParams.update({'font.family': 'DejaVu Sans', 'pdf.fonttype': 42, 'svg.fonttype': 'none'})  # editable text
+FONT_DIR = Path('/gscratch/stergachislab/bmallo/large_home/fonts/liberation')   # Liberation Sans = Arial metrics
+for _f in FONT_DIR.glob('LiberationSans-*.ttf'):
+    font_manager.fontManager.addfont(str(_f))
+CAPTION = ('Overview of all the genes with classified regulatory variants in ClinVar, their mechanism of action LOE = '
+           'loss-of-expression, GOE = gain-of-expression, number of classified variants, number of variants predicted '
+           'to be benign, accessibility of the elements in experimental cell lines by Fiber-seq.')
 ROWS = [  # gene, mechanisms, P/LP, B/LB, Fiber-seq accessible (user's table)
     ('GATA2', ['LOE'], 2, 85, 'WTC-11, HUDEP-2'),
     ('SHH', ['LOE', 'GOE'], 17, 27, 'HAP1, WTC-11'),
@@ -34,7 +43,7 @@ ROWS = [  # gene, mechanisms, P/LP, B/LB, Fiber-seq accessible (user's table)
     ('HBG1', ['GOE'], 6, 1, 'K562, HUDEP-2'),
     ('SLC39A4', ['LOE'], 1, 1, 'HEK293T, WTC-11'),
     ('NIPBL', ['LOE'], 1, 0, 'HEK293T, HAP1, Jurkat, WTC-11'),
-    ('PAH', ['LOE'], 0, 7, 'HEK293T, Jurkat, WTC-11')]
+    ('RBM8A', ['LOE'], 0, 0, 'HEK293T, HAP1, Jurkat, WTC-11')]
 MECH = {'LOE': ('#009E73', 'white'), 'GOE': ('#CC79A7', 'white'), 'mLOE': ('#F0E442', 'black')}
 PLP, BLB = '#D55E00', '#0072B2'
 LEVELS = {1: '#c6dbef', 2: '#6baed6', 3: '#08306b'}
@@ -42,8 +51,38 @@ LEVELS = {1: '#c6dbef', 2: '#6baed6', 3: '#08306b'}
 FULL = dict(fig_w=15.6, row_in=0.45, extra_in=1.5, xmax=156, X=dict(gene=0.6, mech=13.5, plp=27, blb=41, proxy=57,
             fs=101), W=(9, 10.5, 33), hdr=13, gene=13, pill=11.5, num=12, fs=11.5, pill_w=4.0, half=0.3, rule=1.5)
 COMPACT = dict(fig_w=7.0, row_in=0.2, extra_in=0.25, xmax=100, X=dict(gene=0.4, mech=11.5, plp=24, blb=35,
-               proxy=47.5, fs=66), W=(6, 8, 18), hdr=7.5, gene=7.5, pill=5.8, num=6.5, fs=6.5, pill_w=3.5, half=0.33,
-               rule=0.8)
+               proxy=47.5, fs=66), W=(6, 8, 18), hdr=10, gene=7.5, pill=8, num=8, fs=8, pill_w=3.5, half=0.33,
+               rule=0.8, family='Liberation Sans', gene_weight='bold', fs_weight='normal', caption_in=37.8 / 72,
+               caption_pt=9)
+
+
+def caption(fig, L, h_in):
+    """'FIGURE 4.' in bold then CAPTION, greedily wrapped to the table width, below the table (as the user's SVG)."""
+    r = fig.canvas.get_renderer()
+    x0, x1 = 7 / 504, 1 - 7 / 504                             # 7 pt margins
+    line_h = 11.3 / 72 / h_in
+    y = 1 - (L['row_in'] * 16 + L['extra_in'] + 10.5 / 72) / h_in
+    kw = dict(fontsize=L['caption_pt'], va='baseline', transform=fig.transFigure)
+
+    def width(t, **k):
+        e = fig.text(0, 0, t, **kw, **k)
+        w = e.get_window_extent(r).width / fig.bbox.width
+        e.remove()
+        return w
+    head = 'FIGURE 4.'
+    fig.text(x0, y, head, fontweight='bold', **kw)
+    x = x0 + width(head, fontweight='bold') + width(' ')
+    line, lines, avail = '', [], x1 - x
+    for word in CAPTION.split():
+        test = (line + ' ' + word).strip()
+        if width(test) > avail and line:
+            lines.append(line)
+            line, avail = word, x1 - x0
+        else:
+            line = test
+    lines.append(line)
+    for i, t in enumerate(lines):
+        fig.text(x if i == 0 else x0, y - i * line_h, t, **kw)
 
 
 def main():
@@ -61,8 +100,12 @@ def main():
 
     n = len(ROWS)
     L = COMPACT if a.compact else FULL
-    fig = plt.figure(figsize=(L['fig_w'], L['row_in'] * (n + 1) + L['extra_in']))
-    ax = fig.add_axes([0, 0, 1, 1])
+    if 'family' in L:
+        plt.rcParams['font.family'] = L['family']
+    table_in = L['row_in'] * (n + 1) + L['extra_in']
+    cap_in = L.get('caption_in', 0)
+    fig = plt.figure(figsize=(L['fig_w'], table_in + cap_in))
+    ax = fig.add_axes([0, cap_in / (table_in + cap_in), 1, table_in / (table_in + cap_in)])
     ax.set_xlim(0, L['xmax'])
     ax.set_ylim(n + (1.0 if a.compact else 2.0), -0.2)
     ax.axis('off')
@@ -98,7 +141,8 @@ def main():
         y = i + 1.5
         if i % 2 == 0:
             ax.add_patch(plt.Rectangle((0.3, y - 0.5), L['xmax'] - 0.8, 1, color='#f0f0f0', lw=0, zorder=0))
-        ax.text(X['gene'], y, gene, fontsize=L['gene'], style='italic', va='center')
+        ax.text(X['gene'], y, gene, fontsize=L['gene'], style='italic', fontweight=L.get('gene_weight', 'normal'),
+                va='center')
         mx = X['mech']
         for m in mechs:
             bg, fg = MECH[m]
@@ -120,7 +164,7 @@ def main():
             x0 += wd
         lab = f'{int(tot[gene]):,}' if (a.counts or a.v2) else f'{tot[gene]:.0f}%'
         ax.text(x0 + 0.4, y, lab, fontsize=L['num'] if a.compact else 11, va='center')
-        ax.text(X['fs'], y, fs, fontsize=L['fs'], fontweight='bold', va='center')
+        ax.text(X['fs'], y, fs, fontsize=L['fs'], fontweight=L.get('fs_weight', 'bold'), va='center')
     foot = ('Proxy benign = SNVs in a 350 bp window containing the TSS whose predicted RNA and DNase changes '
             '(AlphaGenome) are both outside the top 20% of changes across the ' +
             ('350 bp window' if a.cut350 else '1 kb element') + '.\nTSS = MANE Select (APC: promoter 1B); '
@@ -134,9 +178,14 @@ def main():
                 color='#444444', va='center', linespacing=1.4)
     stem = 'table_proxy_benign' + ('_350bp' + ('_cut350' if a.cut350 else '') + ('_compact' if a.compact else '')
                                    if a.v2 else '_counts' if a.counts else '')
+    if cap_in:
+        caption(fig, L, table_in + cap_in)
     fig.savefig(root / f'{stem}.png', dpi=300 if a.compact else 200)
     fig.savefig(root / f'{stem}.pdf')
     fig.savefig(root / f'{stem}.svg')
+    if 'family' in L:                                        # name Arial in the SVG (Liberation Sans has its metrics)
+        p = root / f'{stem}.svg'
+        p.write_text(p.read_text().replace(L['family'], 'Arial'))
     print('written', root / f'{stem}.png')
 
 

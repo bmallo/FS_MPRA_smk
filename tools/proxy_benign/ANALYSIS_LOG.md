@@ -30,3 +30,16 @@
 - User edits to the table: PAH row removed (15 genes) and HEL 92.1.7 removed from the Fiber-seq accessible column (HBB: HUDEP-2; ANKRD26: HEK293T, HAP1, Jurkat, WTC-11, HUDEP-2). Proxy counts unchanged: HBB still uses K562 (HUDEP-2 not in AlphaGenome), ANKRD26 its non-erythroid lines.
 - User edits: RBM8A row replaced by PAH (15 genes); APC mechanism shown as LOE; footnote removed and grant-sized layout added (`table_figure.py --v2 --compact` -> `v2_350bp/table_proxy_benign_350bp_compact.png/.pdf`, 7.0 x 3.45 in, 300 dpi). The proxy rule now lives only in rules.json and this log, so the grant legend must state it.
 - 2026-11-07: HUDEP-2 added to the Fiber-seq column for GATA2 and HBG1 (display only; HUDEP-2 is not in AlphaGenome, so proxy counts are unchanged).
+
+## 2026-11-08 — v3: protein-changing ClinVar records dropped, MANE Select labels (>= 1 star kept)
+
+- After the Ellingford et al. 2022 comparison. Rule `v3_noncoding_clinvar` written first. `clinvar_noncoding.py` -> `v3_noncoding_clinvar/clinvar_annotated.tsv`, `clinvar_counts.tsv` (MANE Select from the UCSC mane track, cached in `mane/`).
+- Dropped (>= 1-star P/LP or B/LB with a protein-changing consequence on any transcript): 11 records — APC 6 B/LB missense in the promoter 1B isoform; MLH1 4 P/LP (3 start-codon deletions, 1 haplotype record with a missense change) and 1 B/LB missense in EPM2AIP1. Kept: 9 synonymous (APC 6, MLH1 3).
+- MANE regions of the 362 kept benchmark records: upstream <= 2 kb, 5'UTR, intron (GATA2 +9.5, 87), other > 2 kb from the MANE gene (APC 1B 66, SHH ZRS 31).
+- `proxy.py --benchmark ... --output v3_noncoding_clinvar` and `proxy_350.py`: 350 bp proxy counts identical to v2 in all 16 elements — none of the dropped SNVs lies in a 350 bp window except the MLH1 c.-27C>A position, which is still a benchmark SNV through another record.
+
+## 2026-11-08 — overlap with Ellingford et al. 2022 (Genome Med 14:73, PMC9295495)
+
+- Our genes in the paper: SHH (ZRS, PM1 example in text; Table S1 chr7:156791413 A>C, LP), VHL (Table 1, deep intronic cryptic exon), and Table S1 test variants HBB (3'UTR polyA, VUS; outside our element), LDLR (chr19:11089410 CT>C, VUS), TERT (chr5:1295046 T>G, VUS), ANKRD26 (chr10:27100453 T>C, VUS). Supplementary file from static-content.springer.com.
+- Our calls: SHH variant DNase-large (not proxy benign); TERT RNA+DNase large (not proxy); ANKRD26 T>C no large change = proxy benign, although T>A and T>G at the same base are ClinVar P/LP. Across the 350 bp windows, 9 of 54 >= 1-star non-coding P/LP SNVs have no large AlphaGenome change (ANKRD26 2/11, HBB 3/24, LDLR 1/8, SHH 3/4), i.e. would be called proxy benign if unlabelled.
+- 2026-11-08: compact figure restyled to the user's edited SVG (gene_figure_legend.svg): Arial (Liberation Sans fonts in large_home/fonts/liberation for rendering; SVG font names rewritten to Arial), bold 10 pt headers, bold-italic 7.5 pt genes, 8 pt cells (cell lines no longer bold), FIGURE 4 caption below; 504 x 286.2 pt. PAH dropped, RBM8A back.
